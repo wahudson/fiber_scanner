@@ -1,0 +1,26 @@
+2019-08-05
+		Optical Fiber Scanning Confocal Microscope
+		------------------------------------------
+
+"Fiber Scanner" for short.
+
+A project to design and build a fiber scanning confocal microscope.
+Initially focusing on the fiber scanner system.
+
+Files:
+------
+    README
+    camera/	camera image analysis
+    data/
+    doc/	general doc
+    exp/
+    led_light/	LED fiber light source
+    lissajous/
+    photo/
+    piezo/	piezo tube scanner design
+	notes.text	main notes
+
+    psd_box/	Position Sensing Detector connector box design
+    tmp/
+    tool/
+
