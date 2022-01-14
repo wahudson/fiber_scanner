@@ -1,0 +1,161 @@
+2022-01-06
+		Netpbm Use
+		----------
+
+Netpbm Home page:
+    http://netpbm.sourceforge.net/
+
+----------------------------------------------------------------------------
+## References
+----------------------------------------------------------------------------
+
+Netpbm Program Directory
+    http://netpbm.sourceforge.net/doc/directory.html
+
+pgm Functions (a simpler subset)
+    http://netpbm.sourceforge.net/doc/libpgm.html
+
+----------------------------------------------------------------------------
+## My summary - pgm
+----------------------------------------------------------------------------
+
+PAM is super set of the other forms (pbm, pgm, ppm).
+    It has a more abstract interface - easier for generality, but harder
+    for a specific use, e.g. pgm.
+    The individual forms can be used directly.
+
+    The file formats are simple and straight-forward.  Expect the principles
+    of the underlying library is also.
+
+Object oriented would help a lot.
+    Perhaps make a Pgm class that is the libnetpbm interface.
+
+Initialization:
+    http://netpbm.sourceforge.net/doc/libpm.html#initialization
+
+    pm_proginit(...)	parses command line options
+	Not necessary to use the library.
+
+    void	pm_init( const char * progname, unsigned int flags ); 
+	progname = program name used by error reporting
+	flags    = 0	future capability
+	Required bare essential initialization.
+
+pgm.h
+    typedef unsigned int	gray;
+	The pixel value type.  Values are typically 8-bit, but can be 16-bit.
+
+Memory Management:
+
+    ((gray**)	pgm_allocarray( int const cols, int const rows )
+	cols = number of columns - possibly stored in the library
+	rows = number of rows
+	Allocate a whole array.
+
+    void	pgm_freearray( (char**) grays, int const rows )
+	grays = pointer to the array
+	rows = number of rows
+	What is it doing with rows?
+
+    Assume these two must be used together with exact same arguments.
+
+Reading Files:
+
+    The read functions can read any Netpbm file, and return Gray data.
+
+    void
+    pgm_readpgminit(
+	    FILE * const file,
+	    int *  const colsP,
+	    int *  const rowsP,
+	    gray * const maxvalP,
+	    int *  const formatP
+    );
+	Read the header of a PGM file, returning all header information.
+	Leaves file positioned just after the header.
+
+    gray **
+    pgm_readpgm(
+	    FILE * const file,
+	    int *  const colsP,
+	    int *  const rowsP,
+	    gray * const maxvalP
+    );
+	Reads an entire PGM image file into memory allocated internally.
+	It returns header information.
+	It combines pgm_readpgminit(), pgm_allocarray(), and pgm_readpgmrow().
+
+Error Handling:
+
+    !! The read functions abort the program if any errors are detected.
+    Not nice, except perhaps in a single file processing program.
+
+    Abort on error:
+	pgm_readpgminit()
+	pgm_readpgm()
+
+----------------------------------------------------------------------------
+## Notes on C
+----------------------------------------------------------------------------
+
+    FILE is a type name, from <stdio.h>, for a stream structure.
+
+    Use fopen(3) to return a pointer to FILE.
+
+----------------------------------------------------------------------------
+## My Thoughts - pgm
+----------------------------------------------------------------------------
+
+    Use the "pgm.h" pgm functions library directly.  Avoid complexity of
+    the more general 'pam' format, which adds little value in our case.
+
+    Looks simple enough to read or write Netpbm files and actually save
+    development time.
+
+    Beware abort on error.
+    A try-catch mechanism would be so useful here.
+    The abort(3) call cannot be caught.
+    The exit(3) call could be caught by registered atexit(3) functions.
+
+    The read and allocate function pgm_readpgm() looks great.
+    Uses 4-bytes per pixel, 12 M pixel is ~50 Mbyte, is fine (these days).
+
+    Type name 'gray' is a really poor name.  Better model after uint32_t.
+    typeset	gray_t		gray;
+
+    The image array is an array of pointers to row arrays of pixel values.
+    A standard C multi-dimensional array.  i.e.
+	gray_t		pixv  = img[row][col];	// a pixel value
+    is the same as
+	gray_t*		row_p = img[row];	// pointer to a row array
+	gray_t		pixv  = row_p[col];	// a pixel value (gray)
+
+    Note:  There is no range checking on the array indexes.  The user must
+    ensure array bounds are not exceeded.
+
+Example use:  (see:  pgexample/)
+
+    #include <stdio.h>		// fopen()
+    #include <netpbm/pgm.h>
+
+    pm_init( "MyProg", 0 );
+
+    gray**	img;		// pointer to image array  img[row][col]
+    FILE*	fp;
+    int		Ncol;
+    int		Nrow;
+    int		MaxVal;
+
+    pm_init( "MyProg", 0 );	// init library error handling
+
+    fp = fopen( "my_file.pgm", "r" );	// open file
+
+    img = pgm_readpgm(			// read file
+	fp,
+	&Ncol,
+	&Nrow,
+	&MaxVal		// maximum gray value
+    );
+
+Perhaps encapsulate in a C++ class.
+

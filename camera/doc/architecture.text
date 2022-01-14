@@ -1,0 +1,530 @@
+2021-12-19  William A. Hudson
+
+		Camera Scan Pattern Image Analysis
+		----------------------------------
+
+Raspberry Pi HQ Camera.
+Initially analyzing Ellipse patterns.
+
+See also:  /home/wah/pro/raspberryPi/hq_camera/notes.text
+
+----------------------------------------------------------------------------
+## Background
+----------------------------------------------------------------------------
+
+We are using an Raspberry Pi HQ Camera and microscope lens to view the
+scan pattern of our fiber scanners.
+
+The static scan pattern is typically an ellipse.
+
+The ellipse typically changes shape as the sinusoidal driving frequency
+is swept thru resonance of the fiber cantilever.
+
+We want an automated way of extracting the essential information of the
+ellipse pattern from a camera image.
+
+Things we want to find:
+    Center of the ellipse.
+    XY Bounding box of the ellipse.
+    Major and minor axis of the ellipse.
+    Size on the ellipse axis.
+
+One approach is to fit an ellipse to the set of points in the image.
+    This can be done by several methods.
+    But we don't really need the actual mathematical ellipse.
+
+We are interested in the drive/response relationship of the fiber cantilever.
+    Drive/response sinusoids in two dimensions.
+    The drive signal is a sinusoid.
+    The fiber resonance response is sinusoidal in nature.
+
+    We know all aspects of the drive sinusoid - amplitude, phase, frequency.
+
+    We want to find the response sinusoids in X and Y.
+    They will always have the same frequency (in a static pattern).
+    The X and Y amplitude and phase may be different.
+
+    Note this problem is much simpler than fitting a mathematical ellipse.
+
+----------------------------------------------------------------------------
+## Analysis Ideas
+----------------------------------------------------------------------------
+
+Camera Image:
+    Is of a single elliptical scan pattern, of bright LED light on a 
+    dark (black) background.
+
+    Images are generally color.
+    Convert to grayscale, since there is only one color in the pattern -
+    the red LED light.
+
+    Use red LED.  Silicon photodetectors typically have better sensitivity
+    in the red (and infrared) end of the spectrum.  Often peak around 900 nm.
+
+Identify background level:
+    Identify the background intensity level, perhaps by histogram of all
+    pixels.  The dominant intensity is probably background, since the
+    ellipse trace is a small fraction of all pixels.
+
+    A) From a reference background-only image.
+    B) From image after crop.
+    C) From image before crop.
+    D) From an area known to be outside the ellipse pattern.
+
+    Background intensity could be tilted, i.e. the general intensity changes
+    across the image.
+
+Remove the background:
+    Zero intensity for all background pixels.  Simplify further analysis.
+
+    Perhaps subtract the constant background intensity from remaining pixels.
+    This might make intensity signal excursion effectively larger.
+
+Identify center of mass:
+    The center of mass of the whole image is the center of the ellipse,
+    since it is the only object in the image.
+    It is simply calculated as the weighted mean of all pixels, where
+    the weight is the pixel intensity.
+    You can see where making the background zero helps here.
+
+    Cxy = (1/Mtot) * sum( M[i] * Rxy[i] )	Center of mass vector (x,y)
+
+	Mtot = sum( M[i] )
+
+	M[i]   = pixel intensity
+	Rxy[i] = pixel location vector (x,y)
+
+Identify XY Bounding Box:
+
+    -         +----------+
+    -         |    o o   |
+    -         |   o    o |
+    -         |  o      o|
+    -         | o       o|
+    -         |o   +   o |
+    -         |o      o  |
+    -         |o    oo   |
+    -         |  ooo     |
+    -         +----------+
+
+    -  00000000222222222200000000000
+
+    For each index in X, sum up all the intensities in the column (Y).
+    Find the left and right edges of the linear blob.
+
+    Similar for Y.
+
+    Assuming the object is an ellipse.
+    The X range is the amplitude of the X-sinusoid.  Similar for Y.
+ 
+Identify Ellipse Axis:
+    The axis must pass thru the center of mass.
+
+    The bounding box is a good starting estimate of the long axis.
+    i.e. Find the corners that have more points of end of the ellipse.
+
+    The Long Axis is the axis for which the sum of all moments is minimized.
+    i.e.
+    For each pixel, multiply its distance from the axis by its intensity,
+    and sum them up.
+    Find the axis (search) for which this sum is minimized.
+
+    Similarly,
+    The Short Axis is the axis for which the sum of all moments is maximized.
+
+    These axis are an interesting character of the ellipse.
+    It would be interesting to see how they change as drive frequency is
+    swept thru resonance.
+
+    Could axis be estimated from center-of-gravity of each row and column?
+    If not exact, it could be a good starting point for a search.
+    It feels plausible, but I don't see an easy proof.
+    Try it an see.  Perhaps model with an exact ellipse.
+
+Scan Spot:
+    The fiber image spot is not a single point.
+    It is a distribution (e.g. Gaussian) over many pixels.
+
+    We want to identify and track the center of the spot.
+    It is harder to identify the center when several spots are adjacent
+    and merge together, as in the ellipse pattern.
+
+    Strobe (chop) the LED light, so each spot is separate.
+    Now the center of the spot represents the center position of the fiber.
+
+    Perhaps have a pixel distribution that represents the spot intensity
+    profile.  Lay this on top of the image to see where the spot center is.
+    Effectively know how the center is offset from the scan edge, since
+    edges are easier to identify in a scan.
+    e.g. Use in identifying the Bounding Box more accurately.
+
+Full Width Half Maximum (FWHM):
+    FWHM is a good way to identify edges of a distribution.
+    Use to find edges and estimate center of the spot or line.
+
+    The edge locations more strongly depends on maximum value.
+    The center location less so, because the slopes at the two edges are
+    similar and opposite.  A steep slope at the edges should make location
+    fairly independent of the maximum value.
+
+Maximum value:
+    The maximum value could be anomalous, i.e. just one pixel while others
+    are significantly less.
+
+    A histogram of the larger values would help.
+    Choose an initial half-maximum threshold, and histogram all pixels above.
+    Choose the nominal maximum as the value for which, say, 2% of these pixels
+    are above that.
+
+    Or just validate that a significant number of pixels have the maximum
+    value.  Count and report the value.
+
+Phase of Response:
+
+    Strobe the LED light at zero crossings of the drive signal.  Now we can
+    see where those points are on the response scan pattern.
+
+    When response has zero phase difference (from drive), we expect that the
+    zero crossing drive points should be symmetric (evenly located) on the
+    ellipse.  Not exactly sure where, but it would be good to see.
+
+----------------------------------------------------------------------------
+## Coordinates
+----------------------------------------------------------------------------
+
+Image coordinates are different than the normal XY plot.
+Consider only a right-hand XYZ coordinate system.
+
+XY Plot:
+    Origin is usually the lower-left corner.
+    +X to the right.
+    +Y is up.
+    +Z is out of the page.
+
+Netpbm Image:
+    Origin is the upper-left corner.
+    +X to the right.    - Column index {0 .. Ncol}
+    +Y is down.         - Row index    {0 .. Nrow}
+    +Z is into the page.
+
+    In a file the image is stored as a linear sequence of pixels, with the
+    column index (X) changing fastest.
+
+    When stored in an array of the libnetpbm library, it is a two-dimensional
+    array:
+	unsigned	im[Nrow][Ncol];		// dimensions
+	im[y][x]
+    where
+	im[y] is an array of pointers to row arrays of pixels.
+	y = {0 .. Nrow}
+	x = {0 .. Ncol}
+
+    This is similar to matrix notation, except that matrix elements count
+    from 1 (instead of 0 in an array).
+
+    This is the same as X11 screen coordinates.
+
+Geometry Specification:  (i.e. in X11, see X(1) )
+
+    -geometry WIDTHxHEIGHT+XOFF+YOFF
+
+Lab Coordinates:  Rationalization
+
+  > Camera is best used right-side-up - it gets confusing to operate the
+    camera upside-down.
+
+    The fiber scanner is usually on a horizontal axis, so we tend to want
+    +Y up, but no real hardship to make +Y down to match the image direction.
+    Either way can work well.
+  > For now, assign fiber coordinates as if it were a camera making an image:
+    Make +Y down, +X right (looking in +Z direction) and +Z in direction of
+    light leaving the fiber (toward the object).  This matches a camera
+    image with sample objects right-side up.  (2021-01-10)
+
+  > Plotting data is best with +Y up.  It is abstract data visualization,
+    so it is not that important that +Y data is in the physical downward
+    direction.
+
+  > Images are best displayed right-side-up, with image +Y going down, which
+    also matches X11 screen coordinates.
+
+    It seems best to keep the natural orientation of things, and simply
+    identify the direction of +Y being used.
+
+    [ I considered trying to make XY plot and Image have the same coordinate
+    system, but that seems to lead to insanity.  Better to recognize and use
+    the established systems.  2021-01-09 ]
+
+    Generally want +X to be to the right in most situations.
+    Let +Z be in the direction that makes a right-hand coordinate system.
+
+    Physically label the axis on the Fiber Scanner, as an aid.
+    Label axis on images and plots.
+
+    Note a lens system can invert an image.
+    When looking from the other side +X is reversed.
+    Physical scanner coordinates matter for the displacement drive stimulus.
+
+----------------------------------------------------------------------------
+## Experiment Ideas
+----------------------------------------------------------------------------
+
+Exciter Displacement
+    As a function of frequency and drive current amplitude.
+    Use as a baseline drive strength for fiber cantilever.
+    Perhaps look for exciter resonance.
+    Extract exciter displacement amplitude.
+
+Fiber Resonant frequency sweep
+    Characterize fiber resonance.
+    Sweep frequency at constant drive current.
+    Extract ellipse parameters.
+
+----------------------------------------------------------------------------
+## Analysis Pipeline
+----------------------------------------------------------------------------
+
+Operations needed to capture a camera image of a fiber scan pattern and
+analyze its properties.
+
+This process will then be integrated with fiber stimulus operations, e.g.
+frequency sweep.
+
+Capture image:
+
+    Capture background reference with no scan image.
+	Perhaps average to a mean and standard deviation.
+	Optional saving of full image.
+	Once for each set of scan images.
+
+    Capture conditions of the image.  e.g.
+	Fiber drive amplitude and frequency.
+
+    Camera captures image in jpeg format.
+	raspistill -v -k -t 0 --shutter 1000000 -o -
+
+    Convert to grayscale PGM format, crop, and save.
+	jpegtran -grayscale -crop 50x1000+2000+1000 > file
+
+	Saved data should be minimally processed to allow later analysis
+	    with improved methods.
+	Save storage space by grayscale and crop.
+
+Analysis:
+
+    Identify background level
+	A) From a reference background-only image.
+	B) From current image.
+	C) From image before crop.  Perhaps area known to be outside the
+	    ellipse pattern.
+
+    Subtract a background level, clamping to zero.
+
+    Identify center of mass.
+
+    Find bounding box of ellipse.
+
+    Identify Ellipse Axis.
+
+----------------------------------------------------------------------------
+## Background Identification - Design  pgm_stats
+----------------------------------------------------------------------------
+
+    Stand-alone program.
+    Assume only a single ellipse in the image.
+    Assume significant background rows and columns.
+
+    Image with no fiber motion, i.e. a spot, gives a reference for what
+    the spot size is.
+    This could also be the background reference.
+
+Initial version:  Whole image is background.
+
+    Compute min, max, mean, and standard deviation across whole image.
+    Use to assess quality of background threshold.
+
+Image with scan pattern.
+
+    The Mean might turn out to be a fine background threshold even with
+    the scan pattern included.
+
+    Chop out a rectangle where the scan pattern is expected.
+
+    Perhaps an option to use only area outside or inside a given rectangle.
+
+    Rectangles in 4 corners of the image give a sense of background tilt.
+
+Implementation ideas:
+
+    A) Netpbm
+	pamsumm(1) can compute one thing at a time.
+	    Kind of a waste to run 4 times.
+	    Does not give a standard deviation.
+	pnmcut(1) can pull out rectangle to analyze.
+
+    B) Modify pamsumm
+	Program looks fairly straight forward and clean.
+	Seems practical.
+	At least use as a reference.
+	Need to be able to compile Netpbm.
+
+ >  C) Write custom program.
+	Probably just as straight forward.
+	Probably won't have standard Netpbm options.  (only 3)
+	Using the library is simple.
+
+Algorithm:
+
+    Read whole image.
+
+    Walk specified region of image and compute
+	min
+	max
+	mean
+
+    Walk image again and compute standard deviation.
+	sd
+
+    Report results.
+
+Pixel values:
+    In pgm grayscale, max value is 255 (2^8) or 64k (2^16).
+    Image has 12 M pixel, ~ (2^24)
+
+    Summing all values:  (2^8) * (2^24) = 2^32
+	Might overflow a 32-bit int.
+	Use double.
+
+Results:  pgm_stats.cpp  (my program)
+    Initial program looks really promising.
+
+    % pgm_stats first_fiber.2021_08_08.pgm
+    ==> first_fiber.2021_08_08.pgm <==
+    Ncol   = 1014
+    Nrow   = 760
+    MaxVal = 255
+    im[0,0]= 53
+    Npix   = 770640
+    max    = 222
+    min    = 17
+    sum    = 32586088
+    mean   = 42
+    sd_sum = 8.28346e+07
+    SD     = 10.3676		standard deviation
+    CG     = 449, 384		center of gravity
+
+    The image background is tilted.
+    Subtracting/clamping a value of (mean + (2 * SD)) zeros all the background.
+
+    % netpbm pamfunc -adder -60  first_fiber.2021_08_08.pgm > y.pgm
+
+    % pgm_stats  y.pgm
+    ==> y.pgm <==
+    Ncol   = 1014
+    Nrow   = 760
+    MaxVal = 255
+    im[0,0]= 0
+    Npix   = 770640
+    max    = 162
+    min    = 0
+    sum    = 199013
+    mean   = 0
+    sd_sum = 1.44105e+07
+    SD     = 4.32428
+    CG     = 522, 352
+
+    Notice CG shifts with background removal.
+    The new mean is 0, because background pixels (value 0) dominates.
+    SD goes down for the same reason.
+
+----------------------------------------------------------------------------
+## Bounding box of ellipse - Design  pgm_box
+----------------------------------------------------------------------------
+
+    Stand-alone program.
+    Assume only a single ellipse in the image.
+    Assume background intensity has been subtracted, i.e. all background
+	pixels are zero (0) value.
+
+Algorithm:
+
+    Background is zero, so the only non-zero pixels are the ellipse pattern.
+
+    A) Sum pixel intensity in each row and column.
+	OR
+ >  B) Row means.  i.e. Normalize the sum.
+	Compute mean of non-zero (non-background) pixels in each row and column.
+	The mean should be close to original ellipse intensity regardless of
+	the line crossing the middle or skimming a long edge of the ellipse.
+
+    The mean of each row is a column vector.
+    The mean of each column is a row vector.
+
+    Now where the mean value rises (e.g. half maximum) is an edge of the
+    ellipse.
+
+    Output is the left and right edge in the row vector,
+	  and the top and bottom edge in the column vector.
+
+Row Means:  Similar for column means.
+
+    for ( int j=0;  j<Nrow;  j++ )	// for each row (Y)
+    {
+	cnt = 0;
+	sum = 0;
+	max = 0;
+	min = MaxVal;
+ 
+	for ( int i=0;  i<Ncol;  i++ )	// walk column (X) to compute row mean
+	{
+	    pixv = img[j][i];
+	    if ( pixv > 0 ) { cnt++;  sum += pixv; }
+	    if ( pixv > max ) { max = pixv; }
+	    if ( pixv < min ) { min = pixv; }
+	}
+
+	Mean[j] = sum / cnt;	// avoid divide-by-zero
+	Cnt[j]  = cnt;
+	Sum[j]  = sum;
+	Max[j]  = max;
+	Min[j]  = min;
+    }
+
+    Output could be a big table, or selected values by option.
+    Want this full data to assess suitability of input.
+
+Bounding Box Rows:  (Similar for Columns)
+
+    Estimate from FWHM of Row Means.
+    Essentially walk the Row Mean vector and find the edges.
+
+    Option to offset by 1/2 of spot size.
+
+    Note self-similar operations.
+
+    max = 0;
+    min = MaxVal;
+    for ( int j=0;  j<Nrow;  j++ )	// for each row (Y)
+    {
+	mean = Mean[j];
+	if ( mean > max ) { max = mean; }
+	if ( mean < min ) { min = mean; }
+    }
+
+    threshold = (max + min) / 2;	// half maximum, i.e. average
+
+    top = 0;
+    for ( int j=0;  j<Nrow;  j++ )
+    {
+	if ( Mean[j] >= threshold ) { top = j;  break; }
+    }
+
+    bot = 0;
+    for ( int j=Nrow;  j>=0;  j-- )
+    {
+	if ( Mean[j] >= threshold ) { bot = j;  break; }
+    }
+
+    Output:  top, bot, max, min
+
+

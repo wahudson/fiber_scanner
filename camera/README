@@ -1,0 +1,47 @@
+2022-01-11  William A. Hudson
+
+		Camera Image Analysis of Fiber Scanner
+		--------------------------------------
+
+Using a Raspberry Pi HQ Camera to measure fiber scan positions.
+NOT images produced by the fiber scanner itself.
+
+Files:  (2022-01-11)
+------
+README		this file
+
+doc/		Documentation
+    architecture.text	Overall design
+    netpbm.text		Netpbm use
+
+src/		Source code
+    Makefile		for building the tools
+
+		    Programs
+    pgm_box.cpp		Bounding box of an elliptical image
+    pgm_stats.cpp	Image statistics, mean, SD, CG
+
+		    Boilerplate copied from rgpio
+    Error.cpp		Error handling
+    Error.h
+    yOpVal.cpp		Option Argument class
+    yOpVal.h
+    yOption.cpp		Option parsing base class
+    yOption.h
+
+netpbm -> /opt/netpbm-sf-10.73.37	Netpbm library installation
+
+bin/		Commands
+    pgm_box
+    pgm_stats
+
+obj/		temporary .o object files
+    *.o
+
+pgexample/	Initial example use of Netpbm grayscale pgm
+
+Initial Build process:
+----------------------
+    % cd src
+    % make compile
+
