@@ -1,0 +1,90 @@
+2022-01-19  William A. Hudson
+
+		Camera Image Analysis -- Testing
+		--------------------------------
+
+Self-checking regression tests.
+
+Files:  (2022-01-19)
+------
+Makefile	run all test suites
+README		this file
+
+.gitignore	Git ignore transient files
+
+bin/		commands to be tested
+    pgm_box   -> ../../bin/pgm_box
+    pgm_stats -> ../../bin/pgm_stats
+
+../src/		Header files to be tested
+../obj/		Object files to be tested
+../lib/		Library code to be tested
+    libgmlocal.a
+
+src/		Test library source code (for testing C++ classes)
+    Makefile		compile unit test library
+    utLib1.cpp		library code
+    utLib1.h		user interface, #define
+obj/		Object .o compiled from src/
+lib/		Test library
+    TestLib2.pm		for testing programs (perl framework)
+
+netpbm -> ../netpbm	Netpbm library installation
+
+t_*/		Generic test suite contents
+    Makefile		run/compile the test
+    ref/		reference input/output of the test
+    test.cpp		test program (C++)
+    test.exe		compiled test (may be removed)
+    test.pl		test program (perl)
+    tmp/		where the test program is executed, removed each time
+
+
+Test suites:  (2022-01-19)
+------------
+?       = not committed
+  b     = uses bin/
+   l    = uses lib/
+     s  = uses src/
+ u      = Unit test (C++)        utLib1.cpp
+ p      = Program test (command) TestLib2.pm
+------  --------------
+ u   s  t_gmNetpgm/	gmNetpgm	Netpbm Grayscale input/output class
+ u   s  t_gmStats/	gmStats		Grayscale Image Statistics class
+ pbl    t_pgm_stats/	Image statistics program
+
+
+Test Setup:
+-----------
+    The individual test  t_*/Makefile  has dependency on the test framework,
+    but will not rebuild the test framework.
+
+    Build the test framework in src/ (only needed when it changes):
+    % cd  src/
+    % make
+
+    Tests do NOT rebuild the object being tested.
+
+    Symlinks:  Intended to allow the whole test suit to be pointed at any
+    version of the commands/libraray to be tested.  May not be perfect, i.e.
+    not really exercised.
+    In bin/ symlinks point to commands being tested.
+
+    Framework was copied from the 'rgpio' project.
+
+Run Tests:
+----------
+    # Run all tests from this directory
+    % make test
+
+    # Run a specific test
+    % cd t_<dir>/
+    % make test
+
+Git:
+----
+    The .gitignore file has entries to ignore the transient files in each
+    test directory:
+    t_*/test.exe
+    t_*/tmp
+
