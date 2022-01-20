@@ -119,15 +119,15 @@ gmStats::get_std_deviation()
 	get_mean();
     }
 
-    int64_t		sd = 0;		// sum of deviation squared
+    double		sd = 0;		// sum of deviation squared
 
     for ( int j=0;  j<Nrow;  j++ )
     {
 	for ( int i=0;  i<Ncol;  i++ )
 	{
-	    register int	dv;	// deviation
+	    register float	dv;	// deviation
 	    dv = Img[j][i];
-	    dv -= Mean;
+	    dv -= Mean;			// Mean should be a float
 	    sd += dv * dv;
 	}
     }

@@ -17,6 +17,7 @@ using namespace std;
 #include "Error.h"
 #include "yOption.h"
 
+#include "gmStats.h"
 
 //--------------------------------------------------------------------------
 // Option Handling
@@ -162,92 +163,26 @@ main( int	argc,
     {
 	cout << "==> " << in_file << " <==" << endl;
 
-	FILE		*fp;
-	gray**		img;		// pointer to image array img[row][col]
-	int		Ncol;
-	int		Nrow;
-	unsigned	MaxVal;
+	gmStats		gmx  ( in_file );	// constructor
+	float		std_dev;
 
-	fp = fopen( in_file, "r" );
+	cout << "Ncol   = " << gmx.Ncol   <<endl;
+	cout << "Nrow   = " << gmx.Nrow   <<endl;
+	cout << "MaxVal = " << gmx.MaxVal <<endl;
+	cout << "im[0,0]= " << **gmx.Img  <<endl;
 
-	if ( fp == NULL ) {
-	    Error::msg( "file not found:  " ) << in_file <<endl;
-	    continue;
-	}
+	gmx.get_mean();
 
-	pm_init( Opx.ProgName, 0 );
+	cout << "Npix   = " << gmx.Npix   <<endl;
+	cout << "max    = " << gmx.Max    <<endl;
+	cout << "min    = " << gmx.Min    <<endl;
+	cout << "sum    = " << gmx.Sum    <<endl;
+	cout << "mean   = " << gmx.Mean   <<endl;
 
-	img = pgm_readpgm(
-	    fp,
-	    &Ncol,
-	    &Nrow,
-	    &MaxVal		// maximum gray value
-	);
+	std_dev = gmx.get_std_deviation();
 
-	cout << "Ncol   = " << Ncol   <<endl;
-	cout << "Nrow   = " << Nrow   <<endl;
-	cout << "MaxVal = " << MaxVal <<endl;
-	cout << "im[0,0]= " << **img <<endl;
-
-	int		pixv;
-	int		max = 0;
-	int		min = MaxVal;
-	long int	sum = 0;
-
-	for ( int j=0;  j<Nrow;  j++ )
-	{
-	    for ( int i=0;  i<Ncol;  i++ )
-	    {
-		pixv = img[j][i];
-
-		sum += pixv;
-
-		if ( pixv > max ) { max = pixv; }
-		if ( pixv < min ) { min = pixv; }
-
-//		cout << "im[" << i << "," << j << "]= " << img[i][j] <<endl;
-	    }
-	}
-
-	int		Npix;
-	int		mean;
-	float		sd   = 0;
-	float		cgx  = 0;
-	float		cgy  = 0;
-
-	Npix = Ncol * Nrow;
-
-	mean = sum / Npix;
-
-	cout << "Npix   = " << Npix   <<endl;
-	cout << "max    = " << max    <<endl;
-	cout << "min    = " << min    <<endl;
-	cout << "sum    = " << sum    <<endl;
-	cout << "mean   = " << mean   <<endl;
-
-	// Standard Deviation (SD)
-	for ( int j=0;  j<Nrow;  j++ )
-	{
-	    for ( int i=0;  i<Ncol;  i++ )
-	    {
-		pixv = img[j][i];
-
-		sd += (pixv - mean) * (pixv - mean);
-
-		cgx += i * pixv;
-		cgy += j * pixv;
-	    }
-	}
-
-	cout << "sd_sum = " << sd     <<endl;
-	sd = sqrt( sd / Npix );
-
-	long int	CGx = lroundf( cgx / sum );
-	long int	CGy = lroundf( cgy / sum );
-
-	cout << "SD     = " << sd     <<endl;
-	cout << "CG     = " << CGx << ", " << CGy <<endl;
-
+	cout << "SD     = " << std_dev    <<endl;
+	cout << "CG     = " << gmx.CGx << ", " << gmx.CGy <<endl;
     }
 
   }
