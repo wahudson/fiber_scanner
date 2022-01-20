@@ -188,6 +188,15 @@ Phase of Response:
     zero crossing drive points should be symmetric (evenly located) on the
     ellipse.  Not exactly sure where, but it would be good to see.
 
+Output annotated image:
+
+    Draw the bounding box in the image array.
+    Output the modified image.
+    Allows user inspection to see if he agrees with the automated analysis.
+
+    Output could be a separate translucent image, which then could be
+    overlayed (composited) with the original.
+
 ----------------------------------------------------------------------------
 ## Coordinates
 ----------------------------------------------------------------------------
@@ -527,4 +536,215 @@ Bounding Box Rows:  (Similar for Columns)
 
     Output:  top, bot, max, min
 
+----------------------------------------------------------------------------
+## Object Oriented Design
+----------------------------------------------------------------------------
+
+    Idea is to use object oriented design for better code reuse in programs
+    and better testing of sub-functions.
+
+Ideas:
+
+    gmNetpgm  Class interface to Netpbm read and write functions.
+
+    gmStats   Class to compute statistics.
+
+    gmBox     Class to compute bounding box.
+
+    An image IS the object.
+
+    The class provides an organizing structure of image attributes.
+
+    Higher level classes could inherit from base class gmNetpgm.
+	Inheritance seems appropriate because the higher level classes also
+	want the same functions as the base classes.
+	A HAS-A relationship seems less appropriate.
+
+    Caching accessors could defer computation until an attribute is needed.
+
+    Copy constructor could copy the pointer to the image array, not the
+	whole image, to be light-weight.  This probably happens naturally.
+	A heavy-weight could copy the whole array for modification.
+
+Class gmNetpgm:
+    gray_t**	Img;	// pointer to image array Img[row][col]
+    int		Ncol;	// number of columns (X)
+    int		Nrow;	// number of rows (Y)
+    int		Npix;	// total number of pixels
+    unsigned	MaxVal; // maximum pixel value allowed in file
+
+    read( file )
+    write( file )
+
+    Encapsulates the interface to libnetpbm, at least the used parts?
+    The Netpbm functions provide memory allocation.
+
+Class gmStats:  (inherit from gmNetpgm)
+
+    int		Max;	// maximum pixel value in image
+    int		Min;	// minimum pixel value in image
+    long int	Sum;	// sum of all pixel values
+    float	Mean;	// mean value of all pixels
+    float	StdDev;	// standard deviation
+    int		CGx,CGy;	// center of gravity over all pixels
+
+    Is read-only on the image.
+
+Class gmBox:  (inherit from gmStats)
+
+    int		Ymean[Nrow];	// mean of each row
+    int		Xmean[Ncol];	// mean of each column
+    int		Ytop;		// top edge
+    int		Ybot;		// bottom edge
+    int		Xleft;		// left edge
+    int		Xright;		// right edge
+
+    int		YhalfMean;	// half maximum mean
+    int		XhalfMean;	// half maximum mean
+
+    int		PixBase;	// amount of pixel offset
+
+    pixel_add( int add );
+	Add a constant to each pixel.
+	Uses PixBase to keep track of total offset.
+	Use to subtract a background level.
+
+    draw_box();
+	Draw the bounding box on the image.
+
+    mark_cg();
+	Mark the center of gravity on the image.
+
+Common Features of classes:
+
+    Some attributes could be public.  e.g. Ncol is more natural to just
+    use the value, rather than thru an accessor function.
+
+    Accessor functions have benefit of computing the value if not set.
+    Are especially appropriate for expensive operations.
+
+    IS trying to be pragmatic in the use.
+    NOT to be bullet proof.
+    IS to be natural, common sense, close to the data.
+    IS error checking when possible.
+    NOT the ultimate library - need many iterations for that.
+
+Attribute Types:
+
+    Most things are pixel value related, and should be integer.
+
+    The overall Mean and Standard Deviation seem better as floating point
+    to allow finer resolution if needed.
+
+    The Row Means are integer for simplicity in context of pixel values.
+
+    Center of Gravity is integer, in pixel coordinate context.  For fiber
+    scanner application finer resolution is really not needed.
+
+Pixel value type:
+
+    The Netpbm library uses an unsigned integer (unsigned int) for pixel
+    values.  This is a good match for file data storage, and the actual
+    number of bits scales with the machine architecture.
+
+    The Netpbm library defines a pixel value type "gray", which seems way too
+    plain for such a specialized use.  Here we define type "gray_t", modeled
+    after the "unit32_t" type, to replace it.
+
+    The object classes may use a signed integer (int) for values derived from
+    pixels, to allow negative values as a flag where natural.
+    The thought is to not get too rigid, and do what seems good to start.
+
+Image Memory Management:
+
+    Image memory is allocated/freed in the Netpbm (libnetpbm) library.
+    These classes have only a pointer to the Netpbm image array.
+
+    Approaches to image memory:
+
+    A) Classes have only a pointer to the image array.
+	e.g. A copy constructor would copy only the pointer.  Multiple
+	object copies would all reference the same image, and destroying one
+	would not affect the others.
+	+ Derived objects can be destroyed without loosing the shared image.
+	- Don't get the benefit of an object destructor.
+	- User must manage destruction of the image memory.
+
+    B) Class gmNetpgm creates/destroys the image array.
+	Let gmNetpgm keep track of image memory allocated in libnetpbm and
+	free that memory when the object is destroyed.
+	Destroying a derived object would call the parents destructor
+	(i.e. gmNetpgm destructor) and free the image memory.
+	+ Class destructor frees the image array.
+	    This is the benefit of an object destructor.
+	- More complex.
+	- Derived (copied) classes can destroy the shared image.
+
+	Could add a derived object use count and destroy only when there are
+	no more copied objects.  Maybe??
+
+    C) Let gmNetpgm allocate image memory, not using libnetpbm memory
+	allocation.  A simpler implementation of (B).
+	Here a copy constructor would copy the whole image memory.
+
+    Thinking about copy constructors and inheritance.  Two different use models.
+
+	In a derived object, there is only the one base class with image memory.
+	A copy constructor would copy the object and both would have Img
+	pointers to the same base object with image memory.
+
+	If image memory is in the object, then a copy constructor would copy
+	the memory and both objects would have separate images.
+
+Inheritance:
+    Derived classes inherit from base class gmNetpgm.
+    A derived object IS A gmNetpgm object.
+    Destroying the derived object destroys the base class.
+
+Copy Constructor:
+    A copy constructor makes a copy of another object.
+    If that object has references (pointers) then only the references are
+    copied, not the thing they point to.
+    If the object contained an image array (the memory, not a pointer), then
+    the whole array is copied.
+
+Image manipulation classes:
+    We want these to inherit from lower-level image manipulation classes.
+    Higher levels use the results of lower levels.
+    It is nice if the higher-level IS A lower-level, i.e. it is a super
+    manipulation class.
+
+    Use the highest-level class that makes sense.
+
+Manipulation Object models:
+
+ >  A) The manipulation object IS the image.  When the object is destroyed,
+	the image memory is freed.
+	Copy constructor copies the image.
+	+ Each object is independent.  A cleaner object model.
+	- Object copy is a heavyweight operation (large memory).
+
+    B) The manipulation object HAS A reference to the image.  When the object
+	is destroyed, the image memory is unaffected.
+	Copy constructor copies the pointer to the image.
+	+ Multiple manipulation objects can operate on the same image.
+	- Objects interact on the shared image.  The operation of one could
+	    invalidate the results of another.
+	- User must manage interaction.
+	+ Objects are light weight - have only pointer to image.
+	- When the image is destroyed, the object has an invalid reference.
+
+    Really want both, in different situations.
+    Want the manipulation object to be able to operate either way.
+
+    The essence of the manipulation object is to do the manipulations, e.g.
+    mean, bounding box, etc.  Want to re-use that in both situations.
+    Is that really practical?  Seems like extra complexity.
+    keep it simple to start.
+
+    The manipulation objects all inherit from a base class either way.
+    Thus they are the same either way, and only the base class need change
+    behavior.
+
+    Thus go with (A) to start.
 

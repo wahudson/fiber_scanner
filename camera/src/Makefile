@@ -23,6 +23,8 @@ INCS       = \
 
 		# objects not including main()
 OBJS       = \
+	$(OJ)/gmNetpgm.o \
+	$(OJ)/gmStats.o \
 	$(OJ)/Error.o \
 	$(OJ)/yOpVal.o \
 	$(OJ)/yOption.o
@@ -38,7 +40,9 @@ CXXFLAGS   = -Wall  -std=c++11  -I $(INCDIR)
 run:	compile
 	$(BINDIR)/pgm_box --TESTOP
 
-compile:  $(OJ)  $(BINDIR)  $(BINDIR)/pgm_stats  $(BINDIR)/pgm_box
+compile:  $(OJ)  $(BINDIR)  ../lib/libgmlocal.a \
+	$(BINDIR)/pgm_stats \
+	$(BINDIR)/pgm_box
 
 mkdirs:   $(OJ)  $(BINDIR)
 
@@ -47,6 +51,7 @@ clean:
 
 clobber:
 	rm -f  $(OJ)/*
+	rm -f  ../lib/libgmlocal.a
 	rm -f  $(BINDIR)/pgm_stats
 	rm -f  $(BINDIR)/pgm_box
 
@@ -55,6 +60,11 @@ $(BINDIR):
 
 $(OJ):
 	mkdir -p  $(OJ)
+
+
+../lib/libgmlocal.a:   $(OBJS)
+	rm -f    ../lib/libgmlocal.a
+	ar -rcs  ../lib/libgmlocal.a  $(OBJS)
 
 
 $(BINDIR)/pgm_stats:	        $(OJ)/pgm_stats.o  $(OBJS)  $(LIBS)
@@ -70,6 +80,12 @@ $(OJ)/pgm_stats.o:	pgm_stats.cpp  $(INCS)  $(YINCS)
 $(OJ)/pgm_box.o:	pgm_box.cpp  $(INCS)  $(YINCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_box.cpp
 
+
+$(OJ)/gmNetpgm.o:	gmNetpgm.cpp  gmNetpgm.h
+	g++ $(CXXFLAGS) -o $@  -c gmNetpgm.cpp
+
+$(OJ)/gmStats.o:	gmStats.cpp  gmStats.h
+	g++ $(CXXFLAGS) -o $@  -c gmStats.cpp
 
 $(OJ)/Error.o:		Error.cpp  Error.h
 	g++ $(CXXFLAGS) -o $@  -c Error.cpp
