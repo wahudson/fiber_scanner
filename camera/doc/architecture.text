@@ -629,7 +629,7 @@ Common Features of classes:
     IS error checking when possible.
     NOT the ultimate library - need many iterations for that.
 
-Attribute Types:
+Attribute types and precision:
 
     Most things are pixel value related, and should be integer.
 
@@ -640,6 +640,14 @@ Attribute Types:
 
     Center of Gravity is integer, in pixel coordinate context.  For fiber
     scanner application finer resolution is really not needed.
+
+    Beware underflow when summing many numbers.  If the sum gets larger
+    than the numbers being added, then the sum stops changing leading to a
+    possibly large error.
+    e.g. Adding 2^24 16-bit numbers requires 40-bit precision.
+    Thus need 64-bit integers or double precision floating point.
+    Nowdays memory and computation speed is huge, so no need to skimp on
+    precision.
 
 Pixel value type:
 
@@ -747,4 +755,46 @@ Manipulation Object models:
     behavior.
 
     Thus go with (A) to start.
+
+Computation Functions:
+
+    Consider when memory is allocated and when values are computed from
+    an anti-bugging point of view.
+
+    The classic model is to define variables and arrays (allocate memory)
+    and then at some later point compute the values for those variables.
+    Often multiple computation functions are needed to set all variables.
+    This leads to mistakes where some variable did not get computed.
+
+    The "construction IS initialization" model would combine the computation
+    into the constructor.  In this way if the object exists, it is guaranteed
+    to be initialized.
+
+    For these analysis/manipulator classes, do we really need to defer
+    computation?
+
+    Consider gmNetpgm class:
+    The constructor can be given the file name and read the file.  Thus
+    simply constructing a gmNetpgm object reads in the image.  Throw
+    exceptions if anything goes wrong.  Initial experiments shows this
+    seems to work quite well.
+
+    Reasons to defer computation:
+    a) If some computations are not actually needed.
+	e.g. Want the mean, but don't need the standard deviation.
+	Mostly this saves computation time.
+
+    b) It just feels more flexible to have more control.
+
+    c) Re-computation with different parameters.
+
+    In this chain of inherited manipulators:
+    Higher level computations should call lower level computations to
+    ensure they have been run.
+
+    How do we want to manage the progress of computation?
+
+    For now, try things and see how it goes.
+    The compute functions can always be made private and called in
+    constructors.
 
