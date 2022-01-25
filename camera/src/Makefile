@@ -21,8 +21,9 @@ INCS       = \
 	yOption.h \
 	$(LIBS)
 
-		# objects not including main()
+		# objects not including main()  #!! maybe split out gm*.o
 OBJS       = \
+	$(OJ)/gmBox.o \
 	$(OJ)/gmNetpgm.o \
 	$(OJ)/gmStats.o \
 	$(OJ)/Error.o \
@@ -80,6 +81,9 @@ $(OJ)/pgm_stats.o:	pgm_stats.cpp  $(INCS)  $(YINCS)
 $(OJ)/pgm_box.o:	pgm_box.cpp  $(INCS)  $(YINCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_box.cpp
 
+
+$(OJ)/gmBox.o:	gmBox.cpp  gmBox.h
+	g++ $(CXXFLAGS) -o $@  -c gmBox.cpp
 
 $(OJ)/gmNetpgm.o:	gmNetpgm.cpp  gmNetpgm.h
 	g++ $(CXXFLAGS) -o $@  -c gmNetpgm.cpp

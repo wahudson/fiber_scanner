@@ -20,6 +20,8 @@ using namespace std;
 #include "yOption.h"
 #include "yOpVal.h"
 
+#include "gmBox.h"
+
 
 //--------------------------------------------------------------------------
 // Option Handling
@@ -173,35 +175,14 @@ main( int	argc,
     {
 	cout << "==> " << in_file << " <==" << endl;
 
-	FILE		*fp;
-	gray**		img;		// pointer to image array img[row][col]
-	int		Ncol;
-	int		Nrow;
-	int		Npix;
-	unsigned	MaxVal;
+	gmBox		gmx  ( in_file );	// constructor
 
-	fp = fopen( in_file, "r" );
+	gmx.get_mean();
 
-	if ( fp == NULL ) {
-	    Error::msg( "file not found:  " ) << in_file <<endl;
-	    continue;
-	}
-
-	pm_init( Opx.ProgName, 0 );
-
-	img = pgm_readpgm(
-	    fp,
-	    &Ncol,
-	    &Nrow,
-	    &MaxVal		// maximum gray value
-	);
-
-	Npix = Ncol * Nrow;
-
-	cout << "Ncol   = " << Ncol   <<endl;
-	cout << "Nrow   = " << Nrow   <<endl;
-	cout << "Npix   = " << Npix   <<endl;
-	cout << "MaxVal = " << MaxVal <<endl;
+	cout << "Ncol   = " << gmx.Ncol   <<endl;
+	cout << "Nrow   = " << gmx.Nrow   <<endl;
+	cout << "Npix   = " << gmx.Npix   <<endl;
+	cout << "MaxVal = " << gmx.MaxVal <<endl;
 
     // Subtract black level --sub
 	if ( Opx.sub.Given ) {
@@ -210,23 +191,23 @@ main( int	argc,
 	    int		Nzero = 0;
 	    int		pixv;
 
-	    if ( Opx.sub.Val > MaxVal ) {
+	    if ( Opx.sub.Val > gmx.MaxVal ) {
 		Error::msg( "subtract greater than MaxVal:  --sub=" )
 		    << Opx.sub.Val <<endl;
 		continue;
 	    }
 
-	    for ( int j=0;  j<Nrow;  j++ )		// each row (Y)
+	    for ( int j=0;  j<gmx.Nrow;  j++ )		// each row (Y)
 	    {
-		for ( int i=0;  i<Ncol;  i++ )	// each column (X)
+		for ( int i=0;  i<gmx.Ncol;  i++ )	// each column (X)
 		{
-		    pixv = img[j][i];
+		    pixv = gmx.Img[j][i];
 
 		    if ( pixv > 0 ) {
 			cnt++;
 			pixv -= black;
 			if ( pixv < 0 ) { pixv = 0; }
-			img[j][i] = pixv;
+			gmx.Img[j][i] = pixv;
 		    }
 		    if ( pixv == 0 ) { Nzero++; }
 		}
@@ -235,19 +216,7 @@ main( int	argc,
 	    cout << "Nzero  = " << Nzero  <<endl;	// now zero
 	}
 
-	int		pixv;
-	int		cnt = 0;
-	long int	sum = 0;
-	int		mean;
-	int		max = 0;
-	int		min = MaxVal;
-
-	const int	MAXLINE = 4096;
-	int		Ymean[MAXLINE];
-
-	if ( (Ncol > MAXLINE) || (Nrow > MAXLINE) ) {
-	    Error::msg( "Image exceeds MAXLINE= " ) << MAXLINE <<endl;
-	}
+	gmx.find_Yrow_means( 2 );
 
 	if ( Opx.table ) {
 	    cout <<endl << "Row Means along Y" <<endl;
@@ -257,89 +226,32 @@ main( int	argc,
 		 << "       max"
 		 << "       min"
 		 <<endl;
-	}
 
-	for ( int j=0;  j<Nrow;  j++ )		// each row (Y)
-	{
-	    cnt = 0;
-	    sum = 0;
-	    max = 0;
-	    min = MaxVal;
-
-	    for ( int i=0;  i<Ncol;  i++ )	// each column (X)
+	    for ( int j=0;  j<gmx.Nrow;  j++ )		// each row (Y)
 	    {
-		pixv = img[j][i];
-
-		if ( pixv > 0 ) {	// threshold #!!
-		    cnt++;
-		    sum += pixv;
-		    if ( pixv > max ) { max = pixv; }
-		    if ( pixv < min ) { min = pixv; }
-		}
-	    }
-
-	    if ( min > max ) { min = max; }
-
-	    if ( cnt ) {
-		mean = sum / cnt;
-	    }
-	    else {
-		mean = 0;
-	    }
-
-	    Ymean[j] = mean;
-
-	    if ( Opx.table ) {
 		cout << "  " <<setw(4) << j
-		     << "  " <<setw(8) << cnt
-		     << "  " <<setw(8) << mean
-		     << "  " <<setw(8) << max
-		     << "  " <<setw(8) << min
+		     << "  " <<setw(8) << gmx.Ycnt[j]
+		     << "  " <<setw(8) << gmx.Ymean[j]
+		     << "  " <<setw(8) << gmx.Ymax[j]
+		     << "  " <<setw(8) << gmx.Ymin[j]
 		     <<endl;
 	    }
+
+	    gmx.out_Yrow_means( &cout );
 	}
 
 	// Bounding Box Y
-	{
-	    int		max = 0;
-	    int		min = MaxVal;
-	    int		mean;
+	gmx.find_Yedges();
 
-	    for ( int j=0;  j<Nrow;  j++ )		// each row (Y)
-	    {
-		mean = Ymean[j];
-		if ( mean > max ) { max = mean; }
-		if ( mean < min ) { min = mean; }
-	    }
+	cout << "  Bounding Box Y:" <<endl;
+	cout << "YmaxMean= " << gmx.YmaxMean  <<endl;
+	cout << "YminMean= " << gmx.YminMean  <<endl;
+	cout << "YhalfMax= " << gmx.YhalfMax  <<endl;
 
-	    int		halfmax;
-	    int		Ytop = 0;
-	    int		Ybot = 0;
-
-	    halfmax = (max + min) / 2;		// half maximum, i.e. average
-
-	    cout << "  Bounding Box Y:" <<endl;
-	    cout << "Mmax=    " << max     <<endl;
-	    cout << "Mmin=    " << min     <<endl;
-	    cout << "halfmax= " << halfmax <<endl;
-
-	    for ( int j=0;  j<Nrow;  j++ )
-	    {
-		if ( Ymean[j] >= halfmax ) { Ytop = j;  break; }
-	    }
-
-	    for ( int j=Nrow;  j>=0;  j-- )
-	    {
-		if ( Ymean[j] >= halfmax ) { Ybot = j;  break; }
-	    }
-
-	    int		Yfwhm = Ybot - Ytop;
-
-	    cout << "  Edge Boundaries:" <<endl;
-	    cout << "Ytop   = " << Ytop    <<endl;
-	    cout << "Ybot   = " << Ybot    <<endl;
-	    cout << "Yfwhm  = " << Yfwhm   <<endl;
-	}
+	cout << "  Edge Boundaries:" <<endl;
+	cout << "Ytop   = " << gmx.Ytop  <<endl;
+	cout << "Ybot   = " << gmx.Ybot  <<endl;
+	cout << "Yfwhm  = " << gmx.Ybot - gmx.Ytop <<endl;
 
     }
 
