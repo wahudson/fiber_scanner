@@ -96,8 +96,15 @@ gmStats::get_mean()
 
     Mean = (float) Sum / Npix;
 
-    CGx = cgx / Sum;		// integer division
-    CGy = cgy / Sum;
+    if ( Sum != 0 ) {
+	CGx = cgx / Sum;		// integer division
+	CGy = cgy / Sum;
+    }
+    else {
+	CGx = Ncol / 2;
+	CGy = Nrow / 2;
+	// all pixels are zero
+    }
 
     return  Mean;
 }

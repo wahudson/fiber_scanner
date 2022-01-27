@@ -79,6 +79,46 @@ int main()
 	FAIL( "unexpected exception" );
     }
 
+//--------------------------------------------------------------------------
+//## Read image content
+//--------------------------------------------------------------------------
+
+  CASE( "20", "empty (no pixels) image" );
+    try {
+	gmNetpgm	tx  ( "empty.pgm" );
+	CHECK(   0, tx.Ncol );
+	CHECK(   0, tx.Nrow );
+	CHECK(   0, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "21", "black image" );
+    try {
+	gmNetpgm	tx  ( "black.pgm" );
+	CHECK(   3, tx.Ncol );
+	CHECK(   4, tx.Nrow );
+	CHECK(  12, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "21", "white image" );
+    try {
+	gmNetpgm	tx  ( "white.pgm" );
+	CHECK(   4, tx.Ncol );
+	CHECK(   3, tx.Nrow );
+	CHECK(  12, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
 //--------------------------------------
   CASE( "99", "Done" );
 }

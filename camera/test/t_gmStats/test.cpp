@@ -122,8 +122,9 @@ int main()
 	gmStats		tx  ( "point.pgm" );
 	float		sd;
 	sd = tx.get_std_deviation();
-	cout << "SD= " << sd <<endl;
-	CHECK(   1, (fabs(7.48331 - sd) < 0.0001) );
+	cout << "Mean= " <<fixed << tx.Mean <<endl;
+	cout << "SD=   " << sd <<endl;
+	CHECK(   1, (fabs(7.732759 - sd) < 0.0001) );
 	//
 	CHECK(   5, tx.Ncol );
 	CHECK(   3, tx.Nrow );
@@ -184,6 +185,58 @@ int main()
 	CHECK( 400, tx.Sum  );
 	CHECK(  20, tx.Mean );
 	CHECK(   2, tx.CGx  );
+	CHECK(   1, tx.CGy  );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------------------------------------------
+//## Corner-case images
+//--------------------------------------------------------------------------
+
+//--------------------------------------
+  CASE( "31", "black image" );
+    try {
+	gmStats		tx  ( "black.pgm" );
+	float		sd = tx.get_std_deviation();
+	//cout << "Mean= " <<fixed << tx.Mean <<endl;
+	//cout << "SD=   " << sd <<endl;
+	CHECK(   1, (fabs( 0.000000 - sd ) < 0.0001) );
+	//
+	CHECK(   3, tx.Ncol );
+	CHECK(   4, tx.Nrow );
+	CHECK(  12, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+	CHECK(   0, tx.Max  );
+	CHECK(   0, tx.Min  );
+	CHECK(   0, tx.Sum  );
+	CHECK(   0, tx.Mean );  // as integer
+	CHECK(   1, tx.CGx  );
+	CHECK(   2, tx.CGy  );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "32", "white image" );
+    try {
+	gmStats		tx  ( "white.pgm" );
+	float		sd = tx.get_std_deviation();
+	//cout << "Mean= " <<fixed << tx.Mean <<endl;
+	//cout << "SD=   " << sd <<endl;
+	CHECK(   1, (fabs( 0.000000 - sd ) < 0.0001) );
+	//
+	CHECK(   4, tx.Ncol );
+	CHECK(   3, tx.Nrow );
+	CHECK(  12, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+	CHECK( 255, tx.Max  );
+	CHECK( 255, tx.Min  );
+	CHECK(3060, tx.Sum  );
+	CHECK( 255, tx.Mean );  // as integer
+	CHECK(   1, tx.CGx  );
 	CHECK(   1, tx.CGy  );
     }
     catch (...) {
