@@ -94,7 +94,14 @@ gmStats::get_mean()
 	}
     }
 
-    Mean = (float) Sum / Npix;
+    if ( Min > Max ) { Min = Max; }	// e.g. Npix == 0
+
+    if ( Npix != 0 ) {
+	Mean = (float) Sum / Npix;
+    }
+    else {
+	Mean = 0.0;
+    }
 
     if ( Sum != 0 ) {
 	CGx = cgx / Sum;		// integer division
@@ -139,7 +146,12 @@ gmStats::get_std_deviation()
 	}
     }
 
-    StdDev = sqrt( (float) sd / Npix );
+    if ( Npix != 0 ) {
+	StdDev = sqrt( (float) sd / Npix );
+    }
+    else {
+	StdDev = 0.0;
+    }
 
     return  StdDev;
 }

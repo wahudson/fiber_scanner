@@ -196,6 +196,30 @@ int main()
 //--------------------------------------------------------------------------
 
 //--------------------------------------
+  CASE( "30", "empty image" );
+    try {
+	gmStats		tx  ( "empty.pgm" );
+	float		sd = tx.get_std_deviation();
+	cout << "Mean= " <<fixed << tx.Mean <<endl;
+	cout << "SD=   " << sd <<endl;
+	CHECK(   1, (fabs( 0.000000 - sd ) < 0.0001) );
+	//
+	CHECK(   0, tx.Ncol );
+	CHECK(   0, tx.Nrow );
+	CHECK(   0, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+	CHECK(   0, tx.Max  );
+	CHECK(   0, tx.Min  );
+	CHECK(   0, tx.Sum  );
+	CHECK(   0, tx.Mean );  // as integer
+	CHECK(   0, tx.CGx  );
+	CHECK(   0, tx.CGy  );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
   CASE( "31", "black image" );
     try {
 	gmStats		tx  ( "black.pgm" );
