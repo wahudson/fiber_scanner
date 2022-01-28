@@ -49,8 +49,10 @@ Test suites:  (2022-01-19)
  u      = Unit test (C++)        utLib1.cpp
  p      = Program test (command) TestLib2.pm
 ------  --------------
+ u   s  t_gmBox/	gmBox		Grayscale Image Bounding Box class
  u   s  t_gmNetpgm/	gmNetpgm	Netpbm Grayscale input/output class
  u   s  t_gmStats/	gmStats		Grayscale Image Statistics class
+ pbl    t_pgm_box/	Bounding box of an elliptical image
  pbl    t_pgm_stats/	Image statistics program
 
 

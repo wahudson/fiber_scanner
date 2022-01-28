@@ -8,12 +8,16 @@ SHELL = /bin/sh
 
 test:
 	cd src                && make
+	cd t_gmBox            && make test
 	cd t_gmNetpgm         && make test
 	cd t_gmStats          && make test
+	cd t_pgm_box          && make test
 	cd t_pgm_stats        && make test
 
 clean:
+	cd t_gmBox            && make clean
 	cd t_gmNetpgm         && make clean
 	cd t_gmStats          && make clean
+	cd t_pgm_box          && make clean
 	cd t_pgm_stats        && make clean
 

@@ -1,0 +1,23 @@
+==> ../point.pgm <==
+Ncol   = 5
+Nrow   = 3
+Npix   = 15
+MaxVal = 15
+Max    = 7
+Min    = 0
+Mean   = 0.466667
+SD     = 1.74611
+  Bounding Box Y:
+YmaxMean = 7
+YminMean = 0
+YhalfMax = 3
+Ytop     = 1
+Ybot     = 1
+Yfwhm    = 0
+  Bounding Box X:
+XmaxMean = 7
+XminMean = 0
+XhalfMax = 3
+Xleft    = 2
+Xright   = 2
+Xfwhm    = 0

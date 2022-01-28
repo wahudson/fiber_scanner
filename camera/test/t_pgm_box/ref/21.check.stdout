@@ -1,0 +1,44 @@
+==> ../blob.pgm <==
+Ncol   = 10
+Nrow   = 7
+Npix   = 70
+MaxVal = 255
+Max    = 49
+Min    = 0
+Mean   = 9.57143
+SD     = 18.1931
+    Jy    Ycnt   Ymean    Ymax    Ymin
+     0       0       0       0       0
+     1       3      47      49      47
+     2       5      38      48      25
+     3       5      38      48      25
+     4       3      47      49      47
+     5       0       0       0       0
+     6       0       0       0       0
+
+    Ix    Xcnt   Xmean    Xmax    Xmin
+     0       0       0       0       0
+     1       0       0       0       0
+     2       2      48      49      48
+     3       3      39      47      25
+     4       3      39      47      25
+     5       3      39      47      25
+     6       3      39      47      25
+     7       2      48      49      48
+     8       0       0       0       0
+     9       0       0       0       0
+
+  Bounding Box Y:
+YmaxMean = 47
+YminMean = 0
+YhalfMax = 23
+Ytop     = 1
+Ybot     = 4
+Yfwhm    = 3
+  Bounding Box X:
+XmaxMean = 48
+XminMean = 0
+XhalfMax = 24
+Xleft    = 2
+Xright   = 7
+Xfwhm    = 5
