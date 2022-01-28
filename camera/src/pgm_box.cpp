@@ -177,8 +177,6 @@ main( int	argc,
 
 	gmBox		gmx  ( in_file );	// constructor
 
-	gmx.get_mean();
-
 	cout << "Ncol   = " << gmx.Ncol   <<endl;
 	cout << "Nrow   = " << gmx.Nrow   <<endl;
 	cout << "Npix   = " << gmx.Npix   <<endl;
@@ -216,43 +214,41 @@ main( int	argc,
 	    cout << "Nzero  = " << Nzero  <<endl;	// now zero
 	}
 
-	gmx.find_Yrow_means( 2 );
+	gmx.get_mean();
+
+	cout << "Max    = " << gmx.Max    <<endl;
+	cout << "Min    = " << gmx.Min    <<endl;
+	cout << "Mean   = " << gmx.Mean   <<endl;
+	cout << "SD     = " << gmx.get_std_deviation() <<endl;
+
+	gmx.find_Yrow_means( 2 );		//#!! threshold
+	gmx.find_Xcol_means( 2 );
 
 	if ( Opx.table ) {
-	    cout <<endl << "Row Means along Y" <<endl;
-	    cout << "    Jy"
-		 << "       cnt"
-		 << "      mean"
-		 << "       max"
-		 << "       min"
-		 <<endl;
-
-	    for ( int j=0;  j<gmx.Nrow;  j++ )		// each row (Y)
-	    {
-		cout << "  " <<setw(4) << j
-		     << "  " <<setw(8) << gmx.Ycnt[j]
-		     << "  " <<setw(8) << gmx.Ymean[j]
-		     << "  " <<setw(8) << gmx.Ymax[j]
-		     << "  " <<setw(8) << gmx.Ymin[j]
-		     <<endl;
-	    }
-
 	    gmx.out_Yrow_means( &cout );
+	    cout <<endl;
+	    gmx.out_Xcol_means( &cout );
+	    cout <<endl;
 	}
 
-	// Bounding Box Y
 	gmx.find_Yedges();
+	gmx.find_Xedges();
 
 	cout << "  Bounding Box Y:" <<endl;
-	cout << "YmaxMean= " << gmx.YmaxMean  <<endl;
-	cout << "YminMean= " << gmx.YminMean  <<endl;
-	cout << "YhalfMax= " << gmx.YhalfMax  <<endl;
+	cout << "YmaxMean = " << gmx.YmaxMean  <<endl;
+	cout << "YminMean = " << gmx.YminMean  <<endl;
+	cout << "YhalfMax = " << gmx.YhalfMax  <<endl;
+	cout << "Ytop     = " << gmx.Ytop      <<endl;
+	cout << "Ybot     = " << gmx.Ybot      <<endl;
+	cout << "Yfwhm    = " << gmx.Ybot - gmx.Ytop <<endl;
 
-	cout << "  Edge Boundaries:" <<endl;
-	cout << "Ytop   = " << gmx.Ytop  <<endl;
-	cout << "Ybot   = " << gmx.Ybot  <<endl;
-	cout << "Yfwhm  = " << gmx.Ybot - gmx.Ytop <<endl;
-
+	cout << "  Bounding Box X:" <<endl;
+	cout << "XmaxMean = " << gmx.XmaxMean  <<endl;
+	cout << "XminMean = " << gmx.XminMean  <<endl;
+	cout << "XhalfMax = " << gmx.XhalfMax  <<endl;
+	cout << "Xleft    = " << gmx.Xleft     <<endl;
+	cout << "Xright   = " << gmx.Xright     <<endl;
+	cout << "Xfwhm    = " << gmx.Xright - gmx.Xleft <<endl;
     }
 
   }

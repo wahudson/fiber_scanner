@@ -18,6 +18,7 @@ using namespace std;
 
 /*
 * Constructor.
+//#!!
 gmBox::gmBox( FILE* fp )
     : gmStats( fp )
 {
@@ -46,6 +47,11 @@ gmBox::init()
     Ymean = new int[Nrow];
     //#!! array elements are uninitialized
 
+    Xcnt  = new int[Ncol];
+    Xmax  = new int[Ncol];
+    Xmin  = new int[Ncol];
+    Xmean = new int[Ncol];
+
     YmaxMean = -1;
     YminMean = -1;
     YhalfMax = -1;
@@ -72,6 +78,11 @@ gmBox::~gmBox()
     delete( Ymax  );
     delete( Ymin  );
     delete( Ymean );
+
+    delete( Xcnt  );
+    delete( Xmax  );
+    delete( Xmin  );
+    delete( Xmean );
 }
 
 
@@ -149,6 +160,75 @@ gmBox::find_Yrow_means( unsigned thresh )
 }
 
 /*
+* Compute the Column Means.
+*    Will re-compute on each call.  Dependent values are NOT invalidated.
+*    Does not depend on gmStats.
+* call:
+*    find_Xcol_means( thresh )
+*    thresh  = count only pixel values >= this value
+* return:
+*    Xthreshold = thresh;
+*    Xcnt[], Xmax[], Xmin[], Xmean[]
+*    XmaxMean, XminMean
+*    XhalfMax = (XmaxMean + XminMean) / 2;  input to find_Xedges()
+*/
+void
+gmBox::find_Xcol_means( unsigned thresh )
+{
+    if ( thresh > MaxVal ) {
+	std::ostringstream      css;
+	css << "gmBox::find_Xcol_means() MaxVal exceeded by threshold= "
+	    << thresh;
+	throw std::runtime_error ( css.str() );
+    }
+
+    Xthreshold = thresh;
+
+    XmaxMean = 0;
+    XminMean = MaxVal;
+
+    for ( int i=0;  i<Ncol;  i++ )	// each column (X)
+    {
+	int		pixv;
+	int		cnt  = 0;
+	int64_t		sum  = 0;
+	int		max  = 0;
+	int		min  = MaxVal;
+	int		mean = 0;
+
+	for ( int j=0;  j<Nrow;  j++ )	// each row (Y)
+	{
+	    pixv = Img[j][i];
+
+	    if ( pixv >= Xthreshold ) {
+		cnt++;
+		sum += pixv;
+		if ( pixv > max ) { max = pixv; }
+		if ( pixv < min ) { min = pixv; }
+	    }
+	}
+
+	if ( min > max ) { min = max; }
+
+	if ( cnt ) {
+	    mean = sum / cnt;		// integer division #!! float?
+	}
+
+	Xcnt[i]  = cnt;
+	Xmax[i]  = max;
+	Xmin[i]  = min;
+	Xmean[i] = mean;
+
+	if ( mean > XmaxMean ) { XmaxMean = mean; }
+	if ( mean < XminMean ) { XminMean = mean; }
+    }
+
+    XhalfMax = (XmaxMean + XminMean) / 2;	// half maximum, i.e. average
+
+    return;
+}
+
+/*
 * Find the Y column edges.
 *    Will re-compute on each call.
 * call:
@@ -170,9 +250,37 @@ gmBox::find_Yedges()
 	if ( Ymean[j] >= YhalfMax ) { Ytop = j;  break; }
     }
 
-    for ( int j=Nrow;  j>=0;  j-- )
+    for ( int j=(Nrow - 1);  j>=0;  j-- )
     {
 	if ( Ymean[j] >= YhalfMax ) { Ybot = j;  break; }
+    }
+}
+
+/*
+* Find the X row edges.
+*    Will re-compute on each call.
+* call:
+*    find_Xedges()
+*    XhalfMax  = input threshold for finding edges, default from
+*		find_Xcol_means()
+*    Xmean[]   = means computed by find_Xcol_means()
+* return:
+*    Xtop, Xbot  = edges of blob, -1 if not found
+*/
+void
+gmBox::find_Xedges()
+{
+    Xleft  = -1;	// edges not found
+    Xright = -1;
+
+    for ( int i=0;  i<Ncol;  i++ )
+    {
+	if ( Xmean[i] >= XhalfMax ) { Xleft = i;  break; }
+    }
+
+    for ( int i=(Ncol - 1);  i>=0;  i-- )
+    {
+	if ( Xmean[i] >= XhalfMax ) { Xright = i;  break; }
     }
 }
 
@@ -202,6 +310,32 @@ gmBox::out_Yrow_means( std::ostream* ost )
 	    << "  " <<setw(6) << Ymean[j]
 	    << "  " <<setw(6) << Ymax[j]
 	    << "  " <<setw(6) << Ymin[j]
+	    <<endl;
+    }
+}
+
+/*
+* Output table of Xcol means.
+* call:
+*    out_Xcol_means( std::cout )
+*/
+void
+gmBox::out_Xcol_means( std::ostream* ost )
+{
+    *ost << "    Ix"
+	<< "    Xcnt"
+	<< "   Xmean"
+	<< "    Xmax"
+	<< "    Xmin"
+	<<endl;
+
+    for ( int i=0;  i<Ncol;  i++ )		// each column (X)
+    {
+	*ost << "  " <<setw(4) << i
+	    << "  " <<setw(6) << Xcnt[i]
+	    << "  " <<setw(6) << Xmean[i]
+	    << "  " <<setw(6) << Xmax[i]
+	    << "  " <<setw(6) << Xmin[i]
 	    <<endl;
     }
 }

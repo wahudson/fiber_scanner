@@ -35,9 +35,11 @@ class gmBox : public gmStats {
     int			XminMean;
     int			XhalfMax;
 
-				// find_edges()
+				// find_Yedges()
     int			Ytop;		// top edge
     int			Ybot;		// bottom edge
+
+				// find_Xedges()
     int			Xleft;		// left edge
     int			Xright;		// right edge
 
@@ -54,10 +56,13 @@ class gmBox : public gmStats {
 
 				// computing accessors
     void		find_Yrow_means( unsigned thresh );
+    void		find_Xcol_means( unsigned thresh );
     void		find_Yedges();
+    void		find_Xedges();
     void		img_add_offset();
 
     void		out_Yrow_means( std::ostream* ost );
+    void		out_Xcol_means( std::ostream* ost );
 };
 
 #endif
