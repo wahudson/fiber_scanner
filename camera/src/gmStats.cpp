@@ -21,13 +21,16 @@ using namespace std;
 */
 gmStats::gmStats()
 {
-    StdDev = -1.0;
-    Max    = -1;
-    Min    = -1;
-    Sum    = -1;
-    Mean   = -1.0;
-    CGx    = -1;
-    CGy    = -1;
+    init();
+}
+
+/*
+* Constructor.
+*/
+gmStats::gmStats( FILE* fp )
+    : gmNetpgm( fp )
+{
+    init();
 }
 
 /*
@@ -35,6 +38,15 @@ gmStats::gmStats()
 */
 gmStats::gmStats( const char* in_file )
     : gmNetpgm( in_file )
+{
+    init();
+}
+
+/*
+* Initialization.  (private)
+*/
+void
+gmStats::init()
 {
     StdDev = -1.0;
     Max    = -1;

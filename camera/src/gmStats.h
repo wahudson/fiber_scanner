@@ -22,7 +22,12 @@ class gmStats : public gmNetpgm {
     int			CGx;		// center of gravity
     int			CGy;
 
+  private:
+    void		init();
+
+  public:
     gmStats();				// constructor
+    gmStats( FILE* fp );		// constructor
     gmStats( const char* in_file );	// constructor
 
 				// computing accessors

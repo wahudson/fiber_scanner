@@ -72,6 +72,19 @@ int main()
 	FAIL( "unexpected exception" );
     }
 
+  CASE( "14", "gmStats constructor" );
+    try {
+	FILE*		fp = fopen( "point.pgm", "r" );
+	gmStats		tx  ( fp );
+	CHECK(   5, tx.Ncol );
+	CHECK(   3, tx.Nrow );
+	CHECK(  15, tx.Npix );
+	CHECK( 255, tx.MaxVal );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
 //--------------------------------------------------------------------------
 //## Computation
 //--------------------------------------------------------------------------
