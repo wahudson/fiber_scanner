@@ -62,8 +62,9 @@ gmNetpgm::~gmNetpgm()
 /*
 * Read .pgm image from file stream.
 * call:
+*    FILE*           fp = fopen( "image.pgm", "r" );
 *    read( fp )
-*    read( in_file )
+*    read( stdin )
 */
 void
 gmNetpgm::read( FILE* fp )
@@ -80,11 +81,20 @@ gmNetpgm::read( FILE* fp )
 
 /*
 * Read .pgm image from file name.
+*   File "-" implies stdin.
+* call:
+*    read( in_file )
 */
 void
 gmNetpgm::read( const char* in_file )
 {
     FILE*		fp;
+
+    if ( (in_file[0] == '-') && (in_file[1] == '\0') ) {
+	cout << "in_file= -" <<endl;
+	this->read( stdin );
+	return;
+    }
 
     fp = fopen( in_file, "r" );
 

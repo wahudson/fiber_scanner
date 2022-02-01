@@ -65,15 +65,14 @@ int main()
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "13", "gmNetpgm constructor, file '-' is literal" );
+  CASE( "14", "gmNetpgm constructor" );
     try {
-	gmNetpgm	tx  ( "-" );
-	FAIL( "no throw" );
-    }
-    catch ( runtime_error& e ) {
-	CHECK( "file not found:  -",
-	    e.what()
-	);
+	FILE*		fp = fopen( "point.pgm", "r" );
+	gmNetpgm	tx  ( fp );
+	CHECK(   5, tx.Ncol );
+	CHECK(   3, tx.Nrow );
+	CHECK(  15, tx.Npix );
+	CHECK( 127, tx.MaxVal );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
