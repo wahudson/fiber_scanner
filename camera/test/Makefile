@@ -9,6 +9,7 @@ SHELL = /bin/sh
 test:
 	cd src                && make
 	cd t_gmBox            && make test
+	cd t_gmGeoSpec        && make test
 	cd t_gmNetpgm         && make test
 	cd t_gmStats          && make test
 	cd t_pgm_box          && make test
@@ -16,6 +17,7 @@ test:
 
 clean:
 	cd t_gmBox            && make clean
+	cd t_gmGeoSpec        && make clean
 	cd t_gmNetpgm         && make clean
 	cd t_gmStats          && make clean
 	cd t_pgm_box          && make clean

@@ -19,11 +19,16 @@ INCS       = \
 	Error.h \
 	yOpVal.h \
 	yOption.h \
+	gmBox.h \
+	gmGeoSpec.h \
+	gmNetpgm.h \
+	gmStats.h \
 	$(LIBS)
 
 		# objects not including main()  #!! maybe split out gm*.o
 OBJS       = \
 	$(OJ)/gmBox.o \
+	$(OJ)/gmGeoSpec.o \
 	$(OJ)/gmNetpgm.o \
 	$(OJ)/gmStats.o \
 	$(OJ)/Error.o \
@@ -43,7 +48,8 @@ run:	compile
 
 compile:  $(OJ)  $(BINDIR)  ../lib/libgmlocal.a \
 	$(BINDIR)/pgm_stats \
-	$(BINDIR)/pgm_box
+	$(BINDIR)/pgm_box \
+	$(BINDIR)/pgm_swatch
 
 mkdirs:   $(OJ)  $(BINDIR)
 
@@ -55,6 +61,7 @@ clobber:
 	rm -f  ../lib/libgmlocal.a
 	rm -f  $(BINDIR)/pgm_stats
 	rm -f  $(BINDIR)/pgm_box
+	rm -f  $(BINDIR)/pgm_swatch
 
 $(BINDIR):
 	mkdir -p  $(BINDIR)
@@ -74,16 +81,25 @@ $(BINDIR)/pgm_stats:	        $(OJ)/pgm_stats.o  $(OBJS)  $(LIBS)
 $(BINDIR)/pgm_box:	        $(OJ)/pgm_box.o  $(OBJS)  $(LIBS)
 	g++ -o $@ -L $(LIBDIR)  $(OJ)/pgm_box.o  $(OBJS)  $(LIBS)
 
+$(BINDIR)/pgm_swatch:	        $(OJ)/pgm_swatch.o  $(OBJS)  $(LIBS)
+	g++ -o $@ -L $(LIBDIR)  $(OJ)/pgm_swatch.o  $(OBJS)  $(LIBS)
 
-$(OJ)/pgm_stats.o:	pgm_stats.cpp  $(INCS)  $(YINCS)
+
+$(OJ)/pgm_stats.o:	pgm_stats.cpp  $(INCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_stats.cpp
 
-$(OJ)/pgm_box.o:	pgm_box.cpp  $(INCS)  $(YINCS)
+$(OJ)/pgm_box.o:	pgm_box.cpp  $(INCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_box.cpp
+
+$(OJ)/pgm_swatch.o:	pgm_swatch.cpp  $(INCS)
+	g++ $(CXXFLAGS) -o $@  -c pgm_swatch.cpp
 
 
 $(OJ)/gmBox.o:	gmBox.cpp  gmBox.h
 	g++ $(CXXFLAGS) -o $@  -c gmBox.cpp
+
+$(OJ)/gmGeoSpec.o:	gmGeoSpec.cpp  gmGeoSpec.h
+	g++ $(CXXFLAGS) -o $@  -c gmGeoSpec.cpp
 
 $(OJ)/gmNetpgm.o:	gmNetpgm.cpp  gmNetpgm.h
 	g++ $(CXXFLAGS) -o $@  -c gmNetpgm.cpp
