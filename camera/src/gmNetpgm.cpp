@@ -91,7 +91,6 @@ gmNetpgm::read( const char* in_file )
     FILE*		fp;
 
     if ( (in_file[0] == '-') && (in_file[1] == '\0') ) {
-	cout << "in_file= -" <<endl;
 	this->read( stdin );
 	return;
     }
