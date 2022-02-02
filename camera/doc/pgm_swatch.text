@@ -1,0 +1,114 @@
+2022-02-01  William A. Hudson
+
+	pgm_swatch - Extract a pixel swatch in table format
+	---------------------------------------------------
+
+A swatch is a patch of fabric.  Here it means a rectangular region of pixels
+in an image.  Similar to Netpbm program named 'pgmslice'.
+
+Geometry:
+
+    --geo=WxH+X+Y
+
+    Split option specification into individual values.
+
+    geoW
+    geoH
+    geoX
+    geoY
+
+    Geo_W
+    Geo_H
+    Geo_X
+    Geo_Y
+
+    The separator characters 'x' and '+' could be unique in the string,
+    i.e. make that a requirement.  Then can find those characters and
+    replace with null char '\0' to split into 4 separate strings.  Assign
+    each string to a parameter pointer.
+
+    NOT making the ultimate geometry specification parser.
+    IS making a working program.
+
+Example:
+
+    --geo=3x5+10+20
+
+    GeoW = 3
+    GeoH = 5
+    GeoX = 10
+    GeoY = 20
+
+    output:
+
+    Jy c13 c14 c15
+    20   7   7   7
+    21   7   7   7
+    22   7   7   7
+    23   7   7   7
+    24   7   7   7
+
+    The row index is the original image pixel row index.
+
+    The column headings is the original image column numbers.  Prefix with
+    a 'c' for column.  Or maybe they could be pure numbers.
+
+    The idea is output is a suitable table for input to R (the language).
+
+    Keep original image indexes in the swatch table to minimize mappings.
+    The user may want multiple swatches.
+
+Essential algorithm:
+
+    // Output heading
+    cout << "Jy";
+    for ( int i=GeoX;  i<=(GeoX + GeoW);  i++ )	// each column (X)
+    {
+	cout << " c" << i;
+    }
+    cout <<endl;
+
+    // Output swatch table
+    for ( int j=GeoY;  j<=(GeoY + GeoH);  j++ )		// each row (Y)
+    {
+	cout << j;
+
+	for ( int i=GeoX;  i<=(GeoX + GeoW);  i++ )	// each column (X)
+	{
+	    pixv = Img[j][i];
+
+	    cout << " " << pixv;
+	}
+	cout <<endl;
+    }
+
+    Detail formatting is not addressed here.
+
+Object Design:
+
+    The geometry spec could be a class.  Parsing it out is just complex
+    enough, and a separate testable unit would be very helpful.
+    Multiple objects are definitely used in programs.
+
+    The table output looks simple enough to be in the main program.
+    It has a lot of custom formatting that would be awkward in a library class.
+
+
+class gmGeoSpec
+{
+  public:
+    int			GeoW;
+    int			GeoH;
+    int			GeoX;
+    int			GeoY;
+
+    const char*		GeoSpec;	// input string WxH+X+Y
+
+    gmGeoSpec( const char * spec );	// constructor
+};
+
+    Construction IS parsing and initialization.  Throw exceptions on error.
+    See how it goes.
+
+    Object keeps original spec string to aid in error message reporting.
+
