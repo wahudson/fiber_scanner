@@ -42,12 +42,12 @@ chdir( "tmp" ) || die_Error( "cannot chdir ./tmp\n" );
 ## basic options --help
 #---------------------------------------------------------------------------
 
-run_test( "11", "pgm_stats no args",
-    "pgm_stats",
-    0,
-    Stderr => q(),
-    Stdout => q(),
-);
+#run_test( "11", "pgm_stats no args - reads stdin",
+#    "pgm_stats",
+#    0,
+#    Stderr => q(),
+#    Stdout => q(),
+#);
 
 run_test( "12", "pgm_stats help",
     "pgm_stats --help",

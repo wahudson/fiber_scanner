@@ -1,7 +1,6 @@
-    Compute image stats - min, max, mean, standard deviation
-usage:  pgm_stats [options..]  FILE.pgm ..
+    Compute image stats - min, max, mean, standard deviation, CG
+usage:  pgm_stats [options..]  [FILE.pgm ..]
+    FILE.pgm            input file, '-' or default is stdin
   options:
     --help              show this usage
-    -v, --verbose       verbose output, show if fake memory
-    --debug             debug output
   (options with GNU= only)

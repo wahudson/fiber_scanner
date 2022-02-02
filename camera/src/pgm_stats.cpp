@@ -122,13 +122,14 @@ void
 yOptLong::print_usage()
 {
     cout <<
-    "    Compute image stats - min, max, mean, standard deviation\n"
-    "usage:  " << ProgName << " [options..]  FILE.pgm ..\n"
+    "    Compute image stats - min, max, mean, standard deviation, CG\n"
+    "usage:  " << ProgName << " [options..]  [FILE.pgm ..]\n"
+    "    FILE.pgm            input file, '-' or default is stdin\n"
     "  options:\n"
 //  "    --geo=WxH+X+Y       region to analyze\n"
     "    --help              show this usage\n"
-    "    -v, --verbose       verbose output, show if fake memory\n"
-    "    --debug             debug output\n"
+//  "    -v, --verbose       verbose output\n"
+//  "    --debug             debug output\n"
     "  (options with GNU= only)\n"
     ;
 
@@ -158,36 +159,44 @@ main( int	argc,
 
     if ( Error::has_err() )  return 1;
 
-    char*		in_file;
-    while ( ( in_file = Opx.next_arg() ) )
+    const char*		in_file;
+
+    in_file = Opx.next_arg();
+
+    do
     {
-	cout << "==> " << in_file << " <==" << endl;
+	if ( in_file ) {
+	    cout << "==> " << in_file << " <==" << endl;
+	}
+	else {
+	    in_file = "-";
+	}
 
 	gmStats		gmx  ( in_file );	// constructor
 	float		std_dev;
 
 	cout << "Ncol   = " << gmx.Ncol   <<endl;
 	cout << "Nrow   = " << gmx.Nrow   <<endl;
+	cout << "Npix   = " << gmx.Npix   <<endl;
 	cout << "MaxVal = " << gmx.MaxVal <<endl;
-	cout << "im[0,0]= " << **gmx.Img  <<endl;
 
 	gmx.get_mean();
 
-	cout << "Npix   = " << gmx.Npix   <<endl;
-	cout << "max    = " << gmx.Max    <<endl;
-	cout << "min    = " << gmx.Min    <<endl;
-	cout << "sum    = " << gmx.Sum    <<endl;
-	cout << "mean   = " << gmx.Mean   <<endl;
+	cout << "Max    = " << gmx.Max    <<endl;
+	cout << "Min    = " << gmx.Min    <<endl;
+	cout << "Sum    = " << gmx.Sum    <<endl;
+	cout << "Mean   = " << gmx.Mean   <<endl;
 
 	std_dev = gmx.get_std_deviation();
 
 	cout << "SD     = " << std_dev    <<endl;
-	cout << "CG     = " << gmx.CGx << ", " << gmx.CGy <<endl;
-    }
+	cout << "CGxy   = " << gmx.CGx << ", " << gmx.CGy <<endl;
+
+    } while ( ( in_file = Opx.next_arg() ) );
 
   }
   catch ( std::exception& e ) {
-    Error::msg( "exception caught:  " ) << e.what() <<endl;
+    Error::msg( e.what() ) <<endl;
   }
   catch (...) {
     Error::msg( "unexpected exception\n" );

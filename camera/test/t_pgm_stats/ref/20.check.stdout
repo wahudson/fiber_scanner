@@ -1,13 +1,11 @@
 ==> ../point.pgm <==
 Ncol   = 5
 Nrow   = 3
-MaxVal = 15
-im[0,0]= 0
 Npix   = 15
-max    = 7
-min    = 0
-sum    = 7
-mean   = 0
-sd_sum = 49
-SD     = 1.80739
-CG     = 2, 1
+MaxVal = 15
+Max    = 7
+Min    = 0
+Sum    = 7
+Mean   = 0.466667
+SD     = 1.74611
+CGxy   = 2, 1
