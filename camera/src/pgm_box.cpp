@@ -102,6 +102,9 @@ yOptLong::parse_options()
 	}
     }
 
+    if ( get_argc() > 1 ) {
+	Error::msg( "require only one file argument" ) <<endl;
+    }
 }
 
 
@@ -133,14 +136,15 @@ yOptLong::print_usage()
 {
     cout <<
     "    Bounding box of an elliptical image\n"
-    "usage:  " << ProgName << " [options..]  FILE.pgm ..\n"
+    "usage:  " << ProgName << " [options..]  [FILE.pgm]\n"
+    "    FILE.pgm            input file, '-' or default is stdin\n"
     "  options:\n"
 //  "    --geo=WxH+X+Y       region to analyze\n"
     "    --sub=V             subract value from each pixel\n"
-    "    --table             output row mean table\n"
+    "    --table             output row/column mean tables\n"
     "    --help              show this usage\n"
-    "    -v, --verbose       verbose output, show if fake memory\n"
-    "    --debug             debug output\n"
+//  "    -v, --verbose       verbose output\n"
+//  "    --debug             debug output\n"
     "  (options with GNU= only)\n"
     ;
 
@@ -170,11 +174,16 @@ main( int	argc,
 
     if ( Error::has_err() )  return 1;
 
-    char*		in_file;
-    while ( ( in_file = Opx.next_arg() ) )
-    {
-	cout << "==> " << in_file << " <==" << endl;
+    const char*		in_file;
 
+    in_file = Opx.next_arg();
+
+    if ( ! in_file ) {
+	in_file = "-";
+    }
+
+    do		// single file
+    {
 	gmBox		gmx  ( in_file );	// constructor
 
 	cout << "Ncol   = " << gmx.Ncol   <<endl;
@@ -182,7 +191,7 @@ main( int	argc,
 	cout << "Npix   = " << gmx.Npix   <<endl;
 	cout << "MaxVal = " << gmx.MaxVal <<endl;
 
-    // Subtract black level --sub
+	// Subtract black level --sub
 	if ( Opx.sub.Given ) {
 	    int		black = Opx.sub.Val;
 	    int		cnt   = 0;
@@ -249,11 +258,12 @@ main( int	argc,
 	cout << "Xleft    = " << gmx.Xleft     <<endl;
 	cout << "Xright   = " << gmx.Xright     <<endl;
 	cout << "Xfwhm    = " << gmx.Xright - gmx.Xleft <<endl;
-    }
+
+    } while ( 0 );
 
   }
   catch ( std::exception& e ) {
-    Error::msg( "exception caught:  " ) << e.what() <<endl;
+    Error::msg( e.what() ) <<endl;
   }
   catch (...) {
     Error::msg( "unexpected exception\n" );
