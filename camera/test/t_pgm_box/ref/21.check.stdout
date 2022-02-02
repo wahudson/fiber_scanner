@@ -6,6 +6,7 @@ Max    = 49
 Min    = 0
 Mean   = 9.57143
 SD     = 18.1931
+CGxy   = 4, 2
     Jy    Ycnt   Ymean    Ymax    Ymin
      0       0       0       0       0
      1       3      47      49      47

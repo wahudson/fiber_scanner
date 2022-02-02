@@ -229,6 +229,7 @@ main( int	argc,
 	cout << "Min    = " << gmx.Min    <<endl;
 	cout << "Mean   = " << gmx.Mean   <<endl;
 	cout << "SD     = " << gmx.get_std_deviation() <<endl;
+	cout << "CGxy   = " << gmx.CGx << ", " << gmx.CGy <<endl;
 
 	gmx.find_Yrow_means( 2 );		//#!! threshold
 	gmx.find_Xcol_means( 2 );

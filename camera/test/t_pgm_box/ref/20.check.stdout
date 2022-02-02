@@ -6,6 +6,7 @@ Max    = 7
 Min    = 0
 Mean   = 0.466667
 SD     = 1.74611
+CGxy   = 2, 1
   Bounding Box Y:
 YmaxMean = 7
 YminMean = 0
