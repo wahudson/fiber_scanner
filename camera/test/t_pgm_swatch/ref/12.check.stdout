@@ -1,0 +1,11 @@
+    Extract a swatch of pixels in table format.
+usage:  pgm_swatch [options..]  [FILE.pgm]
+    FILE.pgm            input file, '-' or default is stdin
+  required:
+    --geo=WxH+X+Y       region to extract
+  options:
+    --help              show this usage
+    -v, --verbose       verbose output
+  (options with GNU= only)
+    Array indexes (x,y) with (0,0) at upper left, +X (column) to right,
+    and +Y (row) down.

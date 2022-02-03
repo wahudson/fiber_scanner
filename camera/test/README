@@ -55,6 +55,7 @@ Test suites:  (2022-01-19)
  u   s  t_gmStats/	gmStats		Grayscale Image Statistics class
  pbl    t_pgm_box/	Bounding box of an elliptical image
  pbl    t_pgm_stats/	Image statistics program
+ pbl    t_pgm_swatch/	Extract a swatch of pixels into a table
 
 
 Test Setup:

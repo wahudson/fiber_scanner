@@ -1,0 +1,5 @@
+Ncol   = 10
+Nrow   = 7
+Npix   = 70
+MaxVal = 255
+extract region (4,2) (8,4)

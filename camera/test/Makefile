@@ -14,6 +14,7 @@ test:
 	cd t_gmStats          && make test
 	cd t_pgm_box          && make test
 	cd t_pgm_stats        && make test
+	cd t_pgm_swatch       && make test
 
 clean:
 	cd t_gmBox            && make clean
@@ -22,4 +23,5 @@ clean:
 	cd t_gmStats          && make clean
 	cd t_pgm_box          && make clean
 	cd t_pgm_stats        && make clean
+	cd t_pgm_swatch       && make clean
 
