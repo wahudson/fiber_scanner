@@ -1,0 +1,111 @@
+2022-01-30  William A. Hudson
+
+Experiment:  Image Stationary Fiber  2022-01-30
+
+----------------------------------------------------------------------------
+
+Configuration:
+    RPi:  rpiTouch
+    Microscope lens:  1x magnification
+	Cardboard box cover.  Nighttime.
+    LED Fiber Light:  led_light/kicad/led_fiber_v1/
+	Breadboard v1.0 2021-12-31
+	sw6 - 1.25 mA  LED current
+
+    Camera view a single stationary spot of LED light.
+    Adjusted focus position for minimum spot size.
+
+Image capture:
+    % raspistill -v -k -t 0  -o p_1.25mA.jpg
+	(Renamed original capture p_2.5mA.jpg, had wrong current.)
+
+Initial view:
+    % display p_1.25mA.jpg &
+	Image has one tiny red spot in the center, black background.
+	Fiber core is white, saturated pixels.
+	Red flare surrounds the core.
+	Can see faint fringes around the core.
+	There is an odd 3-axis radial symmetry in the surrounding flare.
+
+    Identify spot position in image.  Bring up cursor with pixel coordinates.
+    Image Magick menu:
+	Image Edit -> Draw
+
+	Image fills more than the monitor.  Do NOT resize image on screen, as
+	we want one screen pixel per camera pixel.
+
+	Put cursor on desired pixel (center of spot) and read coordinates in
+	upper left corner of display.  Shift window on screen as needed.
+	(Note:  My X11 config allows me to grab a window anywhere to move,
+	    not just by a border. )
+
+ >	Spot center at:  (1963,1503)
+	    (0,0)  is upper left corner
+	    (0,3603) is right edge
+	    Cannot see bottom edge and readout in upper left corner at the
+	    same time.
+
+    % file p_1.25mA.jpg
+    p_1.25mA.jpg: JPEG image data, Exif standard: [TIFF image data, big-endian,
+    direntries=10, height=0, manufacturer=RaspberryPi, model=RP_imx477,
+    xresolution=156, yresolution=164, resolutionunit=2,
+    datetime=2022:01:30 21:45:04, width=0], baseline, precision 8,
+    4056x3040, frames 3
+
+    % rdjpgcom -verbose p_1.25mA.jpg
+    JPEG image is 4056w * 3040h, 3 color components, 8 bits per sample
+    JPEG process: Baseline
+
+    View one row X thru center of spot:
+    % djpeg -grayscale p_1.25mA.jpg | pgmslice -row 1503 | less
+	Most background pixels are 0 or 1.
+	Saturated pixels are 255.  The spot is very distinct.
+	    Pixel value >1:	1892 to 2030, delta = 138
+	    Pixel value >100:	1949 to 1978, delta =  29
+	    Pixel value =255:	1959 to 1967, delta =   8
+
+    View one column Y thru center of spot:
+    % djpeg -grayscale p_1.25mA.jpg | pgmslice -col 1963 | less
+    	Similar looking at column thru spot.
+	    Pixel value >1:	1438 to 1577, delta = 139
+	    Pixel value >100:	1488 to 1517, delta =  29
+	    Pixel value =255:	1499 to 1507, delta =   8
+
+    Notice how similar the the spot intensity distribution is in both X and Y
+    thru the center of the spot.  I did not really expect that.
+
+    Eliminating stray light with custom cardboard box really worked.
+    At least at night with only incandescent lighting in my office.
+
+Crop region:
+    Try rounding to nearest 100 pixels away from the spot.
+    X:  1800 .. 2100 	delta 300
+    Y:  1350 .. 1650	delta 300
+
+    djpeg -crop WxH+X+Y
+
+    % djpeg -grayscale -crop 300x300+1800+1350 p_1.25mA.jpg |
+	netpbm ppmtopgm -plain > p1.pgm
+
+    % display p1.pgm &
+	Image looks very good, spot slightly off center to the right.
+	Can see a faint fringe pattern away from the central disk.  Could
+	this be an Airy Disk?  (I suspect not really.)
+	The fringe pattern seems to have a 3-axis radial symmetry, what is that?
+	Gray image is more pronounced than the original color image.
+
+    % head p1.pgm
+    P2
+    308 300
+    255
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    ...
+	Note cropping seems to adopt particular boundaries.  i.e. not 300x300
+	that was specified.
+
+
+Need:
+    File naming convention.  Evolving.
+    LED light version identification.
+    Try tkjpeg(1p)
+

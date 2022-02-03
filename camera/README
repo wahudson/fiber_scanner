@@ -17,9 +17,20 @@ doc/		Documentation
 src/		Source code
     Makefile		for building the tools
 
+		    Object Classes
+    gmBox.cpp		Grayscale Image Bounding Box class
+    gmBox.h
+    gmGeoSpec.cpp	Geometry WxH+X+Y specification class
+    gmGeoSpec.h
+    gmNetpgm.cpp	Netpbm Grayscale input/output class
+    gmNetpgm.h
+    gmStats.cpp		Grayscale Image Statistics class
+    gmStats.h
+
 		    Programs
     pgm_box.cpp		Bounding box of an elliptical image
     pgm_stats.cpp	Image statistics, mean, SD, CG
+    pgm_swatch.cpp	Extract a swatch of pixels in table format
 
 		    Boilerplate copied from rgpio
     Error.cpp		Error handling
@@ -32,16 +43,31 @@ src/		Source code
 netpbm -> /opt/netpbm-sf-10.73.37	Netpbm library installation
 
 bin/		Commands
-    pgm_box
-    pgm_stats
+    pgm_box		Bounding box of an elliptical image
+    pgm_stats		Image stats - min, max, mean, standard deviation, CG
+    pgm_swatch		Extract a swatch of pixels in table format
+
+lib/		Library
+    libgmlocal.a	Compiled library of gm* classes
 
 obj/		temporary .o object files
     *.o
 
+test/		Testing
+    README
+
+exp/		Experiments and Results
+
+data/		Experiment large data, not in Git
+
 pgexample/	Initial example use of Netpbm grayscale pgm
+
 
 Initial Build process:
 ----------------------
     % cd src
     % make compile
+
+    % cd test
+    % make test
 

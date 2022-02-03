@@ -1,0 +1,21 @@
+2022-01-30  William A. Hudson
+
+		Camera Image Processing - Experiments
+		-------------------------------------
+
+Write-up experiments here.
+
+Experiment directory names incorporate the date first, since that is most
+meaningful.  New experiments might add to a directory, but more likely to
+start a new one and refer to the old one.
+
+Raw data in:  ../data/
+Large raw data is separate, not committed in Git.
+
+Files:
+------
+exYYYY_MM_DD_*/
+    notes.text		Note log
+
+ex2022_01_30_spot/	Image stationary fiber spot
+
