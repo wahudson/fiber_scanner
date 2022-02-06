@@ -1,19 +1,40 @@
 2022-01-30  William A. Hudson
 
 Experiment:  Image Stationary Fiber  2022-01-30
+    Measure spot size.
+    Try initial programs:  pgm_box, pgm_stats, pgm_swatch
 
 ----------------------------------------------------------------------------
 
 Configuration:
-    RPi:  rpiTouch
-    Microscope lens:  1x magnification
+    RPi:  rpiTouch  (Raspberry Pi 3B) with official LCD 7 inch screen.
+    Camera:  RPi HQ Camera, C-mount
+    Microscope lens:  Hayear Monocular 0.7-4.5x zoom, 1.0x adapter.
+	Spacing:  8.5 mm from HQ camera metal face to Microscope face.
+	Nominal 1x magnification setting, with one 5mm macro ring.
 	Cardboard box cover.  Nighttime.
     LED Fiber Light:  led_light/kicad/led_fiber_v1/
 	Breadboard v1.0 2021-12-31
 	sw6 - 1.25 mA  LED current
+    Fiber:  Fibertronics SMF-9/125  3.0  04/2018  05574M, Yellow jacket
+	Single mode, 9 um core, 125 um cladding.
+	(Single mode for 1100 nm light, I think.)
 
-    Camera view a single stationary spot of LED light.
+    LED Wavelength:
+	Vishay VLCS5830
+	Wavelength spec:  620 nm min, 624 nm typ, 630 nm max at If= 50 mA.
+	From graph spectral width at 0.2% peak is about 620 nm to 640 nm.
+	Thus spectral width is about 20 nm.
+	This is broad compared to lasers which seem to be around 1 nm or 0.1 nm
+	spectral width.  [Searching laser line width on the web.]
+
+    Camera view a single stationary spot of red LED light.
     Adjusted focus position for minimum spot size.
+
+    Fiber Tip:  (2022-02-05)
+	Fiber is broken with a spur ~300 um long on the bottom and a clean
+	cleave above.  Core are seems clean, and seems to show a circular
+	light spot.
 
 Image capture:
     % raspistill -v -k -t 0  -o p_1.25mA.jpg
@@ -103,9 +124,208 @@ Crop region:
 	Note cropping seems to adopt particular boundaries.  i.e. not 300x300
 	that was specified.
 
+    % cjpeg < p1.pgm > p1.jpg
+
+----------------------------------------
+2022-02-02  Continue Analysis
+
+Moving toward alphabetic source file naming starting with 'a', where the
+first letter groups related analysis files.
+
+Try cropping jpeg file directly:
+
+    % jpegtran -crop 300x300+1800+1350  p_1.25mA.jpg > ac_1.25mA.jpg
+
+    % file ac_1.25mA.jpg
+    ac_1.25mA.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, \
+    density 1x1, segment length 16, baseline, precision 8, 308x306, frames 3
+
+    Some file attributes are lost compared to original from raspistill.
+    The most useful lost is "datetime=2022:01:30 21:45:04".
+
+    This rounds off cropping slightly also.
+    jpegtran:  308x306   spot at (171,159)   ac_1.25mA.jpg  color
+    djpeg:     308x300   spot at (170,153)   p1.pgm         gray
+
+    Where are these rectangles in the original image?
+    I suspect the specified location is not honored.
+    Thus should re-locate spot in the cropped image.  They are different.
+
+File sizes:
+    -rw-rw-r-- 1 wah wah  12902 Feb  2 19:50 ac_1.25mA.jpg	crop color
+    -rw-rw-r-- 1 wah wah   2102 Jan 31 17:48 p1.jpg		crop gray
+    -rw-rw-r-- 1 wah wah 191508 Jan 31 15:22 p1.pgm
+    -r--r--r-- 1 wah wah 505411 Jan 30 21:47 p_1.25mA.jpg	original
+
+Grayscale conversion:
+
+    % djpeg -grayscale ac_1.25mA.jpg | netpbm ppmtopgm -plain > ac.pgm
+
+    % cjpeg < ac.pgm > ac.gray.jpg
+
+    % file ac.gray.jpg
+    ac.gray.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, \
+    density 1x1, segment length 16, baseline, precision 8, 308x306, frames 1
+
+    % ll
+    -rw-rw-r-- 1 wah wah   2147 Feb  2 20:19 ac.gray.jpg	gray
+    -rw-rw-r-- 1 wah wah 195204 Feb  2 20:17 ac.pgm		gray
+    -rw-rw-r-- 1 wah wah  12902 Feb  2 19:50 ac_1.25mA.jpg	color
+	Cropped file sizes.
+	Note cropped jpeg grayscale is very small.
+
+Image statistics:  (my program)
+
+    % pgm_stats ac.pgm p1.pgm
+    ==> ac.pgm <==
+    Ncol   = 308
+    Nrow   = 306
+    Npix   = 94248
+    MaxVal = 255
+    Max    = 255
+    Min    = 0
+    Sum    = 337009
+    Mean   = 3.57577
+    SD     = 18.1196
+    CGxy   = 171, 160		manual (171,159)
+    ==> p1.pgm <==
+    Ncol   = 308
+    Nrow   = 300
+    Npix   = 92400
+    MaxVal = 255
+    Max    = 255
+    Min    = 0
+    Sum    = 337009
+    Mean   = 3.64728
+    SD     = 18.2928
+    CGxy   = 171, 154		manual (170,153)
+
+    The program agrees quite well with manual assessment of spot center,
+    within 1 pixel.
+
+    CGxy is the Center-of-Gravity point.
+
+Bounding Box:
+
+    % pgm_box ac.pgm
+    Ncol   = 308
+    Nrow   = 306
+    Npix   = 94248
+    MaxVal = 255
+    Max    = 255
+    Min    = 0
+    Mean   = 3.57577
+    SD     = 18.1196
+    CGxy   = 171, 160
+      Bounding Box Y:
+    YmaxMean = 62
+    YminMean = 0
+    YhalfMax = 31
+    Ytop     = 142
+    Ybot     = 177
+    Yfwhm    = 35
+      Bounding Box X:
+    XmaxMean = 67
+    XminMean = 0
+    XhalfMax = 33
+    Xleft    = 157
+    Xright   = 188
+    Xfwhm    = 31
+
+    This should be quite accurate since all background pixels are zero (black).
+
+Extract a swatch:
+
+    % pgm_swatch --geo=30x40+157+142 ac.pgm | less
+
+    A great way to view the numeric values in the spot region.  (big window)
+
+    % pgm_swatch --geo=30x200+157+50 ac.pgm > ac1.table
+	Table for R plotting.
+
+    % R
+
+    > df <- read.table( "ac1.table", header=TRUE )
+
+    > row.names( df )
+    > names( df )
+     [1] "Jy"   "X157" "X158" "X159" "X160" "X161" "X162" "X163" "X164" "X165"
+    [11] "X166" "X167" "X168" "X169" "X170" "X171" "X172" "X173" "X174" "X175"
+    [21] "X176" "X177" "X178" "X179" "X180" "X181" "X182" "X183" "X184" "X185"
+    [31] "X186"
+	Looks like R augments column names with 'X' if they are numeric.
+
+    > plot( df$X170 )
+	Plots against Index.
+
+    > plot( df$Jy, df$X170 )
+
+    > plot(   df$Jy, df$X170, type='l' )
+    > points( df$Jy, df$X170, type='p' )
+    > dev.copy2pdf( file="ac_x170_spot.pdf" )
+	Central region is fully saturated.
+	Can see ripples on the sides of possible diffraction rings.
+
+    # Locate two data point very near top of peak.
+    > locator(2)
+    $x
+    [1] 152.1405 165.7451	delta = 14
+    $y
+    [1] 244.4001 241.6155	near top of peak, 255
+
+	Peak is about 14 pixels wide, near top which is saturated.
+	Camera pixel is 1.55 um pitch.
+		Measured 1.43 um pitch, magnification is 0.922x when
+		lens is on 1x magnification mark.
+		There is one macro spacer on the lens.
+
+	14 pixel * 1.5 um/pixel = 21 um
+ >>	Estimate MFD (Mode Field Diameter) is ~21 um.
+
+	Fiber core is 9 um.
+ >>	Spot size is about 2x the fiber core.
+
+Data File Summary:  (primary files in creation sequence)
+
+    p_1.25mA.jpg	original image capture 4056x3040, color
+    ac_1.25mA.jpg	crop original, 308x306, jpegtran, color
+    ac.pgm		grayscale conversion, djpeg, -plain pgm
+    ac.gray.jpg		compress  % cjpeg < ac.pgm > ac.gray.jpg
+    ac1.table		pgm_swatch table of spot, --geo=30x40+157+142
+    ac_x170_spot.pdf	R plot of spot column x170
+
+Conclusions:
+
+    Very low Red LED current, 1.25 mA makes a well defined, bright,
+    saturated spot in the camera image.
+
+    Eliminating stray light with custom cardboard box worked well.  Background
+    pixels had value 0 zero.
+
+    Spot image size is ~14 pixels, ~20 um diameter.  Best focus from a
+    Fibertronics single-mode fiber with 9 um core.
+
+    Why is spot diameter about 2x the fiber core diameter?
+
+    Is the faint fringe pattern around the central disk actually diffraction?
+
+    pgm_stats and pgm_box worked quite well.
+    pbm_swatch made it easy to see the numerical spot pattern.
+
+    Crop region is not exact.  Try power of 2.
 
 Need:
     File naming convention.  Evolving.
     LED light version identification.
     Try tkjpeg(1p)
+
+    pgm_box needs option to specify the edge threshold.
+    Also need way to operate on pixv instead of row means.
+
+Next:
+    Try camera at low gain to see full beam profile without saturation.
+
+    Explore the diffraction rings.  Try getting better image of them.
+
+    Explore camera gain/exposure settings.  (Above was all Auto).
 
