@@ -49,7 +49,8 @@ run:	compile
 compile:  $(OJ)  $(BINDIR)  ../lib/libgmlocal.a \
 	$(BINDIR)/pgm_stats \
 	$(BINDIR)/pgm_box \
-	$(BINDIR)/pgm_swatch
+	$(BINDIR)/pgm_swatch \
+	$(BINDIR)/pgm_width
 
 mkdirs:   $(OJ)  $(BINDIR)
 
@@ -62,6 +63,7 @@ clobber:
 	rm -f  $(BINDIR)/pgm_stats
 	rm -f  $(BINDIR)/pgm_box
 	rm -f  $(BINDIR)/pgm_swatch
+	rm -f  $(BINDIR)/pgm_width
 
 $(BINDIR):
 	mkdir -p  $(BINDIR)
@@ -84,6 +86,9 @@ $(BINDIR)/pgm_box:	        $(OJ)/pgm_box.o  $(OBJS)  $(LIBS)
 $(BINDIR)/pgm_swatch:	        $(OJ)/pgm_swatch.o  $(OBJS)  $(LIBS)
 	g++ -o $@ -L $(LIBDIR)  $(OJ)/pgm_swatch.o  $(OBJS)  $(LIBS)
 
+$(BINDIR)/pgm_width:	        $(OJ)/pgm_width.o  $(OBJS)  $(LIBS)
+	g++ -o $@ -L $(LIBDIR)  $(OJ)/pgm_width.o  $(OBJS)  $(LIBS)
+
 
 $(OJ)/pgm_stats.o:	pgm_stats.cpp  $(INCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_stats.cpp
@@ -93,6 +98,9 @@ $(OJ)/pgm_box.o:	pgm_box.cpp  $(INCS)
 
 $(OJ)/pgm_swatch.o:	pgm_swatch.cpp  $(INCS)
 	g++ $(CXXFLAGS) -o $@  -c pgm_swatch.cpp
+
+$(OJ)/pgm_width.o:	pgm_width.cpp  $(INCS)
+	g++ $(CXXFLAGS) -o $@  -c pgm_width.cpp
 
 
 $(OJ)/gmBox.o:	gmBox.cpp  gmBox.h

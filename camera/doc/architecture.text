@@ -80,6 +80,12 @@ Remove the background:
     Perhaps subtract the constant background intensity from remaining pixels.
     This might make intensity signal excursion effectively larger.
 
+Analysis Threshold:  (Ignore background pixels)
+    Instead of subtracting a background level, we could ignore pixels below
+    a specified background threshold.  This avoids modifying the image and
+    gets a similar result.  Perhaps count the ignored pixels to give a feel
+    for fraction of image that was considered background.
+
 Identify center of mass:
     The center of mass of the whole image is the center of the ellipse,
     since it is the only object in the image.
@@ -166,6 +172,20 @@ Full Width Half Maximum (FWHM):
     The center location less so, because the slopes at the two edges are
     similar and opposite.  A steep slope at the edges should make location
     fairly independent of the maximum value.
+
+Point Spread Function (PSF):
+    Measure the intensity profile (PSF) of the stationary spot.  Idea is spot
+    size is related to scanner resolution.
+
+    The bounding box method almost works for this, except it uses the row means
+    to find edges.
+
+    We want to find FWHM of the actual pixel intensities thru the center of
+    the spot.  With a good CG that is the center of the spot, simply take
+    a row or column thru the CG point.  Generalize to specify an arbitrary
+    center point and arbitrary level to measure width.
+
+    Possibly assess adjacent rows and find maximum width at specified level.
 
 Maximum value:
     The maximum value could be anomalous, i.e. just one pixel while others
@@ -797,4 +817,62 @@ Computation Functions:
     For now, try things and see how it goes.
     The compute functions can always be made private and called in
     constructors.
+
+Analysis Classes:  Constructor Idea
+
+    An analysis class could have a constructor that takes an image pointer.
+    Ideas for "Manipulation Object models:" (B) above.
+
+    In analyzing the point spread function (PSF) of a spot, we want several
+    different but similar computations.  Maybe with different parameter
+    values.  This better fits the object "HAS A" image model.  Multiple
+    objects all analyzing the same image.
+
+Row/Column Parallelism:
+
+    Analysis of a pixel row or column is very similar.  Want to abstract the
+    row/column aspect out of the analysis.  Essentially analyze a line of
+    pixels.
+
+    Operate on a vector (one dimensional array) of pixels.  The vector is
+    assembled externally to be a row or column, or even some other angle
+    thru the spot.
+
+    A row vector is simply the image array pointer to that row.
+    A column vector must copy the pixels into a new array.
+
+    It might be possible to make a virtual vector that is essentially a
+    list of pixel coordinates, and use that to get the actual pixel values.
+    This is much more complex, but might be worth it if pixel values were
+    large structures.  For grayscale images, the pixel value is just a
+    small integer, so copying it is very practical.
+
+Image Vector class:
+
+    An arbitrary vector (array of pixels) thru an image.
+    It could be a base class that analysis classes could inherit.
+
+    Possibly use one of the standard container classes?  No.
+    Want to keep the understanding of it simple.
+
+    Nlen        = length of vector
+    VecArray[]  = pixel values (vector data)
+
+    Functions to generate the vector data:
+	get_row(    gmx, ny )
+	get_col(    gmx, nx )
+	get_45deg(  gmx, nx, ny )
+	get_135deg( gmx, nx, ny )
+
+	gmNetpgm*	gmx;	// gmNetpgm image base class
+
+    An angled vector has a different pixel pitch.  It may be shorter
+    than Nrow or Ncol depending on where in the rectangular image it is
+    extracted.  Do not want to interpolate pixel values.
+    This might be an interesting extension, but avoid complexity to start.
+
+ >> The generation functions should be outside the vector class.  Preserve
+    the abstraction of just a simple vector.
+
+    Decided to not do a vector class for now.  (2022-02-11)
 

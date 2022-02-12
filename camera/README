@@ -31,6 +31,7 @@ src/		Source code
     pgm_box.cpp		Bounding box of an elliptical image
     pgm_stats.cpp	Image statistics, mean, SD, CG
     pgm_swatch.cpp	Extract a swatch of pixels in table format
+    pgm_width.cpp	Find the width (FWHM) of a spot (circular) image
 
 		    Boilerplate copied from rgpio
     Error.cpp		Error handling
@@ -46,6 +47,7 @@ bin/		Commands
     pgm_box		Bounding box of an elliptical image
     pgm_stats		Image stats - min, max, mean, standard deviation, CG
     pgm_swatch		Extract a swatch of pixels in table format
+    pgm_width		Find the width (FWHM) of a spot (circular) image
 
 lib/		Library
     libgmlocal.a	Compiled library of gm* classes
