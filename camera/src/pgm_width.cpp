@@ -42,12 +42,16 @@ class yOptLong : public yOption {
     const char*		geo;
     yOpVal		sub;
     yOpVal		level;
+    const char*		xy       = NULL;
 
     bool		verbose;
     bool		debug;
     bool		TESTOP;
 
   public:	// data values
+
+    int			Px       = -1;	// no --xy given
+    int			Py       = -1;
 
   public:
     yOptLong( int argc,  char* argv[] );	// constructor
@@ -88,6 +92,7 @@ yOptLong::parse_options()
 	if      ( is( "--geo="       )) { geo        = this->val(); }
 	else if ( is( "--sub="       )) { sub.set(     this->val() ); }
 	else if ( is( "--level="     )) { level.set(   this->val() ); }
+	else if ( is( "--xy="        )) { xy         = this->val(); }
 
 	else if ( is( "--verbose"    )) { verbose    = 1; }
 	else if ( is( "-v"           )) { verbose    = 1; }
@@ -104,6 +109,15 @@ yOptLong::parse_options()
     if ( get_argc() > 1 ) {
 	Error::msg( "require only one file argument" ) <<endl;
     }
+
+    if ( xy ) {
+	int 	rv = sscanf( xy, "%d,%d", &Px, &Py );
+
+	if ( (rv != 2) || (Px < 0) || (Py < 0) ) {
+	    Error::msg( "bad --xy=X,Y value:  " ) << xy <<endl;
+	}
+    }
+    //#!! Note scanf() does not catch trailing non-numeric chars.
 }
 
 
@@ -116,8 +130,12 @@ yOptLong::print_option_flags()
     cout << "--geo         = " << geo          << endl;
     cout << "--sub         = " << sub.Val      << endl;
     cout << "--level       = " << level.Val    << endl;
+    cout << "--xy          = " << xy           << endl;
     cout << "--verbose     = " << verbose      << endl;
     cout << "--debug       = " << debug        << endl;
+
+    cout << "Px            = " << Px           << endl;
+    cout << "Py            = " << Py           << endl;
 
     char*	arg;
     while ( ( arg = next_arg() ) )
@@ -141,6 +159,7 @@ yOptLong::print_usage()
 //  "    --geo=WxH+X+Y       region to analyze\n"
     "    --sub=V             subract value from each pixel\n"
     "    --level=V           pixel value at which to compute width\n"
+    "    --xy=X,Y            center point of spot, default is CGxy\n"
     "    --help              show this usage\n"
 //  "    -v, --verbose       verbose output\n"
 //  "    --debug             debug output\n"
@@ -230,6 +249,26 @@ main( int	argc,
 	cout << "SD     = " << gmx.get_std_deviation() <<endl;
 	cout << "CGxy   = (" << gmx.CGx << "," << gmx.CGy << ")" <<endl;
 
+	// analysis point default
+	int		px   = gmx.CGx;
+	int		py   = gmx.CGy;
+	const char*	psrc = "CGxy";
+
+	if ( Opx.xy ) {
+	    px   = Opx.Px;
+	    py   = Opx.Py;
+	    psrc = "--xy";
+	    if ( (px < 0) || (px >= gmx.Ncol) ) {
+		Error::msg( "require X within Ncol in --xy=" ) << Opx.xy <<endl;
+		break;
+	    }
+	    if ( (py < 0) || (py >= gmx.Nrow) ) {
+		Error::msg( "require Y within Nrow in --xy=" ) << Opx.xy <<endl;
+		break;
+	    }
+	}
+	cout << "Pxy    = (" << px << "," << py << ")  " << psrc <<endl;
+
 	gray_t		z_level;
 
 	z_level = ( Opx.level.Given ) ? Opx.level.Val : gmx.Max / 2;
@@ -238,16 +277,14 @@ main( int	argc,
 	int		Ya = -1;
 	int		Yb = -1;
 	{
-	    int		i = gmx.CGx;
-
 	    for ( int j=0;  j<gmx.Nrow;  j++ )
 	    {
-		if ( gmx.Img[j][i] >= z_level ) { Ya = j;  break; }
+		if ( gmx.Img[j][px] >= z_level ) { Ya = j;  break; }
 	    }
 
 	    for ( int j=(gmx.Nrow - 1);  j>=0;  j-- )
 	    {
-		if ( gmx.Img[j][i] >= z_level ) { Yb = j;  break; }
+		if ( gmx.Img[j][px] >= z_level ) { Yb = j;  break; }
 	    }
 	}
 
@@ -255,16 +292,14 @@ main( int	argc,
 	int		Xa = -1;
 	int		Xb = -1;
 	{
-	    int		j = gmx.CGy;
-
 	    for ( int i=0;  i<gmx.Ncol;  i++ )
 	    {
-		if ( gmx.Img[j][i] >= z_level ) { Xa = i;  break; }
+		if ( gmx.Img[py][i] >= z_level ) { Xa = i;  break; }
 	    }
 
 	    for ( int i=(gmx.Ncol - 1);  i>=0;  i-- )
 	    {
-		if ( gmx.Img[j][i] >= z_level ) { Xb = i;  break; }
+		if ( gmx.Img[py][i] >= z_level ) { Xb = i;  break; }
 	    }
 	}
 
