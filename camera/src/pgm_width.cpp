@@ -267,11 +267,19 @@ main( int	argc,
 		break;
 	    }
 	}
-	cout << "Pxy    = (" << px << "," << py << ")  " << psrc <<endl;
+	cout << "Pxy    = (" << px << "," << py << ")  \t" << psrc <<endl;
+	    // tabs tuned to match Zlevel
 
-	gray_t		z_level;
+	// analysis level default
+	gray_t		z_level = gmx.Max / 2;
+	const char*	z_src   = "Max/2";
 
-	z_level = ( Opx.level.Given ) ? Opx.level.Val : gmx.Max / 2;
+	if ( Opx.level.Given ) {
+	    z_level = Opx.level.Val;
+	    z_src   = "--level";
+	}
+
+	cout << "Zlevel = " << z_level << "\t\t" << z_src <<endl;
 
 	// Find the Y column edges
 	int		Ya = -1;
@@ -302,8 +310,6 @@ main( int	argc,
 		if ( gmx.Img[py][i] >= z_level ) { Xb = i;  break; }
 	    }
 	}
-
-	cout << "Zlevel = " << z_level <<endl;
 
 	cout << "Ya     = " <<setw(4) << Ya      <<endl;
 	cout << "Yb     = " <<setw(4) << Yb      <<endl;
