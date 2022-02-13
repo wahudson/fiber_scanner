@@ -56,6 +56,7 @@ Test suites:  (2022-01-19)
  pbl    t_pgm_box/	Bounding box of an elliptical image
  pbl    t_pgm_stats/	Image statistics program
  pbl    t_pgm_swatch/	Extract a swatch of pixels into a table
+ pbl    t_pgm_width/	Find width (FWHM) of a spot (circular) image
 
 
 Test Setup:

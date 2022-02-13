@@ -1,0 +1,17 @@
+Ncol   = 10
+Nrow   = 7
+Npix   = 70
+MaxVal = 255
+Max    = 49
+Min    = 0
+Mean   = 9.57143
+SD     = 18.1931
+CGxy   = (4,2)
+Pxy    = (4,2)  	CGxy
+Zlevel = 24		Max/2
+Ya     =    2
+Yb     =    4
+Ywidth =    2
+Xa     =    3
+Xb     =    7
+Xwidth =    4

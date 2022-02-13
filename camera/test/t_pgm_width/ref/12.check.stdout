@@ -1,0 +1,9 @@
+    Width (FWHM) of a spot (circular) image
+usage:  pgm_width [options..]  [FILE.pgm]
+    FILE.pgm            input file, '-' or default is stdin
+  options:
+    --sub=V             subract value from each pixel
+    --level=V           pixel value at which to compute width
+    --xy=X,Y            center point of spot, default is CGxy
+    --help              show this usage
+  (options with GNU= only)
