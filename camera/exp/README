@@ -15,7 +15,9 @@ Large raw data is separate, not committed in Git.
 Files:
 ------
 exYYYY_MM_DD_*/
+    data ->		symlink to data directory not in Git
     notes.text		Note log
 
 ex2022_01_30_spot/	Image stationary fiber spot
+ex2022_02_05_spot/	Camera Settings on Stationary Fiber Spot
 

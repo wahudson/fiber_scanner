@@ -1,0 +1,469 @@
+2022-02-05  William A. Hudson
+
+		Camera Settings on Stationary Fiber Spot
+		----------------------------------------
+
+Continued from:  ex2022_01_30_spot/notes.text
+    Same configuration.
+
+----------------------------------------------------------------------------
+## Box Cover in Sun:
+----------------------------------------------------------------------------
+
+New image:  box_sun.jpg
+
+    % raspistill -v -t 0  -o box_sun.jpg
+
+    "raspistill" Camera App (commit 4a0a19b88b43 Tainted)
+    Camera Name imx477
+    Width 4056, Height 3040, filename box_sun.jpg
+    Using camera 0, sensor mode 0
+    GPS output Disabled
+
+    Quality 85, Raw no
+    Thumbnail enabled Yes, width 64, height 48, quality 35
+    Time delay 0, Timelapse 0
+    Link to latest frame enabled  no
+    Full resolution preview No
+    Capture method : Run forever
+    Preview Yes, Full screen Yes
+    Preview window 0,0,1024,768
+    Opacity 255
+    Sharpness 0, Contrast 0, Brightness 50
+    Saturation 0, ISO 0, Video Stabilisation No, Exposure compensation 0
+    Exposure Mode 'auto', AWB Mode 'auto', Image Effect 'none'
+    Flicker Avoid Mode 'off'
+    Metering Mode 'average', Colour Effect Enabled No with U = 128, V = 128
+    Rotation 0, hflip No, vflip No
+    ROI x 0.000000, y 0.000000, w 1.000000 h 1.000000
+    Camera component done
+    Encoder component done
+    Starting component connection stage
+    Connecting camera preview port to video render.
+    Connecting camera stills port to encoder input port
+    Opening output file box_sun.jpg
+    Enabling encoder output port
+    Starting capture 0
+    Finished capture 0
+    Opening output file box_sun.jpg
+    Enabling encoder output port
+    Starting capture 1
+    Finished capture 1
+    ^Cmmal: Aborting program
+
+    % file box_sun.jpg
+    box_sun.jpg: JPEG image data, Exif standard: [TIFF image data, big-endian, direntries=10, height=0, manufacturer=RaspberryPi, model=RP_imx477, xresolution=156, yresolution=164, resolutionunit=2, datetime=2022:02:05 16:26:17, width=0], baseline, precision 8, 4056x3040, frames 3
+
+    Spot center:  (1977, 1469)
+
+Crop:
+    256x256+A+B
+
+    A = 1977 - 128  = 1849
+    B = 1469 - 128  = 1341
+
+    djpeg    -grayscale -crop 256x256+1849+1341 box_sun.jpg > box_sun.crop.pgm
+    jpegtran -grayscale -crop 256x256+1849+1341 box_sun.jpg > box_sun.crop.jpg
+
+    % file box_sun.crop.jpg
+    box_sun.crop.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, \
+    density 1x1, segment length 16, baseline, precision 8, 257x261, frames 1
+
+    % file box_sun.crop.pgm
+    box_sun.crop.pgm: Netpbm image data, size = 265 x 256, rawbits, greymap
+
+Conclustion:
+    Verified that background pixel values are zero.  Did not save data.
+    The box cover works well, even with sunlight.
+
+----------------------------------------------------------------------------
+## Camera Exposure
+----------------------------------------------------------------------------
+Purpose:
+    Develop command for camera exposure.
+    Develop scripts to run and get results from RPi.
+    Collect images of stationary fiber spot.
+
+    raspistill  command documentation:
+	https://www.raspberrypi.com/documentation/accessories/camera.html#command-line-options
+
+    Netpbm library is not installed on RPi.  Thus cannot compile my pgm_*
+    commands on RPi.
+
+Preview and explore:
+
+    % raspistill -v -t 0 
+	--shutter 10000 \
+	--awb off \
+	--awbgains 1.0,1.0 \
+	--analoggain 1.0 \
+	--digitalgain 1.0
+
+    Must apply --awbgains 1.0,1.0  with --awb off.
+    Apply --digitalgain 1.0 to ensure no digital gain funny business.
+    Seems that  --analoggain and --shutter  have expected effects.
+
+Put script on RPi:  ~/bin/runcam.sh
+
+	raspistill -v -o - \
+	    --shutter 10000 \
+	    --analoggain 1.0 \
+	    --awb off \
+	    --awbgains 1.0,1.0 \
+	    --digitalgain 1.0 \
+	    | jpegtran -grayscale -crop 256x256+1849+1341
+
+    Run it from my laptop:
+
+    % ssh pi@rpiTouch.local  /home/pi/bin/runcam.sh > x.jpg 2> x.err
+
+	This worked great.
+	Now need way to update parameters and capture them with the data.
+	Use 'set -x' to capture the command on stderr.
+	Parameterize only the key options.
+
+    New script:
+
+	# usage:  runcam.sh  <shutter_ms> <analoggain>
+
+	set -x
+
+	raspistill -v -o - \
+	    --shutter ${1:?} \
+	    --analoggain ${2:?} \
+	    --awb off \
+	    --awbgains 1.0,1.0 \
+	    --digitalgain 1.0 \
+	    | jpegtran -grayscale -crop 256x256+1849+1341
+
+Sample Images:
+
+    All same focus.
+
+    LED current:  sw6  1.25 mA
+ >> % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000   8.0 > a.jpg 2> a.err
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000  8.0 > b.jpg 2> b.err
+ >> % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000 12.0 > c.jpg 2> c.err
+
+    LED current:  sw4  5 mA
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000   8.0 > d.jpg 2> d.err
+
+    LED current:  sw8  0.3 mA
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000   8.0 > e.jpg 2> e.err
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000 12.0 > f.jpg 2> f.err
+
+    It seems high gain and long exposure at If= 1.25 mA is best to reveal
+    fringes.
+    These seem to have a core spot larger than earlier experiment.
+
+    The .err logs are all identical from raspistill, except for command
+    options.  It seems raspistill fails to show important parameters of
+    the exposure.
+
+    LED current:  sw6  1.25 mA
+ >> % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 500000 12.0 > g.jpg 2> g.err
+	Long exposure really reveals fringes.  Can see 5 or 6 fringes.
+
+Analyze g.jpg:
+    Spot center:  (108,134) manual
+
+    % djpeg g.jpg | pgm_swatch --geo=30x256+100+0 > g.table
+	Column x108 looks centered.
+	Can see fringes way out in single-digit pixel levels.
+
+    % R
+
+    > df <- read.table( "g.table", header=TRUE )
+
+    > plot(   df$Jy, df$X108, type='p' )
+    > points( df$Jy, df$X108, type='l' )
+    > dev.copy2pdf( file="g.x108_spot.pdf" )
+	Saturated center, with 6 or 7 strong fringes visible in the plot.
+
+    # Locate two data point very near top of peak.
+    > locator(2)
+    $x
+ >> [1] 122.4161 144.8299	delta = 23 pixels
+    $y
+    [1] 252.1968 251.0830	near top of peak, 255
+
+    This is wider than the 14 pixels seen in ex2022_01_30_spot/
+    Maybe explore tuning the focus.
+
+    > plot(   df$Jy, df$X108, type='p', ylim=30 )
+
+Analyze c.jpg:
+
+    % djpeg c.jpg | pgm_swatch --geo=30x256+100+0 > c.table
+	Column x108 looks centered.
+
+    > df <- read.table( "c.table", header=TRUE )
+
+    > plot(   df$Jy, df$X108, type='p' )
+    > points( df$Jy, df$X108, type='l' )
+    > dev.copy2pdf( file="c.x108_spot.pdf" )
+    This shows a rounded top, with no saturation.  Max value is 249.
+
+    Still a fairly flat, slightly rounded top.  Suspect camera may be
+    somewhat non-linear near saturation.
+
+Analyze a.jpg:
+
+    %  djpeg a.jpg | pgm_stats
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 199
+    Min    = 0
+    Sum    = 72604
+    Mean   = 1.0824
+    SD     = 11.1152
+    CGxy   = 107, 132
+
+    % djpeg a.jpg | pgm_swatch --geo=30x256+100+0 > a.table
+	Column x105 looks like a peak.
+
+    > df <- read.table( "a.table", header=TRUE )
+
+    > plot(   df$Jy, df$X105, type='p' )
+    > points( df$Jy, df$X105, type='l' )
+    > dev.copy2pdf( file="a.x105_spot.pdf" )
+    This looks a lot more peaked, with no saturation.
+
+    > rn <- c(100:160)
+    > plot( df$Jy[rn], df$X105[rn], type='p' )
+    > dev.copy2pdf( file="a.x105_spot.b.pdf" )
+    Looks a lot closer to Gaussian, with less flat top.
+
+    > abline( h=100 )
+    > locator(2)
+    $x
+    [1] 122.2956 141.7502	width= 19.5 pixel
+    $y
+    [1] 100.18155  99.75131
+
+ >> Thus FWHM is 19.5 pixel  * 1.5 um/pixel  = 29 um
+    Is 3x the 9 um fiber core diameter.
+    Ahh, but this is a poor focus.
+
+----------------------------------------
+Adjust focus  for smaller spot.
+Center moved right.  Cropping was kept the same.
+
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000 12.0 > h.jpg 2> h.err
+
+	This is a much smaller center disk.
+
+    % djpeg h.jpg | pgm_stats
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 255
+    Min    = 0
+    Sum    = 250698
+    Mean   = 3.73747
+    SD     = 21.1507
+    CGxy   = 173, 128
+
+    % djpeg h.jpg | pgm_swatch --geo=30x256+160+0 > h.table
+	Column x176 looks centered.
+
+    > df <- read.table( "h.table", header=TRUE )
+
+    > plot(   df$Jy, df$X176, type='p' )
+    > points( df$Jy, df$X176, type='l' )
+    > dev.copy2pdf( file="h.x176_spot.pdf" )
+    This looks much narrower, with a narrower saturated top.
+
+    # Locate two data points very near top of peak.
+    > locator(2)
+    $x
+    [1] 120.9219 134.8682	delta= 14
+    $y
+    [1] 246.0708 246.0708	at top of steep section
+
+    This width, 14 pixels, is same a measured in ex2022_01_30_spot/
+ >> Thus focus has a big effect on saturated peak width.
+    Makes sense, since saturation hides where the real peak is.
+    Really want out of saturation and measure FWHM.
+
+----
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000   8.0 > i.jpg 2> i.err
+
+    % display i.jpg &
+	This looks much smaller diameter, and still see fringes.  Not saturated.
+
+    % djpeg i.jpg | pgm_stats
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 227
+    Min    = 0
+    Sum    = 40801
+    Mean   = 0.608271
+    SD     = 8.44345
+    CGxy   = 176, 130
+
+    % djpeg i.jpg | pgm_swatch --geo=30x256+160+0 > i.table
+	Column x177 looks centered.
+
+    > df <- read.table( "i.table", header=TRUE )
+
+    > plot(   df$Jy, df$X177, type='p' )
+    > points( df$Jy, df$X177, type='l' )
+    > dev.copy2pdf( file="i.x177_spot.pdf" )
+ >> This looks much narrower, with a narrow flat top, near-saturated (227).
+    The flat top is interesting.  Camera may be non-linear near max values.
+    Peak fraction of full scale:  227/255 = 0.89
+
+    > locator(2)
+    $x
+    [1] 125.9027 133.8721	delta= 8 pixel
+    $y
+    [1] 224.5046 224.5046
+
+ >> Width, 8 pixels  * 1.5 um/pixel  = 12 um 
+    This is much closer to the fiber 9 um core diameter.
+    And we still see fringes.
+
+----
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000  1.0 > j.jpg 2> j.err
+
+    % djpeg j.jpg | pgm_stats
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 155
+    Min    = 0
+    Sum    = 10859
+    Mean   = 0.161889
+    SD     = 3.80725
+    CGxy   = 176, 131		manual (175,131)
+
+    % djpeg j.jpg | pgm_swatch --geo=30x256+160+0 > j.table
+	Column x176 looks centered.
+
+    > df <- read.table( "j.table", header=TRUE )
+
+    > plot(   df$Jy, df$X176, type='p' )
+    > points( df$Jy, df$X176, type='l' )
+
+    > rn <- c(110:150)
+    > plot(   df$Jy[rn], df$X176[rn], type='p' )
+    > points( df$Jy[rn], df$X176[rn], type='l' )
+    > abline( h=78 )
+    > dev.copy2pdf( file="j.x176_spot.b.pdf" )
+    Looks a lot closer to Gaussian, with less flat top.
+
+    > locator(2)
+    $x
+    [1] 126.6399 135.5468	delta= 9 pixel
+    $y
+    [1] 78.14602 78.14602	at half max
+
+ >> Thus FWHM is 9 pixel  * 1.5 um/pixel  = 13 um
+    Still larger than the fiber 9 um core diameter, but close to the 12 um
+    value from the saturated flat top i.jpg image.
+
+    This one looks very near "Gaussian" with no fringes.
+
+    % djpeg j.jpg | pgm_box
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 155
+    Min    = 0
+    Mean   = 0.161889
+    SD     = 3.80725
+    CGxy   = 176, 131
+      Bounding Box Y:
+    YmaxMean = 65
+    YminMean = 0
+    YhalfMax = 32
+    Ytop     = 127
+    Ybot     = 135
+    Yfwhm    = 8
+      Bounding Box X:
+    XmaxMean = 61
+    XminMean = 0
+    XhalfMax = 30
+    Xleft    = 173
+    Xright   = 180
+    Xfwhm    = 7
+	Bounding box based on row means.  FWHM is pretty close.
+
+Summary:
+
+    All files grayscale and cropped:
+	jpegtran -grayscale -crop 256x256+1849+1341
+
+    % ll *.jpg
+    -r--r--r-- 1 wah wah  2156 Feb  5 20:22 a.jpg
+    -r--r--r-- 1 wah wah  3874 Feb  5 20:23 b.jpg
+    -r--r--r-- 1 wah wah  5099 Feb  5 20:23 c.jpg
+    -r--r--r-- 1 wah wah  3179 Feb  5 20:30 d.jpg
+    -r--r--r-- 1 wah wah  1711 Feb  5 20:32 e.jpg
+    -r--r--r-- 1 wah wah  2885 Feb  5 20:34 f.jpg
+    -r--r--r-- 1 wah wah 11785 Feb  5 20:44 g.jpg
+    -r--r--r-- 1 wah wah  5645 Feb  5 21:43 h.jpg
+    -r--r--r-- 1 wah wah  2236 Feb  5 22:05 i.jpg
+    -r--r--r-- 1 wah wah  1461 Feb  5 22:20 j.jpg
+
+					------------------------------
+		Analog  Shutter LED     |  pgm_width analysis
+    File	Gain	T_ms	If_ma	Max	CGxy		Wy  Wx
+    -----	-----	----	-----	---	---------	--  --
+	Slightly out of focus
+ >> a.jpg	 8.0	 10	1.25	199	(107,132)	18  19
+    b.jpg	 8.0	100	1.25	243	(107,133)	30  31
+ >> c.jpg	12.0	100	1.25	249	(107,133)	31  33
+    d.jpg	 8.0	 10	5	227	(108,134)	24  26
+    e.jpg	 8.0	 10	0.3	 88	(108,134)	17  15
+    f.jpg	12.0	100	0.3	227	(109,134)	23  25
+ >> g.jpg	12.0	500	1.25	255	(108,136)	41  45
+	Better focus
+    h.jpg	12.0	100	1.25	255	(173,128)	31  25
+ >> i.jpg	 8.0	 10	1.25	227	(176,130)	11  10
+ >> j.jpg	 1.0	 10	1.25	155	(176,131)	 8   7
+
+    Images a thru g were quickly exploring various exposure conditions.
+    Images h, i, j  are good focus exposures.
+
+Conclusions:
+
+    Focus makes a big difference in spot diameter.  Especially when trying
+    to find the focus waist diameter.  Tried only an initial focus, and
+    an improved focus.  Need a translation stage to do better.
+
+    Saturated spot diameter about 8 pixel, which is about 12 um (i.jpg).
+    FWHM is about 9 pixel (13 um) on a non-saturated image (j.jpg).
+
+    Spot diameter also affected by exposure.  Larger apparent spot with
+    higher gain and longer exposure.
+
+    Fringes are also affected by focus.  Fringes seem more pronounced when
+    out-of-focus.
+
+    Why does spot size depend on camera exposure?  Same light, but higher
+    gain and longer shutter time makes a bigger spot.
+    What is the proper spot diameter?
+
+    Image capture script run by ssh works well.
+
+    CGxy seems to be biased toward zero.  From casual comparison against
+    hand picking center of spot.
+    [Integer division truncates toward zero.  Maybe need to round.]
+
+Next:
+    Collect sample images and plots.
+
+    Experiment to explore focus.
+
+Need:
+    Micrometer stage to explore Z depth focus.
+
