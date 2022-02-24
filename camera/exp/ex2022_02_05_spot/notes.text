@@ -7,8 +7,67 @@ Continued from:  ex2022_01_30_spot/notes.text
     Same configuration.
 
 ----------------------------------------------------------------------------
-## Box Cover in Sun:
+## Configuration
 ----------------------------------------------------------------------------
+
+System:
+    LED illuminates connector end of fiber optic cable, cleaved end is
+    imaged by a monocular microscope lens on a Raspberry HQ camera.
+
+Components:
+
+    RPi:  rpiTouch  (Raspberry Pi 3B) with official LCD 7 inch screen.
+
+    Camera:  Raspberry Pi HQ Camera, C-mount
+	Sony IMX477R stacked, back-illuminated sensor, 12.3 megapixels,
+	7.9 mm sensor diagonal, 1.55 um x 1.55 um pixel size
+
+    Microscope lens:  Hayear Monocular 0.7-4.5x zoom, 1.0x adapter.
+	Spacing:  8.5 mm from HQ camera metal face to Microscope face.
+	Nominal 1x magnification setting, with one 5mm macro ring.
+	Distance objective to object:  ~100 mm
+	Cardboard box light cover.
+
+    LED Fiber Light circuit:  led_light/kicad/led_fiber_v1/
+	Breadboard v1.0 2021-12-31
+	sw6 - 1.25 mA  LED current
+
+    LED:  Vishay VLCS5830
+	Wavelength spec:  620 nm min, 624 nm typ, 630 nm max at If= 50 mA.
+	From graph spectral width at 0.2% peak is about 620 nm to 640 nm.
+	Thus spectral width is about 20 nm.
+	This is broad compared to lasers which seem to be around 1 nm or 0.1 nm
+	spectral width.  [Searching laser line width on the web.]
+
+    Fiber:  Single mode, 9 um core, 125 um cladding.
+	FiberTronics PC-HH9S3YV02M Fiber Patch Cable, Single-mode OS2.
+	FC/UPC - FC/UPC Simplex, SMF-9/125, Yellow 3 mm PVC, 2 m long
+	Yellow jacket labeled "SMF-9/125  3.0  OFNR  04/2018  05574M"
+	(Single mode for 1550 nm light, I think.)
+	FC/UPC connector on LED end, other end cleaved.
+
+	Note Fiber Tip:  (2022-02-05)
+	Fiber is broken with a spur ~300 um long on the bottom and a clean
+	cleave above.  Core are seems clean, and seems to show a circular
+	light spot.
+
+Software commands:
+    raspistill	Raspberry Pi camera
+    jpegtran	Lossless JPEG file crop and grayscale conversion
+    djpeg	decompress a JPEG file to Netpbm format
+    display	Image Magick display image files
+    R		for plotting
+
+Custom programs:  (see camera/src/ )
+    pgm_stats	Compute image stats - min, max, mean, standard deviation, CG
+    pgm_swatch	Extract a swatch of pixels in table format
+    pgm_width	Width (FWHM) of a spot (circular) image
+
+----------------------------------------------------------------------------
+## Box Cover in Sun:  (2022-02-05)
+----------------------------------------------------------------------------
+
+    Testing out a new cardboard box cover to exclude room light.
 
 New image:  box_sun.jpg
 
@@ -72,7 +131,7 @@ Crop:
     % file box_sun.crop.pgm
     box_sun.crop.pgm: Netpbm image data, size = 265 x 256, rawbits, greymap
 
-Conclustion:
+Conclusion:
     Verified that background pixel values are zero.  Did not save data.
     The box cover works well, even with sunlight.
 
@@ -83,6 +142,7 @@ Purpose:
     Develop command for camera exposure.
     Develop scripts to run and get results from RPi.
     Collect images of stationary fiber spot.
+    Visualize spot profiles and estimate resolution.
 
     raspistill  command documentation:
 	https://www.raspberrypi.com/documentation/accessories/camera.html#command-line-options
@@ -325,7 +385,7 @@ Center moved right.  Cropping was kept the same.
     $y
     [1] 224.5046 224.5046
 
- >> Width, 8 pixels  * 1.5 um/pixel  = 12 um 
+ >> Width, 8 pixels  * 1.5 um/pixel  = 12 um
     This is much closer to the fiber 9 um core diameter.
     And we still see fringes.
 
@@ -397,12 +457,447 @@ Center moved right.  Cropping was kept the same.
     Xfwhm    = 7
 	Bounding box based on row means.  FWHM is pretty close.
 
+----------------------------------------------------------------------------
+## Analysis of images  h, i, j  (2022-02-16)
+----------------------------------------------------------------------------
+
+    These images (h,i,j) have good focus over a range of exposures.
+    The earlier images a thru g were a first pass quickly exploring various
+    exposure conditions, and were out of focus.
+
+New command:  pgm_width  (2022-02-12)
+
+    It measures FWHM (Full Width Half Maximum) width thru the CG (Center of
+    Gravity) of a spot image, in both X and Y directions.
+
+    % pgm_width --help
+	Width (FWHM) of a spot (circular) image
+    usage:  pgm_width [options..]  [FILE.pgm]
+	FILE.pgm            input file, '-' or default is stdin
+      options:
+	--sub=V             subract value from each pixel
+	--level=V           pixel value at which to compute width
+	--xy=X,Y            center point of spot, default is CGxy
+	--help              show this usage
+      (options with GNU= only)
+
+    The default Zlevel (--level) is (Max / 2), where
+    Max = the maximum pixel value in the whole image, which is assumed
+	    to be the peak value in the spot.
+
+    The default Pxy (--xy) analysis point is CGxy, as found by class gmStats,
+    which is the center of gravity of the whole image.  When all background
+    pixels are zero value, it is a good estimate of the center of the spot.
+
+    Outputs Ya,Yb and Xa,Xb are the left and right edges that have a
+    pixel value >= Zlevel.
+
+    Outputs
+	Ywidth = Yb - Ya
+	Xwidth = Xb - Xa
+	Are the width of the spot profile at Zlevel.
+
+Results pgm_width:
+
+    These images have background pixel level of zero.
+
+    Using CGxy as the center of the spot seems good enough after looking at
+    manual choice and exploring adjacent centers.
+    Note in image h there seems to be a difference between the saturated
+    center and the CG of the whole profile.
+
+    % djpeg h.jpg | pgm_width
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 255
+    Min    = 0
+    Mean   = 3.73747
+    SD     = 21.1507
+    CGxy   = (173,128)		saturated center ~ (176,128)
+    Pxy    = (173,128)      CGxy
+    Zlevel = 127            Max/2
+    Ya     =  110
+    Yb     =  141
+    Ywidth =   31
+    Xa     =  162
+    Xb     =  187
+    Xwidth =   25
+
+    % djpeg i.jpg | pgm_width
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 227
+    Min    = 0
+    Mean   = 0.608271
+    SD     = 8.44345
+    CGxy   = (176,130)
+    Pxy    = (176,130)      CGxy
+    Zlevel = 113            Max/2
+    Ya     =  125
+    Yb     =  136
+    Ywidth =   11
+    Xa     =  172
+    Xb     =  182
+    Xwidth =   10
+
+    % djpeg j.jpg | pgm_width
+    Ncol   = 257
+    Nrow   = 261
+    Npix   = 67077
+    MaxVal = 255
+    Max    = 155
+    Min    = 0
+    Mean   = 0.161889
+    SD     = 3.80725
+    CGxy   = (176,131)
+    Pxy    = (176,131)      CGxy
+    Zlevel = 77             Max/2
+    Ya     =  127
+    Yb     =  135
+    Ywidth =    8
+    Xa     =  173
+    Xb     =  180
+    Xwidth =    7
+
+      Image   Pxy       Zlevel Ywidth  Xwidth
+	h     (173,128)  127    31      25	CGxy
+
+	h     (176,128)  127    28      25	Pxy for comparison
+	i     (176,130)  113    11      10	CGxy
+	j     (176,131)   77     8       7	CGxy
+
+Thoughts:
+	Separate plots of full profile.
+	Combine all 3 for detail.
+	Plot h (saturated) at X= 173, 176, 179, 182 to see fringes.
+	    Find width of Airy disk, radius ~9 pixels to first darkness.
+	    Radius 9 pixel = 13 um.
+	    Is min distance to resolve 2 objects.  see [Protocol]
+
+Plot spot profiles in R.
+
+    # Plot fiber dimensions at position xpos
+    plot_fiber = function ( xpos ) {
+	coreX <- c(-3, -3, 3, 3)
+	coreY <- c(5, 0, 0, 5)
+	cladX <- c(-42, -42, 42, 42)
+	cladY <- c(0, -5, -5, 0)
+	points( coreX+xpos, coreY, type='l', col='red' )
+	points( cladX+xpos, cladY, type='l', col='red' )
+	abline( v=xpos, col='red' )
+	text( 180, 20, "9 um core (6 pixel)", adj=0, col='red' )
+	text( 180, 10, "125 um cladding (83 pixel)", adj=0, col='red' )
+	points( coreX+xpos, coreY+260, type='l', col='red' )
+	tn <- paste( "9 um core, Y=", xpos )
+	text( xpos+10, 260, tn, adj=0, col='red' )
+    }
+
+Plot h:  Pxy= (176,128) has broader top than CGxy= (173,128)
+    df <- read.table( "h.table", header=TRUE )
+    plot(   df$Jy, df$X176, type='o', ylim=c(0,255), xlab='Y Index',
+	ylab='Z  Pixel Value [0..255]')
+    title( main='h.jpg -  Gain=12.0, T=100 ms', sub='Spot Profile at X=176' )
+    abline( h=127, col='blue' )
+    text( -3, 127, "Z=127,\nFWHM= 28 pixel (42 um)", adj=0, col='blue' )
+    plot_fiber( 128 )
+    text( 0, 230, "LED If= 1.25 mA", adj=0 )
+    dev.copy2pdf( file="h.x176_spot.a.pdf" )
+
+Plot i:  Pxy= (176,130)  is CGxy
+    df <- read.table( "i.table", header=TRUE )
+    plot(   df$Jy, df$X176, type='o', ylim=c(0,255), xlab='Y Index',
+	ylab='Z  Pixel Value [0..255]')
+    title( main='i.jpg -  Gain=8.0, T=10 ms', sub='Spot Profile at X=176' )
+    abline( h=113, col='blue' )
+    text( -3, 113, "Z=113,\nFWHM= 11 pixel (16 um)", adj=0, col='blue' )
+    plot_fiber( 130 )
+    text( 0, 230, "LED If= 1.25 mA", adj=0 )
+    dev.copy2pdf( file="i.x176_spot.a.pdf" )
+
+Plot j:  Pxy= (176,131)  is CGxy
+    df <- read.table( "j.table", header=TRUE )
+    plot(   df$Jy, df$X176, type='o', ylim=c(0,255), xlab='Y Index',
+	ylab='Z  Pixel Value [0..255]')
+    title( main='j.jpg:  Gain=1.0, T=10 ms', sub='Spot Profile at X=176' )
+    abline( h=77, col='blue' )
+    text( -3, 77, "Z=77,\nFWHM= 8 pixel (12 um)", adj=0, col='blue' )
+    plot_fiber( 131 )
+    text( 0, 230, "LED If= 1.25 mA", adj=0 )
+    dev.copy2pdf( file="j.x176_spot.a.pdf" )
+
+Composite plot h,i,j:  (in R)
+
+    # Note pixel coordinate df$Jy counts from zero, while the R index [rn]
+    # counts from 1.  Let the plot index be the pixel coordinate.
+
+    # Plot fiber core dimensions at position xpos
+    plot_core = function ( xpos, ypos ) {
+	coreX <- c(-3, -3, 3, 3)
+	coreY <- c(5, 0, 0, 5)
+	points( coreX+xpos, coreY+ypos, type='l', col='red' )
+	tn <- paste( "9 um core, Y=", xpos )
+	text( xpos+10, ypos, tn, adj=0, col='red' )
+    }
+
+    rn <- c(90:160) + 1		# pixel coordinate
+    df <- read.table( "h.table", header=TRUE )
+    plot(   df$Jy[rn], df$X176[rn], type='o', col='black', ylim=c(0,255),
+	xlab='Y Index', ylab='Z  Pixel Value [0..255]')
+    title( main='Spot Profile vs Exposure', sub='Spot Profile at X=176' )
+    df <- read.table( "i.table", header=TRUE )
+    points( df$Jy[rn], df$X176[rn], type='o', col='red' )
+    df <- read.table( "j.table", header=TRUE )
+    points( df$Jy[rn], df$X176[rn], type='o', col='blue' )
+
+    plot_core( 128, 260 )
+    text( 90, 230, "LED If= 1.25 mA", adj=0 )
+    legend( 142,240, title="Exposure",
+	c( "h 12.0 x 100 ms", "i  8.0 x 10 ms", "j  1.0 x 10 ms" ),
+	pch=c(1,1,1),
+	col=c("black", "red", "blue") )
+
+    coreX <- c(-3, -3, 3, 3)
+    coreY <- c(5, 0, 0, 5)
+    points( coreX+131, coreY+0, type='l', col='red' )
+    text( 131, -5, "Y=131", col='red' )
+
+    dev.copy2pdf( file="x176_spot.hij.pdf" )
+
+----------------------------------------
+Interpretation:
+
+    Look at files:  [hij].jpg  [hij].x176_spot.a.pdf  x176_spot.hij.pdf
+	display h.jpg &
+	display i.jpg &
+	display j.jpg &
+	xpdf h.x176_spot.a.pdf &
+	xpdf i.x176_spot.a.pdf &
+	xpdf j.x176_spot.a.pdf &
+	xpdf x176_spot.hij.pdf &
+
+    The product of Analog Gain and Shutter Time is a measure of the integrated
+    light intensity gathered on each pixel of the CMOS sensor:
+
+	    Analog  Shutter G*T     LED     pixel             FWHM
+    File    Gain    T_ms    (ms)    If_ma   Max   CGxy        Wy  Wx
+    h.jpg   12.0    100     1200    1.25    255   (173,128)   31  25
+    i.jpg    8.0     10       80    1.25    227   (176,130)   11  10
+    j.jpg    1.0     10       10    1.25    155   (176,131)   8   7
+
+    The process was to start with a saturated spot image, and then reduce
+    exposure to see the unsaturated intensity profile.
+
+    All 3 images have the same light intensity, LED current If= 1.25 mA,
+    and were taken about 15 minutes apart without changing focus.  Only
+    the camera settings were changed.
+
+    Image h has a bright saturated center, and what appears to be interference
+    fringes.  More on fringes later.
+
+    The spot profile plots show a vertical slice (parallel to the Y axis)
+    thru the center of the spot maximum intensity at X=176.
+    The X and Y indices are pixel coordinates with the origin at upper left
+    corner of the image, +X to the right, and +Y down.
+    The FWHM is calculated from the peak pixel value, which may be saturated.
+
+Saturation:
+    The maximum pixel value is 255, which we see in the center of (h).
+    Image (i) also has a flat top at about 227.
+    Is this flat top real, or an artifact?
+
+    The intensity profile from a fiber can have a flat top.  [1]
+
+    Analog circuits do saturate at some maximum signal, generally with a
+    smooth transition, not a sharp cutoff.
+    Since the flat top is about 90% of maximum pixel value, it seems likely
+    this also is saturation.  Especially since image (j) shows the profile
+    as near Gaussian.
+
+    Image (j) clearly is not saturated, the peak is more pointed at about 150.
+
+    Plot (h) shows further support for non-linear near saturation:
+    Plot(i) has a fairly flat top for about 8 pixels.  Plot (h) has 9
+    pixels saturated at 255, with 3 pixels sloping off the sides, suggesting
+    that they to would have been at 255 with ideal saturation, but are not.
+
+    Note the FWHM is broader with higher exposure of the same spot intensity.
+    Assume image (j) represents the actual intensity profile.  A larger
+    exposure would amplify all points of the profile, resulting in saturation
+    of the spot center.
+
+    In the composite plot (x176_spot.hij.pdf) we can imagine (j) being amplified
+    by 80x to make (i) and by 1200x to make (h).  But that does not match what
+    we see.  Perhaps logarithmic scaling?  The Analog Gain parameter is not
+    defined, other than an arbitrary number having range 1.0 to 12.0 .  We
+    can assume it is linear, but the gain could be logarithmic.
+
+Lateral Drift:
+    The peak centers are not aligned in the 3 images, having shifted about
+    4 pixels (about 6 um) over the 30 minutes of the 3 images.
+    We assume the light from the fiber was fairly stable.
+    The fixture was not intentionally moved, but it is held only by friction
+    on a wood platform.  Thus the drift seems likely caused by by the setup
+    shifting.
+
+Cladding modes:
+    The light source is an red LED illuminating the ferrule end of the FC
+    connector.  The fiber is over-filled, meaning similar light intensity
+    is striking the fiber core and cladding.  Thus we expect that cladding
+    propagation modes might be stimulated.
+    The spot profile spots seem to suggest that not much light is emanating
+    from the cladding.  The non-saturated image (j) shows most of the light
+    in a ~20 um diameter, while the cladding is 125 um diameter.
+    Thus it seems most of the light is in the core and little in the cladding.
+    One possible explanation is the connector ferrule (2.5 mm diameter
+    ceramic, 10.5 mm long) may allow light in the cladding to escape since
+    the cladding there is surrounded by epoxy and ceramic which may have
+    an index of refraction closer to the cladding.  The ferrule is 84 cladding
+    diameters long, which seems sufficiently long.
+    The fiber was bent in no less than 70 mm radius for 3/4 turn, so fiber
+    bending seems unlikely to be loosing the cladding modes.
+
+Single Mode Fiber:
+    The optical fiber was a patch cable cut in half:
+	FiberTronics PC-HH9S3YV02M Fiber Patch Cable, Single-mode OS2.
+	FC/UPC - FC/UPC Simplex, SMF-9/125, Yellow 3 mm PVC, 2 m long
+    It is rated as a single mode fiber with a 9 um core and 125 um cladding.
+    Note that is for telecommunication wavelengths, typically 1550 nm [3].
+    The LED wavelength is 624 nm, so the fiber is probably operating somewhere
+    between single-mode and multi-mode.  For comparison, a ThorLabs SM600 fiber
+    for wavelength 633 to 780 nm has a mode field diameter around 4 um.
+
+Airy pattern:
+    Image (h) has pretty distinct fringes.  Is this an Airy pattern?
+    It looks somewhat similar to Airy diffraction patterns seen in [2][4][5].
+    The first dark ring is quite distinct, with possibly 2 or 3 others just
+    visible in the fuzzy outer regions.
+
+    My understanding from the published literature:
+    The Airy pattern can be seen in broad-band incoherent light, as in
+    astronomy where the fringes can be seen on a bright star.  The pattern is
+    Fraunhofer diffraction of light thru a pinhole as seen in the far-field,
+    and also when it is viewed at the focal plane of an imaging lens [5].
+    It is also seen in microscopy imaging 100 nm fluorescent beads [2], where
+    the light is narrow-band incoherent.
+    The fringe lobes are quite faint compared to the central disk.
+
+    Here we have the fiber core (~9 um) acting as a somewhat broad point source
+    with incoherent red LED light at ~624 nm.  Diffraction occurs as the
+    light leaves the fiber and any interference would be seen in the lens
+    image plane on the camera sensor.  At high camera sensitivity (exposure)
+    the interference pattern could be visible, if not swamped by other light,
+    and the central disk would be saturated.
+
+    Overall, it seems likely this is an Airy pattern and the central saturated
+    region is the Airy disk.  To be clear, it is not a pure Airy pattern, as
+    the fringes appear on the sides of the spot profile, and not at the bottom.
+    It is likely that other light from some cladding modes, or from the core
+    being larger than ideal for single-mode light is contributing.
+    In addition, the image we see is a convolution of the ideal image with an
+    Airy diffraction pattern (of what?).
+
+    Is the diffraction pattern we see primarily created by the fiber, or
+    by the lens system?
+
+Resolution:
+    Trying to apply intuition and methods from the literature.
+    By resolution, we mean the closest distance between two spots that
+    can just be seen as distinct.
+
+    The Rayleigh criterion states that in order to resolve two points they
+    must be no closer together than the distance from the center of the PSF
+    to the first destructive interference band in the diffraction pattern [2].
+
+    Our image (h) is only an estimate of the PSF (point spread function), since
+    it came from a 9 um point instead of a sub-wavelength sized point, and
+    is thus likely larger than the true PSF.  The distance from the center
+    to the first dark ring is about 9 pixels (~14 um), and would be the
+    resolution capability of this light spot.
+
+    The resolution of a confocal microscope is given by:  [2]
+	(Lateral resolution) = (0.51 * Lexc) / NA,  where
+	Lexc = excitation wavelength of laser,
+	NA = numerical aperture of objective lens.
+
+	[Why do they use the excitation wavelength, when it is the
+	fluorescent wavelength that is being imaged?]
+
+    If this monocular microscope lens were used in a confocal microscope,
+    with the optical fiber being the pinhole, we would estimate:
+	Lexc = 0.624 um  LED wavelength
+	NA = ((14 mm dia objective) / 2) / (100 mm focal length) = 0.07
+	(Lateral resolution) = (0.51 * 0.624 um) / 0.07  = 4.5 um
+
+    The camera resolution (pixel period) is 1.5 um with the monocular
+    microscope lens set at 1x magnification used here.
+
+    The FWHM of the Gaussian PSF is direct measure of resolution.  From
+    image (j) the FWHM is about 8 pixels (12 um).  This is reasonable
+    agreement with the 9 pixels (~14 um) of image (h).
+
+    Note these images may not be the best focus, and thus on the high side.
+    The estimated spot resolutions are greater than the 9 um fiber core
+    diameter.
+
+Image acquisition settings:
+    Reference [2] has nice discussions and example images.
+
+    The sensor (camera) gain and light source (LED) intensity should be
+    adjusted to avoid data clipping loosing pixels below the detection
+    threshold on the low side and pixel saturation on the high side.
+    They suggest making the peak intensity about 75% of maximum, which would
+    help avoid non-linearity near saturation.
+    Digital gain should be set to 1 (i.e. OFF).
+
+    Our images have a background pixel level of 0 (zero).  Digital cameras
+    may clip the low level to avoid noise in the image, i.e. they could
+    subtract an arbitrary low level threshold.  This makes the image nicer,
+    but less accurate.
+
+    Avoid pixel interpolation, which makes a nice image, but again looses
+    accuracy.  Beware of "zoom" or "region of interest" camera features, which
+    may apply pixel interpolation.  We want the raw camera sensor pixels.
+    Note digital cameras may have defective pixels, which may be replaced by
+    interpolation within the camera.
+
+    They show an example of pixel oversampling and undersampling.  They want
+    to avoid oversampling, which creates longer scan times that may cause
+    bleaching of the fluorescent microspheres (not a problem for us).
+    Undersampling does not give enough pixel resolution.
+
+    Magnifying our image (h) 4x makes the pixels visible, and seems about
+    the minimum image pixel pitch for this spot profile.  It also helps to
+    see the fringes.
+
+References:  (see also top doc/reference.text)
+
+    [1] Multimode Fiber Beam Profiles - ThorLabs Lab Facts
+	https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=10417
+
+    [2] Measuring and interpreting point spread functions to determine confocal
+	microscope resolution and ensure quality control (2011)
+	https://www.nature.com/articles/nprot.2011.407
+
+    [3] Fiber-optic communication
+	https://en.wikipedia.org/wiki/Fiber-optic_communication
+
+    [4] Airy disk
+	https://en.wikipedia.org/wiki/Airy_disk
+
+    [5] Fraunhofer diffraction
+	https://en.wikipedia.org/wiki/Fraunhofer_diffraction
+
+
 Summary:
 
-    All files grayscale and cropped:
+    All files grayscale and cropped:  (original timestamps)
 	jpegtran -grayscale -crop 256x256+1849+1341
 
-    % ll *.jpg
+    % ll *.jpg					   minutes delta
     -r--r--r-- 1 wah wah  2156 Feb  5 20:22 a.jpg
     -r--r--r-- 1 wah wah  3874 Feb  5 20:23 b.jpg
     -r--r--r-- 1 wah wah  5099 Feb  5 20:23 c.jpg
@@ -411,10 +906,10 @@ Summary:
     -r--r--r-- 1 wah wah  2885 Feb  5 20:34 f.jpg
     -r--r--r-- 1 wah wah 11785 Feb  5 20:44 g.jpg
     -r--r--r-- 1 wah wah  5645 Feb  5 21:43 h.jpg
-    -r--r--r-- 1 wah wah  2236 Feb  5 22:05 i.jpg
-    -r--r--r-- 1 wah wah  1461 Feb  5 22:20 j.jpg
+    -r--r--r-- 1 wah wah  2236 Feb  5 22:05 i.jpg  17 minutes
+    -r--r--r-- 1 wah wah  1461 Feb  5 22:20 j.jpg  15
 
-					------------------------------
+    Source Data:			------------------------------
 		Analog  Shutter LED     |  pgm_width analysis
     File	Gain	T_ms	If_ma	Max	CGxy		Wy  Wx
     -----	-----	----	-----	---	---------	--  --
@@ -427,12 +922,18 @@ Summary:
     f.jpg	12.0	100	0.3	227	(109,134)	23  25
  >> g.jpg	12.0	500	1.25	255	(108,136)	41  45
 	Better focus
-    h.jpg	12.0	100	1.25	255	(173,128)	31  25
+ >> h.jpg	12.0	100	1.25	255	(173,128)	31  25
  >> i.jpg	 8.0	 10	1.25	227	(176,130)	11  10
  >> j.jpg	 1.0	 10	1.25	155	(176,131)	 8   7
 
     Images a thru g were quickly exploring various exposure conditions.
     Images h, i, j  are good focus exposures.
+
+    Plot files:  spot profiles at X=176
+	h.x176_spot.a.pdf    h.jpg, Y = [0..255]
+	i.x176_spot.a.pdf    i.jpg
+	j.x176_spot.a.pdf    j.jpg
+	x176_spot.hij.pdf    composite profile, Y = [90..160]
 
 Conclusions:
 
@@ -440,30 +941,56 @@ Conclusions:
     to find the focus waist diameter.  Tried only an initial focus, and
     an improved focus.  Need a translation stage to do better.
 
-    Saturated spot diameter about 8 pixel, which is about 12 um (i.jpg).
-    FWHM is about 9 pixel (13 um) on a non-saturated image (j.jpg).
+    Image (h.jpg) seems to show an Airy diffraction pattern, with a
+    saturated central disk and about 3 visible fringes.
+    The dark fringes appear fairly high on the sides of the peak, which
+    suggests it is mixed with other sources of light.
 
-    Spot diameter also affected by exposure.  Larger apparent spot with
-    higher gain and longer exposure.
+    The fiber spot resolution as measured on the Airy pattern (h.jpg) is
+    about 9 pixels (~14 um), and as FWHM on the unsaturated near-Gaussian
+    profile of (j.jpg) is about 8 pixels (12 um).
 
-    Fringes are also affected by focus.  Fringes seem more pronounced when
-    out-of-focus.
+    The lateral resolution of the monocular microscope lens is calculated
+    at about 4.5 um (624 nm LED light, 0.07 NA), which is better than the
+    fiber spot resolution.
 
-    Why does spot size depend on camera exposure?  Same light, but higher
-    gain and longer shutter time makes a bigger spot.
-    What is the proper spot diameter?
+    There does not seem to be much light in the fiber cladding, despite
+    the LED light source over-filling the fiber.
 
-    Image capture script run by ssh works well.
+    The saturated spot diameter is affected by exposure, giving a larger
+    apparent spot with higher gain and longer exposure.
+
+    Visibility of fringes are affected by focus and seem more pronounced
+    when out-of-focus.
+
+    The image capture script run by ssh works well.
+    Program pgm_width works well measuring spot FWHM.
 
     CGxy seems to be biased toward zero.  From casual comparison against
     hand picking center of spot.
     [Integer division truncates toward zero.  Maybe need to round.]
 
-Next:
-    Collect sample images and plots.
+    This was a first attempt, and is not optimal.
+    Use as a basis for future work.
 
-    Experiment to explore focus.
+Next:
+    Collect better sample images and plots.
+
+    Experiment to explore focus with a Z-stage.
+
+    Explore exposure:  Analog gain, Shutter time, LED current.
+
+    Explore the fringes seen in saturated exposures.
 
 Need:
     Micrometer stage to explore Z depth focus.
+
+    New fiber cleave, or patch cable.  Eliminate effect of poor break.
+
+    Analysis way to plot a row profile (have column profile).
+
+Idea:
+    We could use the fluorescent confocal microscope techniques of reference
+    [2] to measure the PSF.  We could use actual fluorescent microspheres, or
+    perhaps a 1 um pinhole.  Image with our scanner.
 
