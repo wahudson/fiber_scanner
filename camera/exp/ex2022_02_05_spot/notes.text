@@ -949,6 +949,8 @@ Conclusions:
     The fiber spot resolution as measured on the Airy pattern (h.jpg) is
     about 9 pixels (~14 um), and as FWHM on the unsaturated near-Gaussian
     profile of (j.jpg) is about 8 pixels (12 um).
+    This is about 50% larger than the fiber core (9 um).
+    Caveat:  These results may not be from the best focus.
 
     The lateral resolution of the monocular microscope lens is calculated
     at about 4.5 um (624 nm LED light, 0.07 NA), which is better than the
@@ -972,6 +974,12 @@ Conclusions:
 
     This was a first attempt, and is not optimal.
     Use as a basis for future work.
+
+Questions:
+    Is the image (h.jpg) really an Airy Pattern?
+
+    Is "point spread function" the proper term to describe the spot profile
+    in (j.jpg)?  The light source is not really a point (9 um fiber core).
 
 Next:
     Collect better sample images and plots.
