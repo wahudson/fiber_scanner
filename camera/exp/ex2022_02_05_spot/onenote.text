@@ -1,0 +1,58 @@
+2022-02-27  William A. Hudson
+
+		Results posted to OneNote  (MRAGrant2018)
+		-------------------------
+
+Aim1 Handheld Scanner -> Camera Experiments -> 2022-02-05 Spot Profile
+
+Camera Images of Optical Fiber spot profile - a first look.
+
+An LED illuminates connector end of fiber optic cable, cleaved end is
+imaged by a 1x monocular microscope lens on a Raspberry Pi HQ camera.
+
+See also:   https://github.com/wahudson
+		    fiber_scanner/camera/exp/ex2022_02_05_spot/
+    Clone:  https://github.com/wahudson/fiber_scanner.git
+
+Fig. 1  [hij].jpg
+Camera images of LED light (624 nm) from Fiber (9 um core).
+Microscope magnification 1x, pixel pitch 1.5 um.
+
+Fig. 2  [hij].x176_spot.a.pdf
+Pixel intensity profile (vertical line) thru center of spot at X=176.
+Gain= camera analog gain, T= shutter time.
+Pixel saturated (clipped) at value 255 in (h).
+
+Fig. 3  x176_spot.hij.pdf
+Composite of all three profiles.
+
+Fig. 4  h.magnify_4x.jpg
+Image (h.jpg) magnified 4x to see individual pixels.
+Sadly, OneNote insists on smoothing images, so it does not show the pixels.
+Perhaps the attached file helps.
+
+
+A full report of system configuration, image capture, Analysis, Interpretation,
+Summary, and Conclusions is in notes.pdf below.
+[A web browser to GitHub can easily view these same files.]
+
+[notes.pdf]
+
+
+----------------------------------------------------------------------------
+## Processing for OneNote
+----------------------------------------------------------------------------
+
+? copy page between notebooks - seemed to copy only in the same notebook.
+
+Note:  Image Magick 'display' can double the size, but it does NOT preserve
+pixels, it does interpolation.
+
+The 4x image magnification was done by:
+    % djpeg h.jpg | netpbm pamenlarge 4 | cjpeg -grayscale > h.magnify_4x.jpg
+
+    Man page of pamenlarge seems wrong, no -scale=4 option.
+
+PDF of text notes:
+% a2ps -1 -B -o - notes.text | ps2pdf - notes.pdf
+
