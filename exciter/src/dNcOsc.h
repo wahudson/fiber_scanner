@@ -1,0 +1,56 @@
+// 2018-08-24  William A. Hudson
+
+#ifndef dNcOsc_P
+#define dNcOsc_P
+
+#include <iostream>
+
+#include "dNcWave.h"
+
+//--------------------------------------------------------------------------
+// Numerical Controled Oscillator class.
+//--------------------------------------------------------------------------
+
+class dNcOsc {
+  private:
+    dNcWave*		WTab;		// Pointer to wave table object.
+
+    uint32_t		Stride;		// Stride stepping thru wave table.
+    uint32_t		AccPhase;	// Accumulated phase index into WTab.
+    uint32_t		MaxPhase;	// Maximum Accumulated phase.
+
+    const uint		Kbits = 12;	// Number of bits in fractional part.
+    const uint32_t	Kmask = (1 << Kbits) - 1;
+
+  public:
+    dNcOsc(				// constructor
+	dNcWave*	wx,
+	uint32_t	stride_int,
+	uint32_t	stride_frac
+    );
+
+    void		init_stride( uint32_t  value );
+
+    void		init_phase(
+			    uint32_t	mag,
+			    uint32_t	frac
+			);
+
+    uint32_t		next_sample();
+    uint32_t		next_index();
+
+    uint32_t		get_stride() { return Stride; }
+    uint32_t		get_phase()  { return AccPhase; }
+    uint32_t		get_index()  { return (AccPhase >> Kbits); }
+
+    uint32_t		phase2mag( uint32_t phase ) { return (phase >> Kbits); }
+    uint32_t		phase2frac( uint32_t phase ) { return (phase & Kmask); }
+
+    uint32_t		to_phase( uint32_t mag, uint32_t frac );
+
+    float		get_nout();
+};
+
+
+#endif
+

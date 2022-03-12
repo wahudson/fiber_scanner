@@ -1,0 +1,135 @@
+2022-03-08  William A. Hudson
+
+		Fiber Exciter Driver System
+		---------------------------
+
+Focus is on the Electronics and Software needed to drive an optical fiber tip
+in a scan pattern.
+
+See also projects:
+    dac_adc/	DAC circuits
+    fluxgate/	Current buffer circuits
+
+----------------------------------------------------------------------------
+## Background
+----------------------------------------------------------------------------
+
+Many of these subsystems can be used in various combinations to make a
+complete scanner system.
+
+Multiple configurations may be produced, while common elements are developed
+here.
+
+IS Raspberry Pi (RPi) software.
+IS using DAC (Digital to Analog Converter).
+NOT commercial DAC/ADC instruments.
+IS analog signal conditioning, current buffer, filter.
+IS digital interface to RPi.
+IS modulation signal for fiber light source and camera viewing.
+NOT the LED light system (see led_light/ ).
+NOT the camera system (see camera/ ).
+NOT photodiode signal conditioning (see photodiode/)?.
+NOT ADC (Analog to Digital Converter).
+
+----------------------------------------------------------------------------
+## First Version
+----------------------------------------------------------------------------
+
+Low speed simple system to get started.
+
+Using:
+    MCP4822  12-Bit Dual Voltage Output DAC, SPI Interface, Internal Vref
+
+SPI interface:
+    Idea is to shift bits into the DAC followed by bits for the sync marks,
+    which would shift into a latch.
+    The MCP4822 DAC ignores any SCLK cycles after the first 16 cycles, so
+    any number of additional cycles can be used for other purposes.
+
+DAC digital inputs:  MCP4822
+    Power supply Vdd= 2.7 V min, 5.5 V max
+    Digital inputs are CMOS levels:  High= 0.7 * Vdd min, Low= 0.2 * Vdd max
+    Use Vdd= 3.3 V to be compatible with RPi without level translation.
+
+Dual channel DAC:
+    Each channel is loaded by a separate SPI transaction (chip enable cycle).
+    Thus it is not possible to use one 32-bit transaction to load both channels.
+
+    The RPi universal SPI interface (rgUniSpi class) can load up to 32-bits
+    in a single FIFO write, which would make the most of the 4 entry FIFO.
+
+    To minimize hardware, we will accept two SPI transactions to load both
+    channels.
+
+Sync Marks:
+    A one-bit sync mark can be handled by one D-flip-flop (Dff) for the
+    SPI shifting, and one Dff for an output latch.
+
+    A 74AHC595 8-bit shift register with output latch could handle up to
+    8-bits of scan mark data.
+
+    For gating the LED, only one bit is needed.
+
+    If we wanted to modulate LED intensity (current) we could use all 8-bits.
+    Buffer output with 74LS07 open collector buffers and binary powers of
+    two scaled resistors to control current.
+    [Maybe do this in the led_light/ subproject.]
+
+    If we use 2-channels of drive, then we want at least 2-bits of sync marks.
+
+DAC output:  MCP4822
+    Internal reference is Vref= 2.048 V typ.
+    Full scale output is Vref when operated at 3.3 V supply.
+	When at 5.0 V supply, gain can be set at 2x for (2 * Vref) full scale
+	output.
+
+    Output amplifier is rail-to-rail, Vout= 0.0 V to Vdd.
+
+Sample Rate:  MCP4822
+    Clock (SCLK) frequency:  20 MHz max  over full Vdd range.
+    Settling time is 4.5 us typ to 1/2 LSB of final value.
+
+    Thus sample rate is limited by settling time:
+	5 us ==> 200 kSPS
+
+    The RPi sample rate is limited to about 50 kSPS due to operating system
+    interrupts causing the 4-entry rgUniSpi FIFO to empty.  [Measured in
+    other experiments].  Expect 20 kSPS to be pretty safe.
+
+    We are using the RPi SPI interface to control the sampling rate.
+    If the FIFO buffer is kept full, the SPI transaction rate should be
+    constant [and is what we observe].
+
+----------------------------------------------------------------------------
+## Programs
+----------------------------------------------------------------------------
+
+Existing programs:
+    rgpio	- access RPi peripherals using librgpio
+	    My program from project rgpio.
+
+New programs:
+    Things that would be useful.
+
+    uspi_speed		- measure current sample rate on rgUniSpi
+
+    dac_mcp4822		- send data to the DAC
+			    Use to test and verify DC operation.
+
+    sine_mcp4822	- generate sine waves
+
+    wave_mcp4822	- generate arbitrary waves
+
+    Probably develop these in whatever project they are first used, unless
+    there is an obvious more central project.
+
+Naming programs:
+    Program names appear in a global command name space, and thus want names
+    in that context.
+
+    The device being operated (i.e. mcp4822) is a critical distinguishing
+    feature, as DAC devices are not generally interchangeable.  Put last,
+    since the device name (number) is generally not well known.
+
+    Let the prefix be more descriptive of the type of program.
+

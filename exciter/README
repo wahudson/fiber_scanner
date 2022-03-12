@@ -1,0 +1,72 @@
+2022-03-08  William A. Hudson
+
+		Exciter Driver Systems
+		----------------------
+
+Fiber electromagnetic driver systems - Mechanical, Electronic, Software.
+
+Using voice coil exciters to mechanically drive the fiber resonance.
+Raspberry Pi and DAC producing the electrical signals.
+
+See also projects:  rgpio/  dac_adc/
+
+Files:  (2022-03-08)
+------
+README		this file
+
+doc/		Documentation
+    architecture.text	Overall design
+
+kicad/		Schematic diagrams
+    ??/
+
+src/		Source code
+    Makefile		for building the tools
+
+		    Object Classes
+    dNcOsc.cpp		Numeric Controlled Oscillator class
+    dNcOsc.h
+    dNcScaler.cpp	Signal Scaler class
+    dNcScale.h
+    dNcWave.cpp		Wave Table class
+    dNcWave.h
+
+		    Programs
+    awave.cpp		Arbtrary Waveform Generator
+
+		    Boilerplate copied from rgpio
+    Error.cpp		Error handling
+    Error.h
+    yOpVal.cpp		Option Argument class
+    yOpVal.h
+    yOption.cpp		Option parsing base class
+    yOption.h
+
+librgpio/ ->	C++ library for Raspberry Pi GPIO peripherals
+			(symlink to library installation)
+
+bin/		Commands
+    awave
+
+lib/		Library of src/
+    ??
+
+obj/		temporary .o object files
+    *.o
+
+test/		Testing
+    README
+
+exp/		Experiments and Results
+
+data/		Experiment large data, not in Git
+
+
+Initial Build process:
+----------------------
+    % cd src
+    % make compile
+
+    % cd test
+    % make test
+

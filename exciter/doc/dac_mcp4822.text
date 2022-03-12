@@ -1,0 +1,91 @@
+2022-03-09  William A. Hudson
+
+		DAC Operation Program - dac_mcp4822
+		-----------------------------------
+
+A program to configure and operate a MCP4822 DAC on RPi rgUniSpi.
+
+----------------------------------------------------------------------------
+## Purpose
+----------------------------------------------------------------------------
+
+    The idea is to provide more abstraction for operating the DAC.
+
+----------------------------------------------------------------------------
+## Discussion
+----------------------------------------------------------------------------
+
+Shared resources:
+
+    The program cannot know what the actual external configuration is.
+    Thus it should not reconfigure the Gpio pins, leave that to the user.
+
+----------------------------------------------------------------------------
+## Design
+----------------------------------------------------------------------------
+
+usage:  dac_mcp4822 [options] [data..]
+    data  = 12-bit data values to send
+
+  options:
+
+    [-a|-b]         channel (default is A)
+
+    --gain=         gain setting, 1x or 2x (default 1x)
+    --g1|--g2
+
+    --shutdown      set shutdown bit (default not shutdown)
+
+  config rgUniSpi:
+
+    --reset         reset enabled configuration		--default
+    --off           set all pins inactive, high-Z
+
+
+Configure rgUniSpi:
+
+    This can be done using the 'rgpio uspi' command.
+    A value add here would be interpreting in context of the DAC.
+    Perhaps start minimal, and add as it goes.
+
+    See also:
+	% rgpio man 3 rgUniSpi
+	% rgpio man 7 rgUniSpi
+
+    Essential steps are:
+
+    Configure the GPIO pins for spi1
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+
+	Gpio Signal      Function
+	---- ----------  ------------------------------
+	21   spi1_SCLK   Serial Clock, driven by master
+	20   spi1_MOSI   Master Out Slave In  data
+	19   spi1_MISO   Master In  Slave Out data
+	18   spi1_CE0_n  Chip Enable 0 (driven by master)
+	17   spi1_CE1_n  Chip Enable 1 (driven by master)
+	16   spi1_CE2_n  Chip Enable 2 (driven by master)
+
+	Probably only one Gpio would be used.
+	Maybe this should only be done by rgpio, since shared resource.
+
+    Enable spi1
+    % rgpio uspi -1 --Spi_Enable_1=1
+
+    Configure spi1 (only after enable)
+    % rgpio uspi -1
+	--Speed_12=200
+	--ShiftLength_6=16
+	--ChipSelects_3=6	active low
+	--EnableSerial_1=1	enable shifting
+
+Questions:
+    Which CE (Chip Enable) pins are being used?  Are they encoded?
+
+    What speed RPi is being used?
+
+    There is a bunch of complexity in the detailed config needed.
+
+    Often it is better to separate the config program from operation.
+
+
