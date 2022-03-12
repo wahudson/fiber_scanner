@@ -1,0 +1,79 @@
+2022-03-10  William A. Hudson
+
+		Testing
+		-------
+
+Self-checking regression tests.
+
+Files:  (2022-03-10)
+------
+Makefile	run all test suites
+README		this file
+
+.gitignore	Git ignore transient files
+
+bin/		commands for Test
+
+lib/		Test library
+??  TestLib2.pm		Library for testing programs.
+
+opt/		External command installations (none)
+
+obj/		compiled .o from src/
+src/		test library source code
+    Makefile		compile unit test library
+    utLib1.cpp		library code
+    utLib1.h		user interface, #define
+
+t_*/		Generic test suite contents
+    Makefile		run/compile the test
+    ref/		reference input/output of the test
+    test.cpp		test program (C++)
+    test.exe		compiled test (may be removed)
+    test.pl		test program (perl)
+    tmp/		where the test program is executed, removed each time
+
+
+Test suites:  (2022-03-10)
+------------
+?       = not committed
+  b     = uses bin/
+   l    = uses lib/
+    o   = uses opt/  (indirectly thru bin/)
+     s  = uses src/
+ u      = Unit test (C++)        utLib1.cpp
+ m      = Module test (perl)     TestLib2.pm
+ p      = Program test (command)
+------  --------------
+ u   s  t_dNcScaler/	dNcScaler	Signal Scaler class
+
+
+Test Setup:
+-----------
+    The individual test  t_*/Makefile  has dependency on the test framework,
+    but will not rebuild the test framework.
+
+    Build the test framework in src/ (only needed when it changes):
+    % cd  src/
+    % make
+
+Run Tests:
+----------
+    # Run all tests from this directory
+    % make test
+
+    # Run a specific test
+    % cd t_<dir>/
+    % make test
+
+Git:
+----
+    The .gitignore file has entries to ignore the transient files in each
+    test directory:
+    t_*/test.exe
+    t_*/tmp
+
+
+Issues:
+-------
+
