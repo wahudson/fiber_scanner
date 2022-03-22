@@ -63,6 +63,52 @@ dNcOsc::dNcOsc(
 // Initialization
 //--------------------------------------------------------------------------
 
+/*
+* Set the stride (phase increment).
+*/
+void
+dNcOsc::set_stride(
+    float		v
+)
+{
+    uint32_t		stride;
+
+    stride = float2qmk( v );
+
+    if ( stride >= MaxPhase ) {
+	std::ostringstream	css;
+	css << "dNcOsc::set_stride():  stride exceeds MaxPhase:  ";
+	css << v;
+	throw std::range_error ( css.str() );
+    }
+
+    Stride   = stride;
+}
+
+
+/*
+* Set the accumulated phase index AccPhase.
+*/
+void
+dNcOsc::set_phase(
+    float		v
+)
+{
+    uint32_t		phase;
+
+    phase = float2qmk( v );
+
+    if ( phase >= MaxPhase ) {
+	std::ostringstream	css;
+	css << "dNcOsc::set_phase():  phase exceeds MaxPhase:  ";
+	css << v;
+	throw std::range_error ( css.str() );
+    }
+
+    AccPhase = phase;
+}
+
+
 //#!! init with (integer, fraction)
 
 /*
@@ -85,7 +131,7 @@ dNcOsc::init_stride(
 
 
 /*
-* Set the initial accumulated phase.
+* Set the initial accumulated phase index AccPhase.
 *    Use to provide phase offset between oscillators.
 * call:
 *    init_phase( stride_int, stride_frac )
@@ -112,6 +158,7 @@ dNcOsc::init_phase(
 
     AccPhase = phase;
 }
+
 
 //--------------------------------------------------------------------------
 // Oscillator
@@ -174,8 +221,55 @@ dNcOsc::next_sample()
 }
 
 //--------------------------------------------------------------------------
-// Accessor functions
+// Conversion functions
 //--------------------------------------------------------------------------
+
+/*
+* Convert float to Qm.k format, where k= Kbits.
+*    Precision may be lost.
+* call:
+*    float2qmk( f )
+*    f = positive float (double) (f >= 0).
+* return:
+*    ()  = phase, in Qm.k format, where k=Kbits, m=(32 - Kbits)
+*/
+uint32_t
+dNcOsc::float2qmk(
+    double 		f
+)
+{
+    uint32_t		phase;
+
+    phase = (Kmask + 1) * f;
+
+    return  phase;
+}
+
+
+/*
+* Convert Qm.k to float, where k= Kbits.
+*    Precision may be lost.
+* call:
+*    qmk2float( u )
+*    u = unsigned Qm.k
+* return:
+*    ()  = float
+*/
+float
+dNcOsc::qmk2float(
+    uint32_t 		u	// Qm.k
+)
+{
+    float		y;
+
+    y = (u & Kmask);		// fractional part as integer, convert to float
+    y = y / (Kmask + 1);
+
+    y = y + (u >> Kbits);	// add integer part converted to float
+
+    return  y;
+}
+
 
 /*
 * Convert integers to fixed-point phase.

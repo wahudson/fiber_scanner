@@ -1,7 +1,16 @@
-// 2018-08-21  William A. Hudson
+// 2022-03-14  William A. Hudson
 //
-// Arbtrary Waveform Generator.
-//     Uses DAC connected to Spi1 Universal SPI master.
+// Sine Wave DAC Program.
+//    Uses an MCP4822 DAC connected to Spi1 Universal SPI master.
+//    Analog output is -1.000 V to +1.000 V with zero at code 2048:
+//    code 4095  at +1.0235 V
+//    code 4048  at +1.0000 V
+//    code 2048  at  0.0000 V
+//    code   48  at -1.0000 V
+//    code    0  at -1.0240 V
+//    A 12-bit DAC, LSB is 0.0005 V
+//        Vout = 0.0005 V * (Code - 2048)
+//        Code = (Vout / 0.0005 V) + 2048
 // Provide external configuration:
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
 //   rgpio uspi -1 --Spi_Enable_1=1
@@ -27,6 +36,7 @@ using namespace std;
 
 #include "Error.h"
 #include "yOption.h"
+#include "yOpVal.h"
 
 #define CLKID	CLOCK_MONOTONIC_RAW
 
@@ -49,19 +59,19 @@ class yOptLong : public yOption {
   public:	// option values
 
     bool		wave   = 0;
-    bool		raw;
+    bool		raw    = 0;
     const char*		nsamp;
-    const char*		repeat;
+    yOpVal		gain;
+    const char*		stride = "";
 
     bool		verbose;
     bool		debug;
-    bool		man;
     bool		TESTOP;
 
   public:	// data values
 
     int			nsamp_n;		// number of samples
-    int			repeat_n;		// repeat loop
+    float		stride_f;
 
     static const int	TxSize = 4;		// transmit fifo depth
     uint32_t		txval[TxSize];		// transmit fifo values
@@ -87,17 +97,14 @@ class yOptLong : public yOption {
 yOptLong::yOptLong( int argc,  char* argv[] )
     : yOption( argc, argv )
 {
-    raw         = 0;
     nsamp       = "";
-    repeat      = "";
+    gain.Val    = 0;
 
     verbose     = 0;
     debug       = 0;
-    man         = 0;
     TESTOP      = 0;
 
     nsamp_n     = 100;
-    repeat_n    = 1;
 }
 
 
@@ -112,12 +119,12 @@ yOptLong::parse_options()
 	     if ( is( "--wave"       )) { wave       = 1; }
 	else if ( is( "--raw"        )) { raw        = 1; }
 	else if ( is( "--nsamp="     )) { nsamp      = this->val(); }
-	else if ( is( "--repeat="    )) { repeat     = this->val(); }
+	else if ( is( "--gain="      )) { gain.set(    this->val() ); }
+	else if ( is( "--stride="    )) { stride     = this->val(); }
 
 	else if ( is( "--verbose"    )) { verbose    = 1; }
 	else if ( is( "-v"           )) { verbose    = 1; }
 	else if ( is( "--debug"      )) { debug      = 1; }
-	else if ( is( "--man"        )) { man        = 1; }
 	else if ( is( "--TESTOP"     )) { TESTOP     = 1; }
 	else if ( is( "--help"       )) { this->print_usage();  exit( 0 ); }
 	else if ( is( "-"            )) {                break; }
@@ -128,14 +135,19 @@ yOptLong::parse_options()
     }
 
     string	nsamp_s   ( nsamp );
-    string	repeat_s  ( repeat );
+    string	stride_s  ( stride );
 
     if ( nsamp_s.length() ) {
-	nsamp_n = stoi( nsamp_s );
+	nsamp_n = std::stoi( nsamp_s );
     }
 
-    if ( repeat_s.length() ) {
-	repeat_n = stoi( repeat_s );
+    if ( stride_s.length() ) {
+	stride_f = std::stof( stride_s );
+    }
+
+    if (                       gain.Val > 2047 ) {
+	Error::msg( "require --gain={0..2047}:  "   ) <<
+			       gain.Val <<endl;
     }
 
     txval_n = get_argc();
@@ -161,7 +173,7 @@ yOptLong::print_option_flags()
     cout << "--wave        = " << wave         << endl;
     cout << "--raw         = " << raw          << endl;
     cout << "--nsamp       = " << nsamp        << endl;
-    cout << "--repeat      = " << repeat       << endl;
+    cout << "--gain        = " << gain.Val     << endl;
     cout << "--verbose     = " << verbose      << endl;
     cout << "--debug       = " << debug        << endl;
 
@@ -172,7 +184,7 @@ yOptLong::print_option_flags()
     }
 
     cout << "nsamp_n       = " << nsamp_n      << endl;
-    cout << "repeat_n      = " << repeat_n     << endl;
+    cout << "stride_f      = " << stride_f     << endl;
 
     cout.fill('0');
     for ( int i=0;  i<txval_n;  i++ )
@@ -190,16 +202,21 @@ void
 yOptLong::print_usage()
 {
     cout <<
-    "    Arbtrary Waveform Generator on Spi1.\n"
+    "    Sine Wave DAC Program on Spi1\n"
     "usage:  " << ProgName << " [options]\n"
     "  output forms:  (default is none)\n"
     "    --wave              show wave table\n"
-    "    --raw               raw data\n"
+    "    --raw               show raw output data\n"
     "  options:\n"
     "    --nsamp=N           number of samples in inner loop\n"
-    "    --repeat=N          repeat data read loop N times\n"
+    "    --gain=N            gain (N/2048) of full scale\n"
+    "    --stride=F          stride (float) in table Nsize\n"
+//  "    --gain_Qd12=N       gain (N/2048) of full scale\n"
+//  "    --peak=N            peak amplitude (N/2048 * FS)\n"
+//  "    --mVpp=F            amplitude in mVpp\n"
+//  "    --ramp_n=N          ramp cycles\n"
+//  "    --hold_n=N          hold cycles\n"
     "    --help              show this usage\n"
-//  "  # --man               show manpage and exit\n"
 //  "  # -v, --verbose       verbose output\n"
     "    --debug             debug output\n"
     "  (options with GNU= only)\n"
@@ -221,11 +238,6 @@ main( int	argc,
     int			rv;
     struct timespec	tpA;
     struct timespec	tpB;
-    int			n_samp;		// inner loop number of samples
-
-    const int		DatSize = 8 * 1024 * 1024;
-    uint32_t		*memDat;
-    memDat = new( uint32_t [DatSize+1] );
 
     try {
 	yOptLong		Opx  ( argc, argv );	// constructor
@@ -235,13 +247,6 @@ main( int	argc,
 	if ( Opx.TESTOP ) {
 	    Opx.print_option_flags();
 	    return ( Error::has_err() ? 1 : 0 );
-	}
-
-	if ( Opx.man ) {
-	    Error::msg( "--man not implemented\n" );
-//	    yMan		Manx;
-//	    Manx.show_manpage( Opx.ProgName );
-	    return ( 0 );
 	}
 
 	if ( Error::has_err() )  return 1;
@@ -257,80 +262,105 @@ main( int	argc,
 
 	int32_t			Wtab[ 1024 ];		// wave table
 	dNcWave			Wx  ( 128, Wtab );	// constructor
-	dNcOsc			Nox  ( &Wx, 2, 0 );	// constructor
-//	dNcOsc			Nox  ( &Wx, 25, 1 );	// constructor
+	dNcOsc			Nox  ( &Wx, 2, 0 );	// stride int, frac
+
 	dNcScaler		Sox  ( 12 );		// Nbit
 
-	Sox.set_Gain(   2000 );
-	Sox.set_Offset( 2048 );
+	// Scale wave table Q2.30 value.
+	Sox.set_Gain(   Opx.gain.Val );
+	Sox.set_Offset( 2048 );		// fixed for +- range
 
-	cout << "WaveTab Nsize = " << Wx.get_size() <<endl;
+	Nox.set_stride( Opx.stride_f );
+	Nox.set_phase(  0.0 );		// fixed for now
 
-	// Wave table offset, 12-bit signed.
-	Wx.init_sine( 0x40000000, 0.0 );	// amplitude Q2.30, offset
+	// Show configuration
+	{
+	    cout <<dec <<fixed <<setprecision(4);
+
+	    cout << "Wtab.Nsize = " << Wx.get_size()          <<endl;
+
+	    cout << "Sox.Gain   = " << Sox.get_Gain()         <<endl;
+	    cout << "Sox.Offset = " << Sox.get_Offset()       <<endl;
+
+	    cout << "Nox.Stride = " << Nox.get_stride_float() <<endl;
+	    cout << "Nox.Phase  = " << Nox.get_phase_float()  <<endl;
+	    cout << "NperCycle  = " << Nox.get_nout()         <<endl;
+
+//	    cout << "Stride = 0x" <<hex << Nox.get_stride_qmk() <<endl;
+	}
+
+	// Sine Wave table Q2.30 values +1.0 to -1.0
+	Wx.init_sine( 0x40000000, 0.0 );
+
 	if ( Opx.wave ) {
-	    Wx.write_wave( &cout );
+	    int32_t		nsize  = Wx.get_size();
+	    int32_t		entry;
+	    uint32_t		vdac;
+
+	    cout << "     i  Entry          DAC   Float" <<endl;
+	    cout <<fixed;
+
+	    for ( int i=0;  i<nsize;  i++ )
+	    {
+		entry = Wx.WavTab[i];
+		vdac  = Sox.scale( entry );
+
+		cout <<setw(6) << i <<setfill('0')
+		     << "  0x" <<setw(8) <<hex << entry <<setfill(' ')
+		     << "  " <<setw(6) <<dec << vdac
+		     << "  " <<setw(9) <<setprecision(6)
+		     << Sox.float_Qd30( entry ) <<endl;
+	    }
 	}
 
-//	Nox.init_stride( 0x18000 );	// unsigned 16-bit offset
-//	Nox.init_phase( 0 );
-
-	// Output waveform period and frequency
+    // Main Loop
 	{
-	    cout << "Stride = 0x" <<hex << Nox.get_stride_qmk() <<endl;
-	    cout <<dec;
-	    cout << "Stride = " << Nox.get_stride_qmk() <<endl;
-	    cout << "Nout   = " << Nox.get_nout()   <<endl;
-	}
+	    int		ii           = 0;	// loop counter
+	    int		sample_cnt   = 0;	// total read samples
+	    int		fifo_cnt     = 0;	// number of Tx fifo writes
+	    int		overflow_cnt = 0;	// number of Tx fifo empty
 
-	// Main Loop
+	    uint32_t	vdac;			// DAC write word
+	    int32_t	vsin;			// wave table sample
 
-	n_samp = Opx.nsamp_n;
-	if ( n_samp > DatSize ) {
-	    n_samp = DatSize;
-	    Error::msg( "--nsamp exceed DatSize\n" );
-	}
-	cerr << "    n_samp= " << n_samp << endl;
-
-	int			sample_cnt;	// total read samples
-	int			fifo_cnt;	// number of Tx fifo writes
-	int			overflow_cnt;	// number of Tx fifo empty
-
-	uint32_t		vdac;		// DAC write word
-	int32_t			vsin;		// sample
-
-	for ( int jj=1;  jj<=Opx.repeat_n;  jj++ )	// repeat loop
-	{
-	    sample_cnt   = 0;
-	    fifo_cnt     = 0;
-	    overflow_cnt = 0;
+	    if ( Opx.raw ) {
+		cout << "    ii   Vout      Code" <<endl;
+		cout <<fixed <<setprecision(6);
+	    }
 
 	    rv = clock_gettime( CLKID, &tpA );
 
 	    // initial fill of the 4-entry fifo
-	    for ( int i=0;  i < 4;  i++ )
-	    {
-		Uspix.Fifo.write( 0x0f0f );
-	    }
+//	    for ( int i=0;  i < 4;  i++ )
+//	    {
+//		Uspix.Fifo.write( 0x0f0f );
+//	    }
 
 	    // Inner loop
 	    //    This loop should never empty the Tx fifo, but a process
 	    //    sleep might.
-	    while ( sample_cnt < n_samp )
+	    while ( sample_cnt++ < Opx.nsamp_n )
 	    {
 		Uspix.Stat.grab();	// query this sample only
 
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
-		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 		    vsin = Nox.next_sample();
 		    vdac = Sox.scale( vsin );
-		    cout <<fixed;
-		    cout <<setw(9) <<setprecision(6) << Sox.float_Qd30( vsin )
-			 <<setw(6) <<dec << vdac <<endl;
-//		    cout << "0x" <<setw(8) <<hex << vsin
-//				 <<setw(6) <<dec << vdac <<endl;
+
+		    if ( Opx.raw ) {	// show raw waveform output
+			ii++;
+			cout <<setw(6) << ii << "  "
+			     <<setw(9) << Sox.float_Qd30( vsin )
+			     <<setw(6) <<dec << vdac <<endl;
+		    }
+
+		    // d[15] = A/B select, 0= A, 1= B
+		    // d[14] = X, unused
+		    // d[13] = Gain, 0= 2x, 1= 1x (times 2.048 V FS)
+		    // d[12] = SHDNn, 0= shutdown, 1= active
 
 		    vdac = vdac || 0x3000;
+		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 
 		    Uspix.Fifo.write( vdac );
 		    fifo_cnt++;
@@ -339,10 +369,6 @@ main( int	argc,
 		if ( Uspix.Stat.get_TxEmpty_1() ) {	// it was empty
 		    overflow_cnt++;	// empty is an underflow error
 		}
-
-		memDat[ sample_cnt ] = Uspix.Stat.get();
-
-		sample_cnt++;
 	    }
 
 	    rv = clock_gettime( CLKID, &tpB );
@@ -364,7 +390,6 @@ main( int	argc,
 		ns_fifo      =         ( delta_ns /   fifo_cnt );
 	    }
 
-	    cerr << "Rep[" << jj << "]" <<endl;
 	    cerr << "    sample_cnt=   " << sample_cnt <<endl;
 	    cerr << "    fifo_cnt=     "
 		 <<left  <<setw(8)          << fifo_cnt  << "  "
@@ -377,33 +402,6 @@ main( int	argc,
 		 <<setw(10) <<right << delta_ns  << " ns,  "
 		 <<setw(4)          << ns_sample << " ns/sample"
 		 <<endl;
-
-//	    cout << "    A.tv_sec  = " << tpA.tv_sec  << endl;
-//	    cout << "    A.tv_nsec = " << tpA.tv_nsec << endl;
-//	    cout << "    B.tv_sec  = " << tpB.tv_sec  << endl;
-//	    cout << "    B.tv_nsec = " << tpB.tv_nsec << endl;
-	}
-
-	// output saved status
-	if ( Opx.raw ) {
-	    uint32_t		vv;
-
-	    cout << " index  Stat        Tx Rx Bit" <<endl;
-
-	    for ( int ii=0;  ii<n_samp;  ii++ )
-	    {
-		vv   = memDat[ii];
-		Uspix.Stat.put( vv );	// for field access of the value
-
-		cout.fill(' ');
-		cout <<dec <<setw(6) << ii;
-		cout.fill('0');
-		cout << "  0x"  <<hex <<setw(8) << memDat[ii];
-		cout << "  "    <<dec <<setw(1) << Uspix.Stat.get_TxLevel_3();
-		cout << "  "          <<setw(1) << Uspix.Stat.get_RxLevel_3();
-		cout << "  "          <<setw(2) << Uspix.Stat.get_BitCount_6();
-		cout <<endl;
-	    }
 	}
 
     }

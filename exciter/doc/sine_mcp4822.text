@@ -1,0 +1,133 @@
+2022-03-12  William A. Hudson
+
+		Sine Wave DAC Program - dac_mcp4822
+		-----------------------------------
+
+Generate a sine wave with amplitude ramp control.
+A program to operate an MCP4822 DAC on RPi rgUniSpi.
+
+----------------------------------------------------------------------------
+## Purpose
+----------------------------------------------------------------------------
+
+    Intended for exploring fiber scanner resonance frequency.
+
+    Initial version with static frequency and amplitude.
+    Then add amplitude ramp.
+    Then add frequency sweep.
+
+----------------------------------------------------------------------------
+## Discussion
+----------------------------------------------------------------------------
+
+    Exciter will be driven by a current buffer.
+
+Shared resources:
+
+    The program cannot know what the actual external configuration is.
+    Thus it should not reconfigure the Gpio pins, leave that to the user.
+
+----------------------------------------------------------------------------
+## Initial Thoughts
+----------------------------------------------------------------------------
+
+    Initial ideas of what needs to be controlled from the command line.
+
+usage:  sine_mcp4822 [options]
+
+  options:
+
+    [-a|-b]         DAC channel (default is A)
+
+    --freq=200.1    frequency in Hz
+    --stride=20.3   stride thru wave table that makes frequency
+
+    --amplitude=0.5 amplitude Vpp		--vpp=
+    --gain=         gain multiplier for sine wave -1 to +1 Vpp
+
+  ? --dacgain=      DAC gain setting, 1x or 2x (default 1x)
+
+    --ramp=         ramp time in seconds
+    --hold=         hold time in seconds
+
+
+Behavior Requirements:
+
+    Want command to ramp up amplitude from zero.  Make a smooth stimulus
+    to exciter driving the fiber cantilever.
+
+    When any program stops feeding new values to the SPI interface FIFO,
+    the DAC will be left at the last voltage value.
+    This may be an abrupt change, and may leave exciter driven.
+
+    Want the output to smoothly ramp down to zero when program terminates.
+    Of course this cannot happen if the program is killed.
+
+    Thus the electronics must be arranged so no damage to exciter if it is
+    left at a constant DC current.
+    We can accept a rough transition as that should not damage anything.
+
+    How does the program know to stop, i.e. ramp down?  Possibly:
+    A)  Time delay option.  i.e. run for 5 seconds.
+    B)  Send process a signal.
+    C)  Gpio input pin could be a signal.
+    D)  Check keyboard input.
+
+    Want a status indicator to show ramping or stable state.
+
+    Frequency could be hard to turn into internal parameters.  Maybe start
+    with directly specifying internal parameters, and do a frequency
+    measurement to make a calibration.
+
+    Want Sync marks to gate LED to see stimulus phase in camera image of
+    fiber scan pattern.
+
+Frequency sweep:
+    Used when looking for resonant frequency.
+
+    Generally sweep frequency keeping amplitude constant.
+    However we seem to see an hysteresis effect where the current response
+    depends on the past stimulus.  To avoid this, we can ramp amplitude to
+    zero between each frequency point, thus making each point independent of
+    past stimulus.
+
+    Possibly arrange an input signal to advance to the next frequency point.
+
+    Experiment cycle could be:
+    1) Ramp up to specified frequency and amplitude.
+    2) Take picture of fiber response.
+    3) Ramp down to zero amplitude.
+
+    This could be done by a single-point program that ramps up, waits
+    5 seconds for picture, then ramps down and exits.
+    Or any of the ramp up/down signal methods.
+
+    Possibly the program could trigger camera thru Gpio.
+    This can work, but leads to program inversion.
+
+    I favor having a separate high-level program doing the orchestrating
+    of a camera program and the sine DAC program.
+
+Frequency Parameters:
+    Ideally frequency specified in Hz, and delays is seconds.
+
+    Internal frequency is really the SPI Speed_12 parameter, and the numeric
+    oscillator stride and wave table size.
+
+    Internally delay by counting cycles.
+
+Not Real-time OS:
+    The RPi is running generic Linux, and is NOT real-time responsive.
+    The main issue is any process can (and will) be put in a sleep state
+    at any time.
+    However it is easy to arrange for a single process to run with minimal
+    disturbance.
+
+    Summary:  We want the RPi running the DAC to pretty much be that one
+    process running 100% CPU, with minimal other things.
+    Thus put the camera on another RPi.
+
+----------------------------------------------------------------------------
+## Design
+----------------------------------------------------------------------------
+

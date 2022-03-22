@@ -15,6 +15,7 @@ class dNcOsc {
   private:
     dNcWave*		WTab;		// Pointer to wave table object.
 
+				// Qm.k fixed point values, k= Kbits
     uint32_t		Stride;		// Stride stepping thru wave table.
     uint32_t		AccPhase;	// Accumulated phase index into WTab.
     uint32_t		MaxPhase;	// Maximum Accumulated phase.
@@ -29,6 +30,20 @@ class dNcOsc {
 	uint32_t	stride_frac
     );
 
+    uint32_t		get_stride_qmk()   { return Stride; }	// Qm.k
+    float		get_stride_float() { return qmk2float( Stride ); }
+
+    uint32_t		get_phase_qmk()    { return AccPhase; }	// Qm.k
+    float		get_phase_float()  { return qmk2float( AccPhase ); }
+
+    void		set_stride( float  v );
+    void		set_phase(  float  v );
+
+    float		qmk2float( uint32_t u );
+    uint32_t		float2qmk( double f );
+
+
+    //#!!
     void		init_stride( uint32_t  value );
 
     void		init_phase(
@@ -39,8 +54,6 @@ class dNcOsc {
     uint32_t		next_sample();
     uint32_t		next_index();
 
-    uint32_t		get_stride() { return Stride; }
-    uint32_t		get_phase()  { return AccPhase; }
     uint32_t		get_index()  { return (AccPhase >> Kbits); }
 
     uint32_t		phase2mag( uint32_t phase ) { return (phase >> Kbits); }

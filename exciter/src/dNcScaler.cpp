@@ -88,12 +88,22 @@ dNcScaler::set_Offset(
 //--------------------------------------------------------------------------
 
 /*
-* Scale a wave table entry for DAC input.
-*    Assume value is signed Q2.30 fixed point:  -1 <= v <= 1
-*    bit[31] is sign (twos complement)
-*    bit[30] is the +-1
-*    bit[29:0] is the fractional value (30 bits)
+* Scale a Q2.30 wave table entry for an Nbits DAC.
+*    Input value is signed Q2.30 fixed point:  -1.9999 <= i <= +1.9999
+*        bit[31] is sign (twos complement)
+*        bit[30] is the +-1
+*        bit[29:0] is the fractional value (30 bits)
+*    Generally use  -1.0 <= i <= +1.0
+*    Note the lower 14 bits are discarded, which could be used for flags,
+*    preserving 16 bits of precision.
+*    Result is saturated to avoid glitches from wrap-around.
 * call:
+*    scale( i )
+*      i = signed Q2.30 fixed point,  -2 < i < +2
+* return:
+*    ()  = ((i * Gain) + Offset) unsigned Nbits integer, clamped (saturated)
+*          in range [0 .. MaskFS], where MaskFS = 2^Nbits - 1
+*#!! rename to scaleQd30() ?
 */
 uint32_t
 dNcScaler::scale(

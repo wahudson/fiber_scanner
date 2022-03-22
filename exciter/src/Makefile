@@ -41,9 +41,10 @@ CXXFLAGS   = -Wall  -std=c++11  -I $(IH)  -I $(INCDIR)
 
 
 run:	compile
-	$(BINDIR)/awave --TESTOP
+	$(BINDIR)/sine_mcp4822 --TESTOP
 
 compile:  $(OJ)  $(BINDIR) \
+	$(BINDIR)/sine_mcp4822 \
 	$(BINDIR)/awave
 
 cap:
@@ -67,6 +68,10 @@ $(OJ):
 $(BINDIR)/awave:	 awave.cpp  $(OBJS)  $(INCS)  $(LIBS)
 	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
 			 awave.cpp  $(OBJS)  $(LIBFLAGS)
+
+$(BINDIR)/sine_mcp4822:	 sine_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
+	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
+			 sine_mcp4822.cpp  $(OBJS)  $(LIBFLAGS)
 
 
 $(OJ)/dNcOsc.o:		dNcOsc.cpp  dNcOsc.h  dNcWave.h

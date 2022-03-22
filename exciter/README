@@ -16,6 +16,7 @@ README		this file
 
 doc/		Documentation
     architecture.text	Overall design
+    sine_mcp4822.text	Sine Wave DAC Program
 
 kicad/		Schematic diagrams
     ??/
@@ -33,6 +34,7 @@ src/		Source code
 
 		    Programs
     awave.cpp		Arbtrary Waveform Generator
+    sine_mcp4822.cpp	Sine Wave DAC Program
 
 		    Boilerplate copied from rgpio
     Error.cpp		Error handling
