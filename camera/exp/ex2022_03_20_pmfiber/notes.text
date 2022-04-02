@@ -1,0 +1,574 @@
+2022-03-20
+		PM Fiber on Camera Exciter
+		--------------------------
+
+PM Fiber on Soberton exciter micrometer stage.
+See notebook:  3-20-2022
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Same camera and microscope lens setup as in  exp/ex2022_02_05_spot/
+
+    Fiber:  ThorLabs P3-780M-FC-2   PM185372  Patch Cable, FC/APC
+	Polarization Maintaining fiber
+	Operating wavelength:  770 to 1100 nm
+	Cutoff wavelength:  710 +- 60 nm
+	Mode Field Diameter:  5.3 +- 1.0 um at 850 nm
+	Cladding diameter:  125 um
+	NA:  0.12
+	Cut in half.
+	Fiber cantilever glued in a 1.25 mm dia by 6.4 mm long ceramic ferrule.
+	Cantilever length 13.0 mm.  Ferrule to jacket distance ~37 mm.
+
+    Exciter:  Soberton E-12041808, 8 ohm, 2 W, 18.5 mm diameter.
+	Mounted with vertical axis of motion, fiber on top.
+
+----------------------------------------------------------------------------
+## First Look  2022-03-20
+----------------------------------------------------------------------------
+
+Data:  /home/wah/pro/fiber_scanner/camera/data/2022_03_20_pmfiber/
+
+Image fiber tip in sunlight:
+
+    % raspistill -v -o File
+    sunlight_4.5x_a.jpg
+    sunlight_4.5x_b.jpg
+    sunlight_4.5x_c.jpg
+
+    Center at (1764,1614)
+    % jpegtran -crop 512x512+1508+1358 sunlight_4.5x_a.jpg \
+	> sunlight_4.5x_a.crop.jpg
+    All 3 images look virtually the same.  Use 'a' version.
+    The fiber face looks contaminated, with bright highlits, some colored,
+    with lots of gray mottling and a distinctive right-angle shape on lower
+    right side.
+
+Draw shade for filtered sunlight.
+    LED light current sw4, 5 mA.
+    % raspistill -v -o File
+    led5ma_4.5x_c.jpg		original
+ >> led5ma_4.5x_c.crop.jpg	cropped color
+	Can see two dark blotches bounding the core.
+	Red light seem to bleed into cladding area, making a triangle
+	shaped section to lower right.
+	Source seems to be LED light in the Cladding, as it goes away when
+	LED is reduced to 1.25 mA (sw6).
+	Note background pixel intensity is ~30, not zero as when covered.
+
+Nighttime.
+    Magnification:  2.0x
+    LED light current sw4, 5 mA.
+
+    % raspistill -v -o File
+    led5ma_2.0x_a.jpg		stationary
+
+    % scp pi@rpiTouch.local:/home/pi/work/fiber/led5ma_2.0x_a.jpg  .
+
+    % file led5ma_2.0x_a.jpg
+    led5ma_2.0x_a.jpg: JPEG image data, Exif standard: [TIFF image data, \
+    big-endian, direntries=10, height=0, manufacturer=RaspberryPi, \
+    model=RP_imx477, xresolution=156, yresolution=164, resolutionunit=2, \
+    datetime=2022:03:20 21:47:46, width=0], baseline, precision 8, 4056x3040, \
+    frames 3
+
+    % display
+    Spot center at (1978, 1476)
+
+    Try cropping:
+    1978 - 128 = 1850
+    1476 - 128 = 1348
+    Note center was really close to last time crop (256x256+1849+1341).
+
+    % jpegtran -grayscale -crop 256x256+1850+1348 led5ma_2.0x_a.jpg \
+	> led5ma_2.0x_a.crop.jpg
+
+ >>	Result shows mottled light across the cladding.  Not going to be good
+	for automated analysis.
+	Can see Airy pattern around bright center.
+	One of the best views of fiber tip.
+
+    % file led5ma_2.0x_a.crop.jpg
+    led5ma_2.0x_a.crop.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, \
+    density 1x1, segment length 16, baseline, precision 8, 258x260, frames 1
+
+    New script:  runcam.sh
+
+	#! /bin/bash
+	# usage:  runcam.sh  <shutter_ms> <analoggain>
+	    set -x
+	    raspistill -v -o - \
+		--shutter ${1:?} \
+		--analoggain ${2:?} \
+		--awb off \
+		--awbgains 1.0,1.0 \
+		--digitalgain 1.0 \
+		| jpegtran -grayscale -crop 256x256+1850+1348
+
+    Gather some stationary images.
+
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 10000  1.0 > still_a.jpg \
+	2> still_a.err
+
+    Center at (131,138)
+
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000  1.0 > still_b.jpg \
+	2> still_b.err
+
+    % djpeg still_a.jpg | pgm_swatch --geo=30x256+115+0 | less
+    The background is zero, peak is not saturated.
+
+    % djpeg still_b.jpg | pgm_swatch --geo=30x256+115+0 | less
+    Center peak at ~200, blotches are all <30 and could be thresholded out.
+
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000  8.0 > still_c.jpg \
+	2> still_c.err
+
+
+Drive exciter:
+
+    F= 490.0 Hz, A= 20.0 mVpp
+    % ssh pi@rpiTouch.local /home/pi/bin/runcam.sh 100000 8.0 > da.jpg 2> da.err
+    % raspistill -v -o da.full.jpg
+	Same, but full image.  Crop only gets center slice.
+
+    F= 473.0 Hz, A= 40.0 mVpp
+    % raspistill -v -o db.full.jpg
+	Took larger amplitude to see clean ellipse.
+
+    Seems like two resonance peaks near 490 Hz and 473 Hz, making orthogonal
+    ellipses.  The amplitude is very large here.  Frequency seems above
+    exciter resonances, which make much more sound but have smaller fiber
+    amplitude.
+    We see definite hysteresis, in both frequency and drive amplitude.
+
+    Note the long axis of the 473 Hz ellipse (db) seems aligned with the
+    two stress rods (seen in led5ma_4.5x_c.crop.jpg), while the higher
+    frequency 490 Hz ellipse (da) is aligned roughly perpendicular to the
+    stress rods.  This seems backwards to what would be expected if the
+    stress rods make the fiber stiffer.  Unless they make the fiber softer?
+
+    These are NOT the actual resonant peaks, but do represent two different
+    resonant modes.
+
+    Lower frequencies have all kinds of resonances going on, and can hear
+    audible beat notes.  Any sound is vibration of exciter and mount
+    platform, since fiber will be virtually silent.
+    Thus want fiber resonance well away from noisy exciter resonances.
+
+    % djpeg -grayscale  db.full.jpg | pgm_box
+    Ncol   = 4056
+    Nrow   = 3040
+    Npix   = 12330240
+    MaxVal = 255
+    Max    = 37
+    Min    = 0
+    Mean   = 0.133195
+    SD     = 1.06582
+    CGxy   = 2028, 1483
+      Bounding Box Y:
+    YmaxMean = 19
+    YminMean = 0
+    YhalfMax = 9
+    Ytop     = 69
+    Ybot     = 2936
+    Yfwhm    = 2867
+      Bounding Box X:
+    XmaxMean = 14
+    XminMean = 0
+    XhalfMax = 7
+    Xleft    = 1036
+    Xright   = 2936
+    Xfwhm    = 1900
+
+    % djpeg -grayscale db.full.jpg | pgm_swatch --geo=30x3000+2000+0 | less
+	Slice near center, pixel values 14 to 17.
+
+    % djpeg -grayscale db.full.jpg | pgm_swatch --geo=30x3000+1036+0 | less
+	Slice at left turn-around has pixel values up to 30.
+
+    Process both images for display:
+    % display da.full.jpg &
+	View -> Half Size,  repeat 3 times
+	File -> Save,       da.decimate8x.jpg
+    % display db.full.jpg &
+	Decimate 8x as above.
+	Enhance -> Brightness.. -> 200%,  repeat 2 times
+	File -> Save,       db.decimate8x_4xbright.jpg
+	The turn-around points begin to saturate.
+
+Need:
+    Better automation.
+    Way to sweep frequency and amplitude and analyze images.
+    Want to see drive phase.  May help separate exciter resonance.
+
+----------------------------------------------------------------------------
+## Gated LED  2022-03-24
+----------------------------------------------------------------------------
+
+Comparator:  (Gated LED)
+    LM311 detecting zero crossing of WaveGen sine waves.
+    Gate is OFF (high level) when drive voltage is >0.0 V.
+    See paper schematic "Exciter LED Gate".
+
+Current Buffer:
+    Added a 10:1 attenuator on input, so comparator has larger signal.
+
+LED current:
+    sw2 20 mA - make it bright.
+    LED is on for only a half cycle.
+
+Magnification:  1x
+    Re-adjusted microscope pointing and focus.
+
+WaveGen:  (from oscilloscope)
+    Amplitude:  400 mVpp
+    Frequency:  495.0 Hz
+    Vs = 40 mVpp   (scope measure 14.5 mVrms AC)
+
+Took only the one image with above condition.
+    % raspistill -v -o gated_495Hz_20mA.jpg
+    Ellipse tilted NW-SE.
+    Image has clean lines at end of ellipse, but see the cladding light only
+    in the center.  Interesting clue!  Could the cladding light be more
+    directional?
+
+Explore sweeping frequency:
+    Same jumps in response.
+    See strong correlation with drive signal zero-crossing edge - when it
+    reaches the tip of an ellipse, the response jumps to a new mode.
+    Both sweeping up or down, at least in the > 470 Hz range.
+    The lower frequency platform resonances seem different.
+
+    Amplitude has an effect on resonant mode.
+    Can sweep to higher frequency e.g. 504 Hz where it drops out of resonance,
+    then increase amplitude to 1.1 V and it goes back into resonance.
+
+    Not really seeing the 473 and 490 resonant peaks (only see one peak in
+    this range.  Was comment confused earlier?
+
+Platform resonance:
+    WaveGen at 400 mVpp
+    At 200 Hz, things are nice and quiet.
+    At 240 Hz, just beginning to get sound and some fiber movement.
+    Maximum at 255 Hz seems to be a peak fiber displacement.
+    Minimum at 280 Hz.
+    Another maximum at 350 Hz
+    At 460 Hz can hear beat notes.
+
+Conclusions:
+    Gated LED works great.  See only one half of ellipse cycle.
+
+    Cladding light seems more prominent at center of ellipse (center of the
+    field of view) and seems to go away at the ellipse ends.
+
+    Resonance jumps suggests confounding factors:
+    Resonance in exciter and platform - can easily be heard.
+    Could fiber not be solidly glued in Ferrule?
+    Could Ferrule be moving in the balsa wood holder?
+    Could hold attachment (rubber cement) be moving?
+
+    Light in cladding aggravates the image.
+    Light in cladding is mottled, suggesting contamination.
+
+    Seems like the fiber is contaminated, and may not be fully glued in
+    the Ferrule.
+
+    Stress rods appear to be aligned with the lower frequency ellipse, as if
+    they make the fiber softer (less stiff).
+
+Need:
+    Want to see whole ellipse with small dark marks for the zero crossings.
+    Currently have only half ellipse illuminated and half dark.
+    Maybe also a gate control for constant ON and constant OFF.
+
+    Put a fiber directly on exciter to measure exciter displacement and phase.
+
+    Reduce/avoid exciter/platform resonance.
+
+    Better quality fiber/ferrule.
+
+    Possibly longer fiber length to get below exciter resonance,
+    or shorter to get further above.
+
+    Automation to capture image and conditions, with sweeping.
+    Some kind of data reduction for a set of sweep data.
+
+----------------------------------------------------------------------------
+## PM fiber  2022-03-25
+----------------------------------------------------------------------------
+
+Microscope:  1x
+    Full Scale image (i.e. image frame) at 1x is:  5.80 mm x 4.35 mm
+    from a prior calibration (2021_12_14_mmruler).
+Current buffer:  10:1 attenuation on input, gain is 10 A/V  not calibrated.
+Gated LED:  Current sw1,2  30 mA
+    Gate is OFF (high level) when drive voltage is >0.0 V.
+
+Try to see two resonant modes as above:
+    It does seem to repeat.
+    Capture images at specific points.
+
+    Sine amplitude at 400 mVpp (10:1) for all points.  Full file e.g.
+    % raspistill -v -o fa_460Hz.full.jpg
+
+	File	Freq	Response
+	----	-----	---------------------
+	fa	^ 460	Well below resonance (Mode 1)
+	fb	^ 470	growing
+	fc	^ 479	see phase nearing peak of ellipse
+	fd	^ 480.2	flip to new mode (Mode 2)
+	fe	^ 490	growing
+	ff	^ 500	growing
+	fg	^ 504	phase reaches peak of ellipse
+	fh	^ 504.2	flip out of resonance (Mode 0)
+	fi	v 484.0	flip back into resonance, sweeping down (Mode 2)
+	fj	v 470.0	flip to new mode, sweeping down (Mode 1)
+	fk	v 475	go up, then sweep down, i.e. before j (Mode 2)
+	fl	v 470.5	flip to new mode, sweeping down (Mode 1)
+	fm	    0	stationary
+
+    ^ = frequency sweeping up
+    v = frequency sweeping down
+
+    Frequencies marked "flip" is the frequency at which the resonance jumped
+    from one mode (direction) to another and the image is of the second mode.
+
+    Hysteresis chart:
+
+    Mode 2:     .         .---------.---------.---------.----     .  high
+		.         v         ^   ^     .         .   v     .
+    Mode 1:     .     ----.---------.   ^     .         .   v     .  low
+		.   ...   .         .   ^     .         .   v     .
+    Mode 0:     -----     .         .   ^-----.---------.---------.  stationary
+		|         |         |         |         |         |
+    Freq Hz:    0   ...   470       480       490       500       600
+	 Hz:                            484                 504
+
+    The center of the ellipse is roughly between the two tails where the LED
+    light is gated off.  The other half of the ellipse is in darkness.
+
+    Orientation of the ellipse changes with frequency.
+    In both modes the ellipse rotates clockwise as frequency increases.
+
+    The size (length) of the ellipse appears to increase with increasing
+    frequency over the whole frequency span between flip points.
+    At the resonant frequency we would expect the amplitude (ellipse size) to
+    be at a maximum.  Here we see the maximum at the frequency just before
+    the flip to another mode.  Is this really the resonance peak?  Or is
+    it being confounded by the mode flipping mechanism?
+
+    Note the drive current phase position on the ellipse changes with
+    frequency (zero crossings are at the edges of the LED gate).  It seems
+    that the zero crossings reach the peak ends of the ellipse just before
+    the resonance flips to a new mode.  This could be coincidence, or it could
+    be the response is lagging by 180 degrees and is no longer supported by the
+    drive.  Could this be the "flip" mechanism?  Need more theory analysis.
+
+    What is the mode flip mechanism?
+
+    File name contains the frequency to help tracking, but is less convenient
+    to type.
+
+Decimate the images 8x to make them more manageable:
+    http://www.imagemagick.org/script/command-line-options.php#scale
+    % convert -scale WIDTHxHEIGHT+XOFF+YOFF
+    Original image size:  4056x3040
+    New size reduce 8x:   507x380
+    % convert -scale 507x380+0+0  IN.jpg  OUT.jpg
+
+    The -contrast-stretch increases the contrast in an image by stretching
+    the range of intensity values.  Seems to do a reasonable job of
+    brightening the scan trace, especially where some traces are very faint.
+
+    % ls f*.full.jpg > list
+    % perl -ne'$y = $_; $y =~ s/full/dec8/; chop($_); print( "$_  $y" )' \
+	< list > list2
+    % arg_cmd 'convert -scale 507x380+0+0 -contrast-stretch 0x0  ${1}  ${2}' \
+	< list2
+
+    Display all images in order:
+    % ls f*.dec8.jpg | arg_cmd 'display ${1} &  sleep 1'
+
+Z Focus of stationary fiber spot:
+
+    Drive off.
+    Microscope:  4.5x
+    Z= 10.3805 mm
+
+    % raspistill -v -o ma_30mA.full.jpg
+	Looks very similar to before.
+
+    % djpeg -grayscale  ma_30mA.full.jpg | pgm_box
+    CGxy   = 1777, 1168
+    Ytop     = 1128
+    Ybot     = 1296
+    Yfwhm    = 168
+    Xleft    = 1755
+    Xright   = 1862
+    Xfwhm    = 107
+
+    Center at  1781,1153
+
+    % cat ma_30mA.full.jpg |
+	jpegtran -grayscale -crop 512x512+1525+897 > ma_30mA.jpg
+
+    Try sweeping focus.
+
+    % vi run4x.sh
+    #! /bin/bash
+    # usage:  runcam.sh  <shutter_ms> <analoggain>
+	set -x
+	raspistill -v -o - \
+	    --shutter ${1:?} \
+	    --analoggain ${2:?} \
+	    --awb off \
+	    --awbgains 1.0,1.0 \
+	    --digitalgain 1.0 \
+	    | jpegtran -grayscale -crop 512x512+1525+897
+
+    Z= 10.3805 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > mb.jpg 2> mb.err
+
+    Z= 10.3790 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > mc.jpg 2> mc.err
+
+    Z= 10.3820 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > md.jpg 2> md.err
+
+    Z= 10.3810 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > me.jpg 2> me.err
+
+    Z= 10.3800 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > mf.jpg 2> mf.err
+
+    Z= 10.3805 mm
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > mg.jpg 2> mg.err
+
+	None of these look as good as the first one, for focus.
+	Did not seem worth analyzing further.
+
+    LED at sw3 10 mA.
+    Z= 10.3735	manual focus seems best
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 8.0 > mh.jpg 2> mh.err
+    % ssh pi@rpiTouch.local /home/pi/bin/run4x.sh 100000 1.0 > mi.jpg 2> mi.err
+	Non-saturated peak.
+
+    Enough for tonight.
+    Somehow this fiber just does not seem good enough for more experiments.
+
+Conclusions:
+
+    PM fiber does seem to have two distinct resonant modes, with roughly
+    orthogonal response (ellipse) directions, in two frequency ranges.
+
+    Not clear where the resonant peaks are.  The amplitude appears to
+    increase with frequency right up to where it flips to another mode.
+
+    There is a strong hysteresis with sharp jumps between modes.
+    What is the mode flip mechanism?
+
+    Mode flip (jump) appears to be near where the drive current zero
+    crossing is at the peak of the ellipse (maximum fiber displacement).
+
+    The gated LED is very helpful to see the zero crossing points of the
+    drive current.  But only half of the ellipse is illuminated.
+    Needs improvement to see both full ellipse and drive phase.
+
+Next Ideas:
+
+    We were driving both axis of the PM fiber.  Could that be causing the
+    mode flip?  Try rotating the fiber to drive only one axis (i.e. parallel
+    or normal to the two stress rods).  This may clarify the frequency response
+    of each mode.
+
+    What direction is the ellipse being traced?
+    The LED gate was symmetric here, so we cannot tell.
+    Try making a LED gate pattern that could show direction of trace.
+
+    Camera auto exposure resulted in some images being very faint.
+    Try longer exposure.
+
+----------------------------------------------------------------------------
+## File Summary
+----------------------------------------------------------------------------
+In chronologic order.
+
+    Mar 20  Fiber tip illuminated by sunlight, magnification 4.5x, (5.6 Mbyte)
+sunlight_4.5x_a.jpg	full sunlight
+sunlight_4.5x_b.jpg
+sunlight_4.5x_c.jpg
+
+    Mar 20  Filtered sunlight thru window shade, LED 5 mA
+led5ma_4.5x_c.jpg	Magnification 4.5x
+led5ma_4.5x_c.crop.jpg	cropped color
+
+    Mar 20  Magnification 2.0x, LED 5 mA, Stationary fiber
+led5ma_2.0x_a.jpg	full color, cladding face, Airy pattern
+led5ma_2.0x_a.crop.jpg  cropped grayscale
+
+    Mar 20  Stationary fiber, Magnification 2.0x, cropped grayscale
+still_a.err
+still_a.jpg		shutter=  10 ms, Gain= 1.0, see only core MFD
+still_b.err
+still_b.jpg		shutter= 100 ms, Gain= 1.0, faint blotches
+still_c.err
+still_c.jpg		shutter= 100 ms, Gain= 8.0, cladding face, Airy pattern
+
+    Mar 20  Exciter driven, Magnification 2.0x
+da.err
+da.jpg			F= 490.0 Hz, A= 20.0 mVpp, shutter= 100 ms, Gain= 8.0
+
+da.full.jpg		F= 490.0 Hz, A= 20.0 mVpp
+da.decimate8x.jpg
+
+db.full.jpg		F= 473.0 Hz, A= 40.0 mVpp
+db.decimate8x_4xbright.jpg
+
+    Mar 24  Gated LED, 10:1 attenuation on current buffer
+gated_495Hz_20mA.jpg	F= 495.0 Hz, A= 400 mVpp (10:1)
+			Shows variation in cladding light with position.
+
+    Mar 25  Frequency Sweep, Microscope 1.0x, LED 30 mA, 10:1 attenuation
+		Gated ellipse patterns.  Full field of view.
+f*.full.jpg		full original image
+f*.dec8.jpg		decimated 8x and -contrast-stretch for brightness
+
+fa_460Hz.dec8.jpg	^ 460   Well below resonance.
+fb_470Hz.dec8.jpg	^ 470   growing
+fc_479Hz.dec8.jpg	^ 479   see phase nearing peak of ellipse
+fd_480Hz.dec8.jpg	^ 480.2 flip to new mode
+fe_490Hz.dec8.jpg	^ 490   growing
+ff_500Hz.dec8.jpg	^ 500   growing
+fg_504Hz.dec8.jpg	^ 504   phase reaches peak of ellipse
+fh_504Hz.dec8.jpg	^ 504.2 flip out of resonance
+fi_484Hz.dec8.jpg	v 484.0 flip back into resonance, sweeping down
+fj_470Hz.dec8.jpg	v 470.0 flip to new mode, sweeping down
+fk_475Hz.dec8.jpg	v 475   go up, then sweep down, i.e. before j
+fl_470Hz.dec8.jpg	v 470.5 down, flip to new mode
+fm_0Hz.dec8.jpg		    0   stationary
+
+    Mar 25  Stationary fiber, Sweep Z focus, 4.5x, LED 30 mA, crop 512x512
+		shutter= 100000, Gain= 8.0
+		Focus variation was not very conclusive.
+ma_30mA.full.jpg	full
+ma_30mA.jpg		cropped
+mb.err
+mb.jpg			Z= 10.3805 mm
+mc.err
+mc.jpg			Z= 10.3790 mm
+md.err
+md.jpg			Z= 10.3820 mm
+me.err
+me.jpg			Z= 10.3810 mm
+mf.err
+mf.jpg			Z= 10.3800 mm
+mg.err
+mg.jpg			Z= 10.3805 mm
+mh.err
+mh.jpg			Z= 10.3735 mm, LED 10 mA
+mi.err
+mi.jpg			Z= 10.3735 mm, LED 10 mA, shutter= 100000, Gain= 1.0
+
