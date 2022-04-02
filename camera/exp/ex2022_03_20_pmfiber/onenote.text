@@ -1,0 +1,82 @@
+2022-03-27  William A. Hudson
+
+		Results posted to OneNote  (confocalScanner_SrDesign_2021)
+		-------------------------
+
+Bill's Notes -> 2022-03-20 PM Fiber
+
+Images of PM Fiber cantilever resonance patterns driven by an exciter.
+
+A horizontal Polarization Maintaining (PM) Fiber cantilever is driven
+vertically (in the Y direction) by a Soberton exciter.
+An LED illuminates connector end of fiber optic cable, cleaved end is
+imaged by a 1x monocular microscope lens on a Raspberry Pi HQ camera.
+
+See also:   https://github.com/wahudson
+		fiber_scanner/camera/exp/ex2022_03_20_pmfiber/
+
+Selected images:
+
+Fig. 1  sunlight_4.5x_a.crop.jpg
+Fiber tip illuminated in sunlight with red LED light in 5 um core.
+The bright highlights and mottling suggests perhaps a bad cleave or
+contamination.  Disk is 125 um fiber tip.  Microscope 4.5x
+
+Fig. 2  led5ma_4.5x_c.crop.jpg
+Fiber tip showing LED light in core and cladding, minimal side lighting.
+Compare with Figure 1.  Microscope 4.5x, LED 5 mA.
+Fiber stress rods are visible as two dark disks in the cladding area.
+
+Fig. 3a)  da.decimate8x.jpg
+F= 490.0 Hz, A= 20.0 mApp  flattened ellipse tilted left
+
+Fig. 3b)  db.decimate8x_4xbright.jpg
+F= 473.0 Hz, A= 40.0 mApp  ellipse tilted right
+
+Fig. 3  da, db  (Fig. 3a, 3b above)
+Fiber resonant patterns when driven in Y-direction.
+da  F= 490.0 Hz, A= 20.0 mApp  flattened ellipse tilted left
+db  F= 473.0 Hz, A= 40.0 mApp  ellipse tilted right
+Both files decimated 8x.  Image db brightness increased 4x.
+Image Frame size is 5.80 mm x 4.35 mm, 1x magnification.
+The lower frequency ellipse db (Fig. 3b) is is aligned with the fiber stress
+rods, suggesting the stress rods make the fiber less stiff in that direction.
+
+
+Fig. 4a  fa_460Hz.dec8.jpg  Mode1  ^ 460   Hz  Well below resonance
+Fig. 4b  fb_470Hz.dec8.jpg  Mode1  ^ 470   Hz  Growing
+Fig. 4c  fc_479Hz.dec8.jpg  Mode1  ^ 479   Hz  Zero crossing nearing peak of ellipse
+Fig. 4d  fd_480Hz.dec8.jpg  Mode2  ^ 480.2 Hz  Flip to new mode
+Fig. 4e  fe_490Hz.dec8.jpg  Mode2  ^ 490   Hz  Growing
+Fig. 4f  ff_500Hz.dec8.jpg  Mode2  ^ 500   Hz  Growing
+Fig. 4g  fg_504Hz.dec8.jpg  Mode2  ^ 504   Hz  Zero crossing reaches peak of ellipse
+Fig. 4h  fh_504Hz.dec8.jpg  Mode0  ^ 504.2 Hz  Flip out of resonance
+Fig. 4i  fi_484Hz.dec8.jpg  Mode2  v 484.0 Hz  Flip into resonance
+Fig. 4k  fk_475Hz.dec8.jpg  Mode2  v 475   Hz  Shrinking
+Fig. 4l  fl_470Hz.dec8.jpg  Mode1  v 470.5 Hz  Flip to new mode
+Fig. 4m  fm_0Hz.dec8.jpg    Mode0      0.0 Hz  Stationary
+
+Fig. 4  Fiber scan patterns with gated LED.  (Fig. 4a - 4m above)
+LED is ON for one half cycle of drive current, the other half is in darkness,
+switching at the zero crossing of drive current.
+Image Frame size is 5.80 mm x 4.35 mm, 1x magnification.
+Sine wave exciter drive amplitude is 40 mApp for all points.
+The '^' indicates increasing frequency, 'v' decreasing frequency.
+See notes for a Hysteresis chart.
+(Figure 4j is omitted for clarity of the sequence.)
+
+
+A full report of system configuration, image capture, Analysis, Interpretation,
+Summary, and Conclusions is in notes.pdf below.
+
+[notes.pdf]
+
+[exciter_LED_gate.pdf]
+
+----------------------------------------------------------------------------
+## Processing for OneNote
+----------------------------------------------------------------------------
+
+PDF of text notes:
+% a2ps -1 -B -o - notes.text | ps2pdf - notes.pdf
+
