@@ -33,7 +33,7 @@ src/		Source code
     dNcWave.h
 
 		    Programs
-    awave.cpp		Arbtrary Waveform Generator
+    awave.cpp		prototype Arbtrary Waveform Generator
     sine_mcp4822.cpp	Sine Wave DAC Program
 
 		    Boilerplate copied from rgpio
@@ -48,7 +48,8 @@ librgpio/ ->	C++ library for Raspberry Pi GPIO peripherals
 			(symlink to library installation)
 
 bin/		Commands
-    awave
+    awave		prototype Arbtrary Waveform Generator
+    sine_mcp4822	Sine Wave DAC Program
 
 lib/		Library of src/
     ??
@@ -66,8 +67,12 @@ data/		Experiment large data, not in Git
 
 Initial Build process:
 ----------------------
+    # Symlink to access librgpio, e.g.
+    % ln -s ../../rgpio/librgpio  .
+
     % cd src
     % make compile
+    % make cap		# on an RPi
 
     % cd test
     % make test

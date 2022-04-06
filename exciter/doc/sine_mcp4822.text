@@ -127,6 +127,72 @@ Not Real-time OS:
     process running 100% CPU, with minimal other things.
     Thus put the camera on another RPi.
 
+SPI Interface:  (rgUniSpi)
+
+    SCLK frequency changes with ARM core frequency.
+    Thus need a process "warmup" period to kick the OS to raise ARM frequency.
+    Keeping high CPU usage will keep the frequency constant (i.e. not go into
+    power saving), unless over temperature causes throttling.
+
+    It may be tricky to keep a constant sample rate, but I think it is just
+    possible.
+
+----------------------------------------------------------------------------
+## Frequency Calculation
+----------------------------------------------------------------------------
+
+    Nsize  = Number of entries used in table
+    Stride = Stride stepping thru wave table
+
+    Tsamp  = sample period, generally a given
+    Tcyc   = oscillator cycle period (one output sine wave cycle)
+
+    Fsamp  = 1 / Tsamp		= sample frequency
+    Fcyc   = 1 / Tcyc		= oscillator frequency
+
+    (1)  AnSamp  = Nsize / Stride	= average number of samples in a cycle
+
+
+    (2)  Tcyc = AnSamp * Tsamp
+
+    (3)      Tcyc = Tsamp * Nsize / Stride
+
+    (4)      Fcyc = Stride / (Tsamp * Nsize)
+
+
+    (5)  Stride = Fcyc * Tsamp * Nsize
+
+    Want program to calculate frequency Fcyc, given a sample period Tsamp.
+    Want program to compute Stride, given Fcyc.
+    Possibly program could read Speed_12 to calculate Tsamp.
+
+SPI Frequency:  (rgUniSpi)
+
+    From:  dac_adc/code/doc/uspi_period.text
+        --Speed_12           - Sets the SCLK clock frequency.
+        Fsclk = Fsys / (2 * (Speed_12 + 1))		- SCLK frequency
+
+	Tsclk = 1 / Fsclk		SLCK period
+
+	Tsclk = 2 * (Speed_12 + 1) / Fsys
+
+	On a RPi4:
+        Fsys = 200 MHz  for  Farm =  600 MHz  idle
+        Fsys = 500 MHz  for  Farm = 1500 MHz  full speed
+
+    ShiftLength_6 = number of data bits shifted out in a SPI (CS) cycle.
+
+    Nsclk = ShiftLength_6 + 2.5      = number of sclk periods in a SPI cycle
+
+    Tsamp = Tsclk * Nsclk	= sample period (one SPI CS cycle).
+
+Frequency Measurement:
+
+    The program can count cycles, and measure the elapsed time with
+    clock_gettime().  Thus can measure period and frequency.
+    Use this as a measured result.
+
+
 ----------------------------------------------------------------------------
 ## Design
 ----------------------------------------------------------------------------

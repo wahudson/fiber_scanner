@@ -49,6 +49,7 @@ compile:  $(OJ)  $(BINDIR) \
 
 cap:
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/awave
+	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/sine_mcp4822
 
 mkdirs:   $(OJ)  $(BINDIR)
 

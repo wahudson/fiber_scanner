@@ -13,8 +13,9 @@
 //        Code = (Vout / 0.0005 V) + 2048
 // Provide external configuration:
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
-//   rgpio uspi -1 --Spi_Enable_1=1
-//   rgpio uspi -1 --Speed_12=200 --EnableSerial_1=1 --ShiftLength_6=16
+//   rgpio uspi -1 --SpiEnable_1=1
+//   rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=16
+//   rgpio uspi -1 --OutMsbFirst_1=1
 // ? rgpio clock -0 --Enable_1=1 --Source_4=5 --Mash_2=0 --DivI_12=1000
 // ? rgpio fsel --mode=Alt0  4
 //--------------------------------------------------------------------------
@@ -62,7 +63,7 @@ class yOptLong : public yOption {
     bool		raw    = 0;
     const char*		nsamp;
     yOpVal		gain;
-    const char*		stride = "";
+    const char*		stride = "1.0";
 
     bool		verbose;
     bool		debug;
@@ -149,6 +150,7 @@ yOptLong::parse_options()
 	Error::msg( "require --gain={0..2047}:  "   ) <<
 			       gain.Val <<endl;
     }
+    //#!! could allow gain to be negative
 
     txval_n = get_argc();
     if ( txval_n > TxSize ) {
@@ -358,8 +360,10 @@ main( int	argc,
 		    // d[14] = X, unused
 		    // d[13] = Gain, 0= 2x, 1= 1x (times 2.048 V FS)
 		    // d[12] = SHDNn, 0= shutdown, 1= active
+		    // d[11:0] = DAC value
 
-		    vdac = vdac || 0x3000;
+		    vdac = (vdac || 0x3000) << 16;
+		    // output MSB, i.e. bit 31, first
 		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 
 		    Uspix.Fifo.write( vdac );
@@ -402,6 +406,13 @@ main( int	argc,
 		 <<setw(10) <<right << delta_ns  << " ns,  "
 		 <<setw(4)          << ns_sample << " ns/sample"
 		 <<endl;
+
+	    float		Fsamp_Hz = 1.0e9 / ns_sample;
+	    float		Fcyc_Hz  = Fsamp_Hz / Nox.get_nout();
+
+	    cerr <<setprecision(4);
+	    cerr << "Fsamp = " <<setw(9) << Fsamp_Hz << " Hz" <<endl;
+	    cerr << "Fcyc  = " <<setw(9) << Fcyc_Hz  << " Hz" <<endl;
 	}
 
     }
