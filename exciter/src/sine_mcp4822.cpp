@@ -16,8 +16,6 @@
 //   rgpio uspi -1 --SpiEnable_1=1
 //   rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=16
 //   rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
-// ? rgpio clock -0 --Enable_1=1 --Source_4=5 --Mash_2=0 --DivI_12=1000
-// ? rgpio fsel --mode=Alt0  4
 //--------------------------------------------------------------------------
 
 #include <iostream>
@@ -64,6 +62,7 @@ class yOptLong : public yOption {
     const char*		nsamp;
     yOpVal		gain;
     const char*		stride = "1.0";
+    yOpVal		warm;
 
     bool		verbose;
     bool		debug;
@@ -100,6 +99,7 @@ yOptLong::yOptLong( int argc,  char* argv[] )
 {
     nsamp       = "";
     gain.Val    = 0;
+    warm.Val    = 5000000;
 
     verbose     = 0;
     debug       = 0;
@@ -122,6 +122,7 @@ yOptLong::parse_options()
 	else if ( is( "--nsamp="     )) { nsamp      = this->val(); }
 	else if ( is( "--gain="      )) { gain.set(    this->val() ); }
 	else if ( is( "--stride="    )) { stride     = this->val(); }
+	else if ( is( "--warm="      )) { warm.set(    this->val() ); }
 
 	else if ( is( "--verbose"    )) { verbose    = 1; }
 	else if ( is( "-v"           )) { verbose    = 1; }
@@ -176,6 +177,7 @@ yOptLong::print_option_flags()
     cout << "--raw         = " << raw          << endl;
     cout << "--nsamp       = " << nsamp        << endl;
     cout << "--gain        = " << gain.Val     << endl;
+    cout << "--warm        = " << warm.Val     << endl;
     cout << "--verbose     = " << verbose      << endl;
     cout << "--debug       = " << debug        << endl;
 
@@ -218,6 +220,7 @@ yOptLong::print_usage()
 //  "    --mVpp=F            amplitude in mVpp\n"
 //  "    --ramp_n=N          ramp cycles\n"
 //  "    --hold_n=N          hold cycles\n"
+    "    --warm=N            warmup count, default 5000000\n"
     "    --help              show this usage\n"
 //  "  # -v, --verbose       verbose output\n"
     "    --debug             debug output\n"
@@ -322,6 +325,13 @@ main( int	argc,
 	    int		fifo_cnt     = 0;	// number of Tx fifo writes
 	    int		overflow_cnt = 0;	// number of Tx fifo empty
 
+	    const uint32_t	DacPrefix = 0x3000;	// 16-bit word
+			// d[15] = A/B select, 0= A, 1= B
+			// d[14] = X, unused
+			// d[13] = Gain, 0= 2x, 1= 1x (times 2.048 V FS)
+			// d[12] = SHDNn, 0= shutdown, 1= active
+			// d[11:0] = DAC value
+
 	    uint32_t	vdac;			// DAC write word
 	    int32_t	vsin;			// wave table sample
 
@@ -330,13 +340,20 @@ main( int	argc,
 		cout <<fixed <<setprecision(6);
 	    }
 
-	    rv = clock_gettime( CLKID, &tpA );
+	    // Warm up loop - allow OS shift to higher core clock frequency
+	    for ( unsigned i=0;  i < Opx.warm.Val;  i++ )
+	    {
+		Uspix.Stat.grab();
+	    }
 
-	    // initial fill of the 4-entry fifo
-//	    for ( int i=0;  i < 4;  i++ )
-//	    {
-//		Uspix.Fifo.write( 0x0f0f );
-//	    }
+	    // Initial fill of the 4-entry fifo with zero (code 2048)
+	    vdac = (0x0800 | DacPrefix) << 16;
+	    for ( int i=0;  i < 4;  i++ )
+	    {
+		Uspix.Fifo.write( vdac );
+	    }
+
+	    rv = clock_gettime( CLKID, &tpA );
 
 	    // Inner loop
 	    //    This loop should never empty the Tx fifo, but a process
@@ -357,15 +374,8 @@ main( int	argc,
 			     <<setw(6) <<dec << vdac <<endl;
 		    }
 
-		    // d[15] = A/B select, 0= A, 1= B
-		    // d[14] = X, unused
-		    // d[13] = Gain, 0= 2x, 1= 1x (times 2.048 V FS)
-		    // d[12] = SHDNn, 0= shutdown, 1= active
-		    // d[11:0] = DAC value
-
-		    vdac = (vdac | 0x3000) << 16;
+		    vdac = (vdac | DacPrefix) << 16;
 		    // output MSB, i.e. bit 31, first
-		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 
 		    Uspix.Fifo.write( vdac );
 		    fifo_cnt++;
