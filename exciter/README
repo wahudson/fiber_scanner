@@ -19,7 +19,7 @@ doc/		Documentation
     sine_mcp4822.text	Sine Wave DAC Program
 
 kicad/		Schematic diagrams
-    ??/
+    avolt_dac_v1/	Voltage DAC
 
 src/		Source code
     Makefile		for building the tools

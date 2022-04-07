@@ -1,0 +1,121 @@
+2022-04-04  William A. Hudson
+
+		Voltage Output DAC - kicad/avolt_dac_v1/
+		------------------
+
+----------------------------------------------------------------------------
+## Power
+----------------------------------------------------------------------------
+
+    VDD = +3.3 V  Digital logic, from RPi
+
+    VPP = +6 V to +12 V  Analog
+    VNN = -6 V to -12 V  Analog
+	From bench power supply.
+	Generally the same one as for the Current Buffer.
+
+Power Supply Sequence:
+    Does not seem critical.
+    No inputs would be harmed by input signal without power.
+
+    0) Disable the exciter (jumper short the current buffer output).
+
+    1) Generally power the RPi first (supplies VDD).
+	Power the DAC and D-flip-flop.
+
+    2) Then power the Analog (VPP, VNN).
+	Power the op-amp and current buffer.
+
+    3) Code Initialize the DAC.
+
+    4) Enable the exciter.
+
+Power Up State:  (from analysis)
+    The  MCP4822  comes up in the "shutdown" state with outputs at high
+    impedance.
+    This leaves op-amp U2A with input Vda floating, and thus in unity gain,
+    with offset of Vref.
+    This feeds attenuator and buffer U2B, making output
+	Voa = Vref / 4    = ~128 mV  about 1/2 full scale.
+
+    Not quite what we want.  This would result in driving the exciter at
+    a reasonably strong DC level.
+
+    May need to disable exciter until DAC is initialized.
+
+    Try it and see how it goes.
+
+
+----------------------------------------------------------------------------
+## First turn-on  2022-04-04
+----------------------------------------------------------------------------
+
+See:  /home/wah/pro/dac_adc/code/doc/uspi_period.text
+	Previous rgUniSpi experiments.
+
+    RPi is:  rpiFour
+
+    RPi (VDD) power ON, VPP/VNN OFF.
+	DAC outputs are ~0.0 Vdc
+    Turn ON VPP/VNN:
+	Vref = 0.783 V
+	Voa  = 0.200 V  final output,  about Vref/4
+
+	Up, this will make current buffer output be 200 mA.
+
+    Disconnect Current Buffer input.
+
+    % rgpio man 7 rgUniSpi
+
+    Enable Spi1 on RPi:
+    % rgpio uspi -1 --SpiEnable_1=1
+    % rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=16
+    % rgpio uspi -1 --ChipSelects_3=0
+
+#!! rgUniSpi(7) - need frequency calculation, what is system_clock_freq?
+
+    From:  dac_adc/code/doc/uspi_period.text
+	--Speed_12           - Sets the SCLK clock frequency.
+        Fsclk = Fsys / (2 * (Speed_12 + 1))
+        Fsys = 200 MHz  for  Farm =  600 MHz  idle
+        Fsys = 500 MHz  for  Farm = 1500 MHz  full speed
+
+    We want:
+	--ShiftLength_6=16  for MCP4822
+
+	About 20 kSPS:  (CSn sample rate)
+	    Fsclk = 20 kSPS * (16 data + 2.5 idle clock cycles)
+	    Fsclk = 370 kHz
+
+	Speed_12 = (Fsys / (2 * Fsclk)) - 1
+		 = (500 MHz / (2 * 0.370 MHz)) - 1  = 675
+
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+
+    --ChipSelects_3=0		activate all 3 CS, active low
+
+
+Data patterns:
+    0x3000	dacA, Gain = 1x, not Shutdown
+
+    % rgpio uspi -1 --tx  0x3000
+
+    % rgpio uspi -1 --OutMsbFirst_1=1
+	Outputs bit 31 first.  Thus put data in high half word.
+
+    % rgpio uspi -1 --tx  0x31110000
+    rgpio uspi -1 --tx  0x30000000	Vda= 0.003 V
+    rgpio uspi -1 --tx  0x3fff0000	Vda= 2.039 V
+    rgpio uspi -1 --tx  0x37ff0000	Vda= 1.018 V
+
+Adjust RV4 to Vref= 0.512 V
+
+    rgpio uspi -1 --tx  0x37ff0000      Voa=  0.001 V
+    rgpio uspi -1 --tx  0x30000000      Voa=  0.257 V
+    rgpio uspi -1 --tx  0x3fff0000      Voa= -0.255 V
+
+    It works!
+
+    rgpio uspi -1 --tx  0x37ff0000	Voa=  0.001 V  zero
+    rgpio uspi -1 --tx  0x27ff0000	Voa=  0.130 V  Shutdown
+

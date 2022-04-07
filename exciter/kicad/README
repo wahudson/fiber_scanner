@@ -1,0 +1,14 @@
+2022-03-21  William A. Hudson
+
+		Exciter Driver Systems - Schematics
+		-----------------------------------
+
+Library from (2022-03-21):  /home/wah/pro/fiber_scanner/led_light/kicad/lib/
+Kicad:  Version: 5.0.2-bee76a0~70~ubuntu18.04.1, release build
+
+Files:
+------
+README
+avolt_dac_v1/	Voltage output DAC, 1 channel, D-ff LED gate, MCP4822
+lib/		Library
+
