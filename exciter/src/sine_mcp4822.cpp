@@ -15,7 +15,7 @@
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
 //   rgpio uspi -1 --SpiEnable_1=1
 //   rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=16
-//   rgpio uspi -1 --OutMsbFirst_1=1
+//   rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
 // ? rgpio clock -0 --Enable_1=1 --Source_4=5 --Mash_2=0 --DivI_12=1000
 // ? rgpio fsel --mode=Alt0  4
 //--------------------------------------------------------------------------
@@ -210,7 +210,7 @@ yOptLong::print_usage()
     "    --wave              show wave table\n"
     "    --raw               show raw output data\n"
     "  options:\n"
-    "    --nsamp=N           number of samples in inner loop\n"
+    "    --nsamp=N           number of SPI (Fifo) samples to write\n"
     "    --gain=N            gain (N/2048) of full scale\n"
     "    --stride=F          stride (float) in table Nsize\n"
 //  "    --gain_Qd12=N       gain (N/2048) of full scale\n"
@@ -318,7 +318,7 @@ main( int	argc,
     // Main Loop
 	{
 	    int		ii           = 0;	// loop counter
-	    int		sample_cnt   = 0;	// total read samples
+	    int		loop_cnt     = 0;	// total read samples
 	    int		fifo_cnt     = 0;	// number of Tx fifo writes
 	    int		overflow_cnt = 0;	// number of Tx fifo empty
 
@@ -341,8 +341,9 @@ main( int	argc,
 	    // Inner loop
 	    //    This loop should never empty the Tx fifo, but a process
 	    //    sleep might.
-	    while ( sample_cnt++ < Opx.nsamp_n )
+	    while ( fifo_cnt < Opx.nsamp_n )
 	    {
+		loop_cnt++;
 		Uspix.Stat.grab();	// query this sample only
 
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
@@ -362,7 +363,7 @@ main( int	argc,
 		    // d[12] = SHDNn, 0= shutdown, 1= active
 		    // d[11:0] = DAC value
 
-		    vdac = (vdac || 0x3000) << 16;
+		    vdac = (vdac | 0x3000) << 16;
 		    // output MSB, i.e. bit 31, first
 		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 
@@ -385,16 +386,16 @@ main( int	argc,
 		// Note 4 seconds overflows a 32-bit int.
 		// Use careful promotion to 64-bit integer to avoid overflow.
 
-	    int			ns_sample    = -1;
+	    int			ns_loop      = -1;
 	    int			ns_fifo      = -1;
-	    if ( sample_cnt ) {
-		ns_sample    =         ( delta_ns / sample_cnt );
+	    if ( loop_cnt ) {
+		ns_loop      =         ( delta_ns / loop_cnt );
 	    }
 	    if ( fifo_cnt   ) {
-		ns_fifo      =         ( delta_ns /   fifo_cnt );
+		ns_fifo      =         ( delta_ns / fifo_cnt );
 	    }
 
-	    cerr << "    sample_cnt=   " << sample_cnt <<endl;
+	    cerr << "    loop_cnt=     " << loop_cnt <<endl;
 	    cerr << "    fifo_cnt=     "
 		 <<left  <<setw(8)          << fifo_cnt  << "  "
 		         <<setw(6)  <<right << ns_fifo   << " ns/fifo_write"
@@ -404,15 +405,15 @@ main( int	argc,
 
 	    cerr << "    delta_ns= "
 		 <<setw(10) <<right << delta_ns  << " ns,  "
-		 <<setw(4)          << ns_sample << " ns/sample"
+		 <<setw(4)          << ns_loop   << " ns/loop"
 		 <<endl;
 
-	    float		Fsamp_Hz = 1.0e9 / ns_sample;
+	    float		Fsamp_Hz = 1.0e9 / ns_fifo;
 	    float		Fcyc_Hz  = Fsamp_Hz / Nox.get_nout();
 
-	    cerr <<setprecision(4);
-	    cerr << "Fsamp = " <<setw(9) << Fsamp_Hz << " Hz" <<endl;
-	    cerr << "Fcyc  = " <<setw(9) << Fcyc_Hz  << " Hz" <<endl;
+	    cerr <<dec <<fixed <<setprecision(1);
+	    cerr << "Fsamp = " <<setw(10) << Fsamp_Hz << " Hz" <<endl;
+	    cerr << "Fcyc  = " <<setw(10) << Fcyc_Hz  << " Hz" <<endl;
 	}
 
     }
