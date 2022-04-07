@@ -197,3 +197,105 @@ Frequency Measurement:
 ## Design
 ----------------------------------------------------------------------------
 
+
+----------------------------------------------------------------------------
+## sine_mcp4822 turn-on  2022-04-06
+----------------------------------------------------------------------------
+
+Configuration:
+    RPi4:  rpiFour
+    Circuit:  avolt_dac_v1/  v1.0
+    Code:  sine_mcp4822.cpp  (commit 2a2d164ace)
+
+Observations:
+
+    Low pass filter working.  Produces a phase delay.
+
+    Noise on output.
+    Digital noise ~120 mVpp on Voa (final output).  This goes away
+    when SPI stops clocking, i.e. CE2n goes high.
+
+    % ../bin/sine_mcp4822 --gain=200 --stride=4.0 --nsamp=10000
+	stride=4.0 --nsamp=10000
+	Wtab.Nsize = 128
+	Sox.Gain   = 200
+	Sox.Offset = 2048
+	Nox.Stride = 4.0000
+	Nox.Phase  = 0.0000
+	NperCycle  = 32.0000
+	    loop_cnt=     5193819
+	    fifo_cnt=     10000      55742 ns/fifo_write
+	    overflow_cnt= 2
+	    delta_ns=  557427296 ns,   107 ns/loop
+	Fsamp =    17939.8 Hz
+	Fcyc  =      560.6 Hz
+
+    Vda (DAC) output:  200 mVpp sine wave.  Can see steps on each sample.
+
+    Vfa filter output:  Looks clean, except for SCLK noise.
+	The filter works!  But adds phase delay.
+
+    Repeated runs can usually capture the ending cycle, with an even
+    stride that ends on a zero crossing.  Can see the digital noise stop
+    when oscillator stops.  Can see DAC steps on DAC output, gone on filter
+    output.  Can see phase delay between DAC and Filter (in addition to the
+    inverting filter output).  Very nice.
+
+    Measured Fcyc ~625 Hz on oscilloscope, program measured Fcyc= 617 Hz.
+    Amplitude is also close.
+
+    % rgpio uspi -1
+    Spi1:
+       1.AuxEn    = 0x00000002
+       1.Cntl0    = 0x2a300850
+       1.Cntl1    = 0x00000000
+       1.Stat     = 0x00400300
+       1.Peek     = 0x00000000
+       1.SpiEnable_1    = 1
+       1.SpiIrq_1       = 0
+     Cntl0
+       1.Speed_12       = 675
+       1.ChipSelects_3  = 0
+       1.PostInMode_1   = 0
+       1.VariableCs_1   = 0
+       1.VariableWidth_1= 0
+       1.DoutHoldTime_2 = 0
+       1.EnableSerial_1 = 1
+       1.InRising_1     = 0
+       1.ClearFifos_1   = 0
+       1.OutRising_1    = 0
+       1.InvertClk_1    = 0
+       1.OutMsbFirst_1  = 1
+       1.ShiftLength_6  = 16
+     Cntl1
+       1.CsHighTime_3   = 0
+       1.TxEmptyIrq_1   = 0
+       1.DoneIrq_1      = 0
+       1.InMsbFirst_1   = 0
+       1.KeepInput_1    = 0
+     Status
+       1.TxLevel_3      = 0
+       1.RxLevel_3      = 4
+       1.TxFull_1       = 0
+       1.TxEmpty_1      = 1
+       1.RxFull_1       = 1
+       1.RxEmpty_1      = 0
+       1.Busy_1         = 0
+       1.BitCount_6     = 0
+
+Need:
+ v  Measure Fsamp and Fcyc.
+
+ v  Change sample_cnt to be the number of SPI cycles.
+
+ v  Add a warmup period.
+	This eliminated SCLK (Arm core) frequency change and made the frequency
+	measurement more accurate.
+
+ v  Add initial fill of Fifo.  Are getting overflow_cnt= 2.
+	This eliminated the initial overflow counts.
+
+    Add sync marks to program.
+
+    Need trigger output for scope.  Perhaps near start or stop.
+
