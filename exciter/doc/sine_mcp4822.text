@@ -137,6 +137,17 @@ SPI Interface:  (rgUniSpi)
     It may be tricky to keep a constant sample rate, but I think it is just
     possible.
 
+Conversion Factors:  Gain, Stride
+    Convert user units, mVpp and Hz, into internal factors of Gain and Stride.
+
+    Conversion is based on a particular configuration of DAC, amplifiers,
+    SPI sample rate, wave table size, etc.
+    Ultimately the program could compute the conversion factors, but start
+    with externally computed factors.
+
+    Gain_mVpp  = Gain per mVpp
+    Stride_Hz  = Stride per Hz
+
 ----------------------------------------------------------------------------
 ## Frequency Calculation
 ----------------------------------------------------------------------------
@@ -145,6 +156,7 @@ SPI Interface:  (rgUniSpi)
     Stride = Stride stepping thru wave table
 
     Tsamp  = sample period, generally a given
+		Is the period from one CS to another.
     Tcyc   = oscillator cycle period (one output sine wave cycle)
 
     Fsamp  = 1 / Tsamp		= sample frequency
@@ -166,19 +178,23 @@ SPI Interface:  (rgUniSpi)
     Want program to compute Stride, given Fcyc.
     Possibly program could read Speed_12 to calculate Tsamp.
 
+    Stride_Hz = Stride / Fcyc		Stride per Hz, Fcyc in Hz
+
+    Stride_Hz = Tsamp * Nsize		Tsamp in seconds
+
 SPI Frequency:  (rgUniSpi)
 
     From:  dac_adc/code/doc/uspi_period.text
-        --Speed_12           - Sets the SCLK clock frequency.
-        Fsclk = Fsys / (2 * (Speed_12 + 1))		- SCLK frequency
+	--Speed_12		- Sets the SCLK clock frequency.
+	Fsclk = Fsys / (2 * (Speed_12 + 1))		- SCLK frequency
 
 	Tsclk = 1 / Fsclk		SLCK period
 
 	Tsclk = 2 * (Speed_12 + 1) / Fsys
 
 	On a RPi4:
-        Fsys = 200 MHz  for  Farm =  600 MHz  idle
-        Fsys = 500 MHz  for  Farm = 1500 MHz  full speed
+	Fsys = 200 MHz  for  Farm =  600 MHz  idle
+	Fsys = 500 MHz  for  Farm = 1500 MHz  full speed
 
     ShiftLength_6 = number of data bits shifted out in a SPI (CS) cycle.
 
@@ -192,10 +208,159 @@ Frequency Measurement:
     clock_gettime().  Thus can measure period and frequency.
     Use this as a measured result.
 
+----------------------------------------------------------------------------
+## Amplitude (Gain) Calculation
+----------------------------------------------------------------------------
+
+Circuit:  avolt_dac_v1  v1.0
+
+    Amplitude is mostly circuit dependent.
+    DAC -> Amp Vo=(2*0.512V - Vi) -> Attenuator 4:1 -> Buffer
+
+    Here we use the MCP4822 DAC in a +-1.0240 V Full Scale (FS) output mode
+    provided by an inverting op-amp filter with offset (output Vfa).
+    For a 12-bit DAC, LSB is 0.0005 V and the conversion equation is:
+
+	Vfa = -0.0005 V * (Code - 2048)		offset output, filtered
+
+	Code = (Vfa / 0.0005 V) + 2048		DAC digital code number
+
+    The signal is then attenuated 4:1 and buffered:
+
+	Voa = Vfa * 0.250			final output
+	    = 0.125 mV * (Code - 2048)
+
+	Code	Vfa		Voa (mV)
+	----	----------	--------
+	4095	-1.0235 V	-255.9
+	4048	-1.0000 V	-250.0
+	2048	 0.0000 V	   0.0
+	  48	+1.0000 V	+250.0
+	   0	+1.0240 V	+256.0
+
+Conversion Factor:  Gain_mVpp
+
+    We define Gain_mVpp such that:
+
+	Gain = Gain_mVpp * User_mVpp	= Gain parameter
+
+	User_mVpp       = user input, in mVpp, range -256 to +255
+
+	Gain is the scale factor used in dNcScaler::set_Gain(), and is
+	a Q14.0 value with range [-MaskFS to MaskFS].
+	In this particular case (MCP4822 DAC in program sine_mcp4822.cpp)
+	Gain is in the range [-2047 .. +2047].
+	#!! should it be [-2048 .. +2048]?
+
+	Essentially the wave table entry Q2.30 value in range [-1.0 to +1.0]
+	is multiplied by (Gain / 2048).
+
+    Thus
+
+	Gain_mVpp = Gain / User_mVpp
+
+	So for overall conversion we want  User_mVpp= 250.0  to produce
+	Gain= 2000, and thus  Gain_mVpp= 8.000 .
+	Just applying nominal range from the table, not the absolute max
+	range, to keep numbers simple.  i.e. Use full scale code +-2000
+	instead of the binary +-2048, leaving a little bit of headroom.
 
 ----------------------------------------------------------------------------
-## Design
+## Sync Marks
 ----------------------------------------------------------------------------
+
+    Sync Marks are digital output signals aligned with interesting points
+    of the output waveform.
+
+    For the Fiber Scanner we want to see the phase of the drive signal and
+    the direction the ellipse is traced in the camera image.
+
+Jitter in the Sync Mark:
+    Jitter is intrinsic, with magnitude equal to the sample period Tsamp.
+    It can be reduced by increasing the number of samples per cycle.
+
+	Tsamp = Tcyc * Stride / Nsize		Jitter in seconds, is the
+						    sample period
+
+	(Tsamp / Tcyc) = Stride / Nsize		Jitter as fraction of a cycle
+		       = 1 / AnSamp
+
+    Jitter is zero when Stride is an integer factor of the table size Nsize.
+    In that case the same set of table indices are selected each cycle.
+    Stride itself need not be an integer.  (e.g. 2.5 * 100 = 250)
+    i.e.
+
+	Stride * M = Nsize		Zero jitter, where M= integer
+
+	Stride / Nsize = M
+
+Stored Sync Marks:
+    The sync mark bits can be stored in the low order bits of the wave table
+    entries, which are discarded in the actual waveform.  Essentially it
+    is a binary waveform issued along with the analog sine wave.  This was
+    the original idea.
+
+    An arbitrary binary wave form can be stored, and is fairly easy to issue.
+    However the position of the edges is not easily changed on the fly, i.e.
+    must re-write the table.
+
+    A stored sync mark must be at least as wide (the number of entries) as
+    Stride to ensure that it is hit at least once per cycle.  Generally
+    round Stride up to the next integer.  Note that in some cases a minimal
+    width mark may result in one or two samples, resulting in width jitter
+    in addition to position jitter.
+
+Computed Sync Marks:
+    The sync mark edges could be computed based on the wave table index
+    currently being issued, essentially the accumulated Stride.
+    e.g.
+
+	if ( (Index > EdgePose) && (Index < (EdgePose + Stride)) ) {
+	    Output sync mark pulse (one sample).
+	}
+
+    This is easy to dynamically change, but mostly appropriate for just a
+    few edges.  The same width and jitter issues occur.
+
+LED Gate:
+    Can have multiple sync marks.  Possibly externally choose which one to
+    apply to the LED gate.
+
+    A sync mark that is half the sine wave works well to mark the zero
+    crossings of the sine wave.  Half the ellipse is in darkness, making
+    it a bit harder to see the full extent.
+
+    Sync marks that disable the LED for only one sample at each zero crossing
+    would allow the full ellipse to be seen.
+
+    The direction of the ellipse tracing cannot be determined if the sync
+    marks have symmetry on the sine wave cycle, the pattern is the same
+    whether time progresses forward or backward.  e.g. Equal width pulses
+    at the drive zero crossings.
+
+    Introduce asymmetry by making one pulse wider, or by adding a third pulse
+    unequally spaced between the first two.
+
+    The best time resolution is near the center of the ellipse pattern, where
+    the trace is moving fastest.  The trace is moving slower at the tips of
+    the ellipse.
+    Thus is may be desirable to position the sync marks at the center of
+    the ellipse, or at the axis crossings, and read out the resulting
+    phase delay.
+
+    The axis crossings of the ellipse pattern are the X and Y sinusoid
+    zero-crossings of the response waveform.
+    This is the phase delay of the response from the drive.
+
+    The maximum X and Y displacements are the response amplitudes.
+    This is essentially the bounding box of the ellipse (for which we already
+    have program pgm_box).
+
+----------------------------------------------------------------------------
+## Current Implementation
+----------------------------------------------------------------------------
+
+Describe what and how the current program works.
 
 
 ----------------------------------------------------------------------------

@@ -41,6 +41,8 @@ dNcScaler::dNcScaler(
 
 /*
 * Set Gain scale factor.
+*    Gain is a Q14.0 value with range [-MaskFS to MaskFS].
+*    Wave table entries Q2.30 are multiplied by (Gain / MaskFS).
 *    Negative gain is allowed.
 *    Small sanity check?
 * call:

@@ -151,7 +151,7 @@ yOptLong::parse_options()
 	Error::msg( "require --gain={0..2047}:  "   ) <<
 			       gain.Val <<endl;
     }
-    //#!! could allow gain to be negative
+    //#!! could allow gain to be negative, gain.Val is unsigned.
 
     txval_n = get_argc();
     if ( txval_n > TxSize ) {
@@ -297,6 +297,29 @@ main( int	argc,
 	// Sine Wave table Q2.30 values +1.0 to -1.0
 	Wx.init_sine( 0x40000000, 0.0 );
 
+	// Add sync marks in LSB of wave table
+	{
+	    int32_t	nsize  = Wx.get_size();		// convert to signed
+	    int32_t	istride;
+
+	    istride = Nox.get_stride_float() + 1;	// truncate to int
+
+	    cout << "nsize   = " << nsize   <<endl;
+	    cout << "istride = " << istride <<endl;
+
+	    for ( int i=0;  i<nsize;  i++ )
+	    {
+		Wx.WavTab[i] &= 0xfffffff0;	// clear LSB
+	    }
+
+	    for ( int i=0;  i<istride;  i++ )
+	    {
+		Wx.WavTab[i+0]       |= 0x1;	// zero crossing rise
+		Wx.WavTab[i+nsize/2] |= 0x1;	// zero crossing fall
+		Wx.WavTab[i+nsize/8] |= 0x1;	// asymmetric mark
+	    }
+	}
+
 	if ( Opx.wave ) {
 	    int32_t		nsize  = Wx.get_size();
 	    int32_t		entry;
@@ -334,9 +357,10 @@ main( int	argc,
 
 	    uint32_t	vdac;			// DAC write word
 	    int32_t	vsin;			// wave table sample
+	    uint32_t	sync;			// sync mark bits
 
 	    if ( Opx.raw ) {
-		cout << "    ii   Vout      Code" <<endl;
+		cout << "    ii   Wtab      Code Sync" <<endl;
 		cout <<fixed <<setprecision(6);
 	    }
 
@@ -366,16 +390,20 @@ main( int	argc,
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
 		    vsin = Nox.next_sample();
 		    vdac = Sox.scale( vsin );
+		    sync = vsin & 0x1;		// sync mark
 
 		    if ( Opx.raw ) {	// show raw waveform output
 			ii++;
 			cout <<setw(6) << ii << "  "
 			     <<setw(9) << Sox.float_Qd30( vsin )
-			     <<setw(6) <<dec << vdac <<endl;
+			     <<setw(6) << vdac << "  "
+			     <<setw(2) << sync <<endl;
 		    }
 
 		    vdac = (vdac | DacPrefix) << 16;
 		    // output MSB, i.e. bit 31, first
+
+		    vdac |= (sync << 15);
 
 		    Uspix.Fifo.write( vdac );
 		    fifo_cnt++;
