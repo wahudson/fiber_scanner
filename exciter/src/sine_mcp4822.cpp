@@ -263,10 +263,12 @@ main( int	argc,
 	    cout << "Using Fake memory" <<endl;
 	}
 
+	const int		TabSize = 128 * 1024;
+
 	rgUniSpi		Uspix  ( &Amx, 1 );	// constructor
 
-	int32_t			Wtab[ 1024 ];		// wave table
-	dNcWave			Wx  ( 128, Wtab );	// constructor
+	int32_t			Wtab[ TabSize ];	// wave table
+	dNcWave			Wx  ( TabSize, Wtab );	// constructor
 	dNcOsc			Nox  ( &Wx, 2, 0 );	// stride int, frac
 
 	dNcScaler		Sox  ( 12 );		// Nbit

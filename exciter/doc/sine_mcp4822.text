@@ -174,13 +174,21 @@ Conversion Factors:  Gain, Stride
 
     (5)  Stride = Fcyc * Tsamp * Nsize
 
+	 Stride = (Fcyc / Fsamp) * Nsize
+
     Want program to calculate frequency Fcyc, given a sample period Tsamp.
     Want program to compute Stride, given Fcyc.
     Possibly program could read Speed_12 to calculate Tsamp.
 
-    Stride_Hz = Stride / Fcyc		Stride per Hz, Fcyc in Hz
+    (6)  Stride_Hz = Stride / Fcyc	Stride per Hz, Fcyc in Hz
 
-    Stride_Hz = Tsamp * Nsize		Tsamp in seconds
+	 Stride_Hz = Tsamp * Nsize	Tsamp in seconds
+
+    Idea is to calculate Stride given user-centric Fcyc:
+
+    (7)  Stride = Fcyc * Stride_Hz
+
+	#!! The name Stride_Hz is a bit confusing.  StrideCyc  StridePerHz ?
 
 SPI Frequency:  (rgUniSpi)
 
@@ -201,6 +209,54 @@ SPI Frequency:  (rgUniSpi)
     Nsclk = ShiftLength_6 + 2.5      = number of sclk periods in a SPI cycle
 
     Tsamp = Tsclk * Nsclk	= sample period (one SPI CS cycle).
+
+Frequency Resolution:
+
+    Intuitively a larger wave table (larger Nsize) will give a finer
+    frequency resolution.  How to express this?
+
+    The fractional component of Stride seems to give arbitrarily fine
+    resolution, but not really.  The fractional part only contributes when
+    it accumulates enough to add an integer step.
+
+    What we mean is frequency resolution is the step change in frequency for
+    an integer unit step in Stride.  i.e.  F(x) is frequency at Stride x:
+
+	DeltaFcyc = F( Stride + 1 ) - F( Stride )
+
+    From eq (4)
+
+	DeltaFcyc = ( (Stride + 1 ) - Stride ) / (Tsamp * Nsize)
+
+	DeltaFcyc = 1 / (Tsamp * Nsize)
+
+	DeltaFcyc = Fsamp / Nsize
+
+    Thus frequency resolution is proportional to (1/Nsize), which makes sense.
+    Note it is independent of the output frequency Fcyc.
+
+    As a fraction of Fcyc, define frequency resolution Fres:
+
+	Fres == DeltaFcyc / Fcyc
+
+	    Fres = 1 / Stride
+	    Fres = 1 / (Fcyc * Tsamp * Nsize)
+	    Fres = ( Fsamp / Fcyc ) / Nsize
+
+	Thus one part in Stride is the frequency resolution, which is kind-of
+	the original definition.
+	For fine resolution make Stride big, and thus Nsize big.
+
+    Example:
+	Fsamp = 20 kHz
+	Nsize = 100000
+	Fcyc  = 200 Hz
+
+	    DeltaFcyc = 20 kHz / 100000         = 0.2 Hz
+
+	    Stride    = (Fcyc / Fsamp) * Nsize  = 1000
+
+	    Fres      = 1 / 1000
 
 Frequency Measurement:
 
@@ -321,6 +377,14 @@ Computed Sync Marks:
 
     This is easy to dynamically change, but mostly appropriate for just a
     few edges.  The same width and jitter issues occur.
+
+Class dNcOsc Sync Marks:
+    Use another dNcOsc object just for issuing the stored sync marks.  It has
+    a separate accumulated phase attribute which can be adjusted to position
+    the stored sync mark pattern relative to the sine wave.
+    Essentially combines the stored sync marks with a computed phase position.
+
+    Extend the idea to use multiple objects for multiple sync marks.
 
 LED Gate:
     Can have multiple sync marks.  Possibly externally choose which one to
