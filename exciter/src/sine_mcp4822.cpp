@@ -391,6 +391,9 @@ main( int	argc,
 		Uspix.Stat.grab();	// query this sample only
 
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
+		    Uspix.Fifo.write( vdac );	// previous sample
+		    fifo_cnt++;
+
 		    vsin = Nox.next_sample();
 		    vdac = Sox.scale( vsin );
 		    sync = vsin & 0x1;		// sync mark
@@ -406,10 +409,7 @@ main( int	argc,
 		    vdac = (vdac | DacPrefix) << 16;
 		    // output MSB, i.e. bit 31, first
 
-		    vdac |= (sync << 15);
-
-		    Uspix.Fifo.write( vdac );
-		    fifo_cnt++;
+		    vdac |= (sync << 15);	// save for next write
 		}
 
 		if ( Uspix.Stat.get_TxEmpty_1() ) {	// it was empty
