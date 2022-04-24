@@ -11,10 +11,11 @@
 //    A 12-bit DAC, LSB is 0.0005 V
 //        Vout = 0.0005 V * (Code - 2048)
 //        Code = (Vout / 0.0005 V) + 2048
+// Gate output is SPI bit 17.
 // Provide external configuration:
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
 //   rgpio uspi -1 --SpiEnable_1=1
-//   rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=16
+//   rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=17
 //   rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
 //--------------------------------------------------------------------------
 

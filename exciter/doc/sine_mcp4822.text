@@ -524,7 +524,145 @@ Need:
  v  Add initial fill of Fifo.  Are getting overflow_cnt= 2.
 	This eliminated the initial overflow counts.
 
-    Add sync marks to program.
+ v  Add sync marks to program.
 
     Need trigger output for scope.  Perhaps near start or stop.
+
+----------------------------------------------------------------------------
+## Experiment:  sine_mcp4822 with LED Gate  2022-04-23
+----------------------------------------------------------------------------
+
+Configuration:
+    Continued from above.
+    Code:  sine_mcp4822.cpp  (commit  87807a0edd)  2022-04-23  includes:
+	Expanded wave table to 128*1024 entries.
+	Added LED gate sync marks at 0, 1/2, and 1/8 cycle.
+    Fiber:  FiberTronics SM 9 um core, ST/UPC connector.
+	Canilever length:  13.5 mm
+	Ferrule:  2.5 mm dia ceramic, free fiber (not glued)
+    Exciter:  PUI Audio ASX04008-R
+	Mounted on thick fender washer on micrometer stage.
+    Microscope:  Lens at 1x magnification.
+    RPi:  rpiTouch with HQ Camera
+    RPi:  rpiFour  driving rgUniSpi circuit
+    Circuit:  avolt_dac_v1/  v1.0  (same as above)
+
+Initialize and run:
+    % bin/sine_mcp4822.init
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    % bin/sine_mcp4822 --stride=1024 --gain=400 --nsamp=10000
+	Wtab.Nsize = 131072
+	Sox.Gain   = 400
+	Sox.Offset = 2048
+	Nox.Stride = 1024.0000
+	Nox.Phase  = 0.0000
+	NperCycle  = 128.0000
+	nsize   = 131072
+	istride = 1025
+	    loop_cnt=     5453930
+	    fifo_cnt=     10000      52727 ns/fifo_write
+	    overflow_cnt= 0
+	    delta_ns=  527277037 ns,    96 ns/loop
+	Fsamp =    18965.6 Hz
+	Fcyc  =      148.2 Hz
+
+    Fixed  sine_mcp4822.init  to set --ShiftLength_6=17  (not committed).
+	rgpio uspi -1 --SpiEnable_1=1
+	rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=17
+	rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
+
+    Sync marks are working on Gate output:
+	Are normally low, pulse high for one sample.
+
+    Sine wave output Voa still has lots of digital noise while DAC is clocked.
+
+Try simple Amplitude calibration:
+    Scope trigger on Gate output.
+    Ch1 is sine wave output, BandWidth limit ON (reduce digital noise some).
+    Ch1 50 mV/div
+    Measure with cursors.
+    % bin/sine_mcp4822 --stride=1024 --gain=100 --nsamp=10000
+
+      Gain       Output            mVpp/Gain
+    --gain=100   Voa=  25.75 mVpp   0.2575
+    --gain=200   Voa=  49.25 mVpp   0.2463
+    --gain=400   Voa=  98.25 mVpp   0.2456
+    --gain=50    Voa=  11.75 mVpp   0.2350
+    --gain=300   Voa=  74.25 mVpp   0.2475
+    --gain=500   Voa= 123.00 mVpp   0.2460
+    --gain=1000  Voa= 246.25 mVpp   0.2462
+    --gain=2000  Voa= 496.25 mVpp   0.2481
+
+Exciter drive from scope WaveGen:
+    Current buffer with 10:1 attenuator on input (91.0 kohm series resistor
+	on input, internal 10.0 kohm to ground).
+    Output gain is:  100 mA/V
+    WaveGen output:  500 mVpp, gives 50 mApp
+    Fiber resonance:
+	Mode 1:  500.0 to 520.0 Hz max before jump
+	Mode 2:  513.0 to 522.8 Hz max before jump
+	512 Hz is good spot in Mode1.
+
+Try Gated LED on camera:
+    % bin/sine_mcp4822 --stride=3520 --gain=2000 --nsamp=100000
+	Wtab.Nsize = 131072
+	Sox.Gain   = 2000
+	Sox.Offset = 2048
+	Nox.Stride = 3520.0000
+	Nox.Phase  = 0.0000
+	NperCycle  = 37.2364
+	nsize   = 131072
+	istride = 3521
+	    loop_cnt=     55031319
+	    fifo_cnt=     100000     52733 ns/fifo_write
+	    overflow_cnt= 0
+	    delta_ns= 5273337163 ns,    95 ns/loop
+	Fsamp =    18963.5 Hz
+	Fcyc  =      509.3 Hz
+
+    Measured amplitude:  Voa= 450 mVpp,  45 mApp
+    LED gate (darkness) is clearly visible on the ellipse.
+    See the three asymmetric marks.  Ellipse is tracing CCW.
+    It works!
+
+    Turn-ON/OFF of the signal makes a thump on exciter and transient
+    resonance as fiber motion stabalizes.
+    Transient may kick it into Mode2.
+    Frequency well below Mode2 minimum is needed to see Mode1.
+
+    Sync pulses:  Voa is inverted compared to DAC, thus see on scope:
+	pulse 0 is at Voa zero cross falling
+	pulse 1 is at 1/8 cycle later
+	pulse 2 is at Voa zero cross rising
+	Pulses are darkness, LED off.
+
+    Image capture on rpiTouch:
+	fiber_scanner/camera/data/ex2022_04_23_sine_mcp4822/
+    % raspistill -v -o sine_509Hz_a.jpg
+
+Need:
+ *  Way to stop waveform at zero volts output.
+	Maybe after --nsamp completes add samples to a zero crossing.
+
+    Calibrated amplitude output.
+    Calibrated frequency output.
+
+    Duration of waveform - mostly want continuous while taking picture.
+	Maybe have a Halt button.
+
+    Maybe ways to step frequency/amplitude up and down.
+	Will need a readout method.
+	Rerunning the program may be good enough if it always stops cleanly.
+
+    Way to select sync marks for measuring frequency on scope.
+
+    Recompute rgUniSpi Speed_12 for 17 bits of data.
+
+    Digital noise on analog signal.  How to avoid?
+
+    Output switch on current buffer.
+
+    Avoid transients on exciter stimulating other fiber modes.
+
+    bin/sine_mcp4822.init  is not committed
 

@@ -1,0 +1,14 @@
+#! /bin/bash
+
+# Initialize SPI1 for  sine_mcp4822  program.
+
+set -x
+
+# show only one set of output
+{
+    rgpio uspi -1 --SpiEnable_1=1
+    rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=17
+} > /dev/null
+
+    rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
+
