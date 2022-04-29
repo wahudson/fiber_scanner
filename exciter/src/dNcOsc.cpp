@@ -23,6 +23,10 @@ using namespace std;
 *    &wx         = pointer to an initialized wave table
 *    stride_int  = stride integer part
 *    stride_frac = stride fractional part
+* Note:
+*    The maximum wave table size is limited by MaxPhase to
+*    (1 << (32 - Kbits)) entries.  Is a trade-off with Stride fractional
+*    resolution, Kbits, to fit in a 32-bit integer.
 */
 dNcOsc::dNcOsc(
     dNcWave		*wx,
@@ -50,10 +54,9 @@ dNcOsc::dNcOsc(
     AccPhase   = 0;
     Stride     = to_phase( stride_int, stride_frac );
 
-    //#!! range check not needed
-    if ( Stride >= MaxPhase ) {
+    if ( Stride >= MaxPhase ) {		// sanity check relied-on condition
 	std::ostringstream	css;
-	css << "dNcOsc:  constructor stride exceeds MaxPhase:  ";
+	css << "dNcOsc:  constructor Stride exceeds MaxPhase:  ";
 	css << Stride;
 	throw std::range_error ( css.str() );
     }
@@ -243,6 +246,7 @@ dNcOsc::float2qmk(
     phase = (Kmask + 1) * f;
 
     return  phase;
+//#!! check positive, overflow
 }
 
 
@@ -292,14 +296,14 @@ dNcOsc::to_phase(
 
     if ( frac > Kmask ) {
 	std::ostringstream	css;
-	css << "dNcOsc::to_phase():  fraction exceeds Kbits:  ";
+	css << "dNcOsc::to_phase():  fraction exceeds Kbits (4095):  ";
 	css << frac;
 	throw std::range_error ( css.str() );
     }
 
     if ( mag >= ( (uint32_t) 1 << (32 - Kbits) ) ) {
 	std::ostringstream	css;
-	css << "dNcOsc::to_phase():  mag exceeds Kbits:  ";
+	css << "dNcOsc::to_phase():  integer exceeds 2^20 (1048575):  ";
 	css << mag;
 	throw std::range_error ( css.str() );
     }
