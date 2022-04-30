@@ -45,7 +45,9 @@ Test suites:  (2022-03-10)
  m      = Module test (perl)     TestLib2.pm
  p      = Program test (command)
 ------  --------------
+ u   s  t_dNcOsc/	dNcOsc		Numeric Controlled Oscillator class
  u   s  t_dNcScaler/	dNcScaler	Signal Scaler class
+ u   s  t_dNcWave/	dNcWave		Wave Table class
 
 
 Test Setup:
