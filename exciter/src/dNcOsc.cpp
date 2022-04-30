@@ -111,58 +111,6 @@ dNcOsc::set_phase(
     AccPhase = phase;
 }
 
-
-//#!! init with (integer, fraction)
-
-/*
-* Set the stride (phase increment).
-*/
-void
-dNcOsc::init_stride(
-    uint32_t		stride
-)
-{
-    if ( stride >= MaxPhase ) {
-	std::ostringstream	css;
-	css << "dNcOsc::init_stride():  stride exceeds MaxPhase:  ";
-	css << stride;
-	throw std::range_error ( css.str() );
-    }
-
-    Stride   = stride;
-}
-
-
-/*
-* Set the initial accumulated phase index AccPhase.
-*    Use to provide phase offset between oscillators.
-* call:
-*    init_phase( stride_int, stride_frac )
-*    mag  = integer part,    {0 .. Nsize}
-*    frac = fractional part, {0 .. Kmask}
-*/
-void
-dNcOsc::init_phase(
-    uint32_t		mag,
-    uint32_t		frac
-)
-{
-    uint32_t		phase;
-
-    phase = to_phase( mag, frac );
-
-    if ( phase > MaxPhase ) {
-	std::ostringstream	css;
-	css << "dNcOsc::init_phase():  phase exceeds MaxPhase:  ";
-	css << phase;
-	throw std::range_error ( css.str() );
-    }
-    //#!! error in terms of arguments
-
-    AccPhase = phase;
-}
-
-
 //--------------------------------------------------------------------------
 // Oscillator
 //--------------------------------------------------------------------------

@@ -59,36 +59,6 @@ dNcWave::init_sine(
     }
 }
 
-
-/*
-* Initialize wave table with a single cycle sine wave, floating-point.
-*    Values are (float) of the form:
-*        WavTab = r * sin() + b
-* call:
-*    init_sine( r, b )
-*    r = amplitude
-*    b = offset
-*/
-void
-dNcWave::init_sine_float(
-    float		r,	// amplitude peak
-    float		b	// offset
-)
-{
-    const float		pi  = 3.14159265;
-    float		rad = (float) 2 * pi / Nsize;	// step size, radians
-
-    float		*x;
-
-    for ( uint32_t  i=0;  i<Nsize;  i++ )
-    {
-	x = (float*) &(WavTab[i]);
-	*x = (sin( i * rad ) * r) + b;
-	// store float result in the integer element.  Tricky #!!
-    }
-}
-
-
 //--------------------------------------------------------------------------
 // Load/Store
 //--------------------------------------------------------------------------

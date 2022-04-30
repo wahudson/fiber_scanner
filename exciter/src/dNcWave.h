@@ -27,11 +27,6 @@ class dNcWave {
 			    float	b	// offset
     );
 
-    void		init_sine_float(
-			    float	r,	// amplitude
-			    float	b	// offset
-    );
-
     uint32_t		get_size()	{ return Nsize; }
     int32_t*		get_array()	{ return WavTab; }
 };

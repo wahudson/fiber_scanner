@@ -42,15 +42,6 @@ class dNcOsc {
     float		qmk2float( uint32_t u );
     uint32_t		float2qmk( double f );
 
-
-    //#!!
-    void		init_stride( uint32_t  value );
-
-    void		init_phase(
-			    uint32_t	mag,
-			    uint32_t	frac
-			);
-
     uint32_t		next_sample();
     uint32_t		next_index();
 
