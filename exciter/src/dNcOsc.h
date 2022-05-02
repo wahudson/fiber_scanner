@@ -30,6 +30,8 @@ class dNcOsc {
 	uint32_t	stride_frac
     );
 
+    uint32_t		get_MaxPhase_qmk() { return  MaxPhase; }
+
     uint32_t		get_stride_qmk()   { return Stride; }	// Qm.k
     float		get_stride_float() { return qmk2float( Stride ); }
 
@@ -46,6 +48,8 @@ class dNcOsc {
     uint32_t		next_index();
 
     uint32_t		get_index()  { return (AccPhase >> Kbits); }
+
+    bool		is_new_cycle()	{ return (AccPhase < Stride); }
 
     uint32_t		phase2mag( uint32_t phase ) { return (phase >> Kbits); }
     uint32_t		phase2frac( uint32_t phase ) { return (phase & Kmask); }

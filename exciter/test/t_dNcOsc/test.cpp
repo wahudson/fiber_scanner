@@ -6,6 +6,7 @@
 //		to_phase()
 //    30-39  Stride, Phase accessors
 //    50-59  next_index(), next_sample()
+//    60-69  is_new_cycle(), next_index() rollover
 //--------------------------------------------------------------------------
 
 #include <iostream>	// std::cerr
@@ -408,6 +409,55 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
 	FAIL( "unexpected exception" );
     }
 
+//--------------------------------------------------------------------------
+//## is_new_cycle(), next_index() rollover
+//--------------------------------------------------------------------------
+
+  CASE( "60", "is_new_cycle() at zero phase" );
+    try {
+	Tx.set_stride(  7.9999 );
+	Tx.set_phase(   0.0000 );
+	CHECK(           1, Tx.is_new_cycle() );
+	CHECKX( 0x00007fff, Tx.get_stride_qmk() );
+	CHECKX( 0x00000000, Tx.get_phase_qmk() );
+	CHECK(           7, Tx.next_index() );
+	CHECK(           0, Tx.is_new_cycle() );
+	CHECKX( 0x00007fff, Tx.get_stride_qmk() );
+	CHECKX( 0x00007fff, Tx.get_phase_qmk() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "61", "is_new_cycle() at MaxPhase" );
+    try {
+	CHECKX( 0x0007ffff, Tx.get_MaxPhase_qmk() );
+	CHECKX( 0x0007ffff, Tx.float2qmk(  127.999999 ) );
+	Tx.set_stride(   7.9999 );
+	Tx.set_phase(  127.9999 );
+	CHECK(           0, Tx.is_new_cycle() );
+	CHECKX( 0x00007fff, Tx.get_stride_qmk() );
+	CHECKX( 0x0007ffff, Tx.get_phase_qmk() );
+	CHECK(           7, Tx.next_index() );
+	CHECK(           1, Tx.is_new_cycle() );
+	CHECKX( 0x00007fff, Tx.get_stride_qmk() );
+	CHECKX( 0x00007ffe, Tx.get_phase_qmk() );
+	CHECK(          15, Tx.next_index() );
+	CHECK(           0, Tx.is_new_cycle() );
+	CHECKX( 0x00007fff, Tx.get_stride_qmk() );
+	CHECKX( 0x0000fffd, Tx.get_phase_qmk() );
+    }
+    catch ( range_error& e ) {
+	CHECK( "dNcOsc::set_phase():  phase exceeds MaxPhase:  128",
+	    e.what()
+	);
+	FAIL( "range exception" );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
   CASE( "99", "Done" );
 }
 

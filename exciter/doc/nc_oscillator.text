@@ -1,0 +1,128 @@
+2022-05-01  William A. Hudson
+
+		Numeric Controlled Oscillator (NCO) Design
+		------------------------------------------
+
+General Idea:
+
+    A wave table holds samples for one cycle of the output waveform, typically
+    a sine wave, but can be arbitrary.
+
+    A fixed point accumulator holds the index (accumulated phase).
+    A constant stride is added for each sample output.
+
+    At each sample do:  (fixed-point Qm.k)
+    {
+	AccPhase += Stride
+	output  ( WaveTable[ (AccPhase >> Kbits) ] )
+    }
+
+    Original idea from  Erin E. Flater  2017-08-01.
+    I developed this implementation.
+
+----------------------------------------------------------------------------
+## Operation
+----------------------------------------------------------------------------
+
+Essential Parameters:
+
+    size_t		Nsize;		// Number of entries used in table
+    int32_t*		WavTab;		// Wave table array
+
+				// Qm.k fixed point values, k= Kbits
+    uint32_t		Stride;		// Stride stepping thru wave table.
+    uint32_t		AccPhase;	// Accumulated phase index into WTab.
+    uint32_t		MaxPhase;	// Maximum Accumulated phase.
+
+    const uint		Kbits = 12;	// Number of bits in fractional part.
+    const uint32_t	Kmask = (1 << Kbits) - 1;
+
+
+    The wave table WavTab is an array, of at least size Nsize, holding waveform
+    sample values.  One cycle of the waveform encompasses [0 .. Nsize] entries.
+
+    The idea is to step thru the wave table by Stride, accumulating the
+    phase (position in the cycle) in AccPhase.  At each step one sample of
+    the waveform is output.  Generally Stride is much less than Nsize.
+
+    Fixed-point arithmetic is used, where the integer part indexes the
+    wave table.  The fractional part provides higher resolution, and
+    contributes only when it has accumulated enough to roll over into the
+    integer part.
+
+Next Sample:
+
+    The essential operation is:
+
+	AccPhase += Stride;
+
+	if ( AccPhase > MaxPhase ) {		// rollover
+	    AccPhase -= (MaxPhase + 1);
+	}
+
+	index = (AccPhase >> Kbits);
+
+	sample = WavTab[index];
+
+    where
+	MaxPhase = (Nsize << Kbits) - 1;
+
+	    Is the maximum value that AccPhase can take on.
+	    e.g.
+	    Kbits = 12
+	    Nsize = 128 = 0x00000400
+	    MaxPhase    = 0x003fffff
+
+    Require:  (Stride < MaxPhase)
+	To keep rollover tracking simple.
+	Generally want Stride much less than (MaxPhase/2) to have a reasonable
+	number of samples per cycle.
+
+	Normally the output waveform frequency increases with Stride.
+	As Stride approaches MaxPhase, the frequency appears to decrease and
+	the wave table is effectively scanned in the reverse direction.
+	Essentially the waveform becomes under-sampled.
+
+    Require:  (Stride > 0)  positive
+	One could allow a negative Stride to scan the wave table in reverse,
+	but handling rollover gets more complex.  Keep it simple for now.
+
+    Rollover calculation:
+	MaxPhase is the maximum valid value of AccPhase.
+	A value one larger (MaxPhase + 1) is equivalent to zero (0), thus
+	we subtract (MaxPhase + 1).
+
+	Subtracting only MaxPhase results in a small phase slip that is
+	generally unnoticeable in typical conditions.
+	[I did have it wrong prior to 2022-05-01.]
+
+New Cycle:
+
+    We want to know each time the output sample has rolled over to the
+    beginning of the wave table.
+
+    Since Stride can cover several table indices, it is not as simple
+    as looking for index zero.
+
+    One way is to set a flag when AccPhase rolls over, and clear it otherwise.
+
+    Another way is the condition:
+
+	NewCycle = (AccPhase < Stride);
+
+    This condition is true exactly one sample per cycle.  The two corner-cases
+    are:
+	a)  AccPhase = 0;		==> NewCycle = 1;
+	    AccPhase += Stride;		==> NewCycle = 0;
+
+	b)  AccPhase = MaxPhase;	==> NewCycle = 0;
+	    AccPhase += Stride;
+		= MaxPhase + Stride
+	    AccPhase -= (MaxPhase + 1);
+		= Stride - 1		==> NewCycle = 1;
+
+    Note this would not work if the AccPhase rollover calculation (above) was
+    not exactly correct.
+
+Fixed-point Qm.k:
+

@@ -63,7 +63,7 @@ dNcOsc::dNcOsc(
 }
 
 //--------------------------------------------------------------------------
-// Initialization
+// Configuration
 //--------------------------------------------------------------------------
 
 /*
@@ -101,7 +101,7 @@ dNcOsc::set_phase(
 
     phase = float2qmk( v );
 
-    if ( phase >= MaxPhase ) {
+    if ( phase > MaxPhase ) {
 	std::ostringstream	css;
 	css << "dNcOsc::set_phase():  phase exceeds MaxPhase:  ";
 	css << v;
@@ -118,7 +118,7 @@ dNcOsc::set_phase(
 /*
 * Return next oscillator output index.
 *    Increments the accumulated phase with Stride.
-*    Rollover at MaxPhase.
+*    Rollover at (MaxPhase + 1).
 */
 uint32_t
 dNcOsc::next_index()
@@ -128,7 +128,7 @@ dNcOsc::next_index()
     AccPhase += Stride;
 
     if ( AccPhase > MaxPhase ) {
-	AccPhase -= MaxPhase;
+	AccPhase -= (MaxPhase + 1);
     }
 
     index = (AccPhase >> Kbits);
@@ -140,7 +140,7 @@ dNcOsc::next_index()
 /*
 * Return next oscillator output sample.
 *    Increments the accumulated phase with Stride.
-*    Rollover at Nsize end of table.
+*    Rollover at (MaxPhase + 1).
 */
 uint32_t
 dNcOsc::next_sample()
@@ -151,7 +151,7 @@ dNcOsc::next_sample()
     AccPhase += Stride;
 
     if ( AccPhase > MaxPhase ) {
-	AccPhase -= MaxPhase;
+	AccPhase -= (MaxPhase + 1);
     }
 
 //    cout << "0x" <<hex << AccPhase <<endl;
