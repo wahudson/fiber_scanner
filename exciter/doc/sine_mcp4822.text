@@ -189,16 +189,18 @@ Conversion Factors:  Gain, Stride
     (7)  Stride = Fcyc * Stride_Hz
 
 	#!! The name Stride_Hz is a bit confusing.  StrideCyc  StridePerHz ?
+	StridePer_Hz
+	GainPer_mVpp
 
 SPI Frequency:  (rgUniSpi)
 
     From:  dac_adc/code/doc/uspi_period.text
 	--Speed_12		- Sets the SCLK clock frequency.
-	Fsclk = Fsys / (2 * (Speed_12 + 1))		- SCLK frequency
+    (8)  Fsclk = Fsys / (2 * (Speed_12 + 1))		- SCLK frequency
 
-	Tsclk = 1 / Fsclk		SLCK period
+	 Tsclk = 1 / Fsclk		SLCK period definition
 
-	Tsclk = 2 * (Speed_12 + 1) / Fsys
+    (9)  Tsclk = 2 * (Speed_12 + 1) / Fsys
 
 	On a RPi4:
 	Fsys = 200 MHz  for  Farm =  600 MHz  idle
@@ -209,6 +211,24 @@ SPI Frequency:  (rgUniSpi)
     Nsclk = ShiftLength_6 + 2.5      = number of sclk periods in a SPI cycle
 
     Tsamp = Tsclk * Nsclk	= sample period (one SPI CS cycle).
+
+    Thus to find Speed_12 for a given Tsamp:
+
+	Tsclk = Tsamp / Nsclk
+
+	Speed_12 = ((Tsclk * Fsys) / 2) - 1		from (9)
+	Speed_12 = ((Tsamp * Fsys / Nsclk) / 2) - 1
+
+    Example:
+	Tsamp = 50 us,  for 20 kSPS desired sample rate
+	ShiftLength_6 = 16
+	Fsys = 500 MHz
+
+	Nsclk = 16 + 2.5  = 18.5
+	Tsclk = 50 us / 18.5  = 2.70 us
+	Speed_12 = ((2.70 us * 500 MHz) / 2) - 1  = 674.7
+
+	Speed_12 = 640.03,  for ShiftLength_6 = 17
 
 Frequency Resolution:
 
@@ -421,6 +441,160 @@ LED Gate:
     have program pgm_box).
 
 ----------------------------------------------------------------------------
+## Ramp Gain up/down
+----------------------------------------------------------------------------
+
+    Idea is to ramp Gain up from zero at beginning, and back down to zero
+    at the end to avoid step transients.
+    Gain is changed only near the zero crossing to minimize step change.
+
+    Ramp duration is a counted number of waveform (sinusoid) cycles.
+    A gain increment (gain_inc) is added to the Gain each cycle during
+    the ramp.  The sign determines the direction of the ramp (up or down).
+
+    Use a linear ramp.  Is probably good enough, and fairly simple.
+    Could use the dNcOsc class to make a sinusoidal ramp, which would
+    be very smooth (i.e. have a continuous derivative).
+
+    Gain in dNcScaler class is an integer.
+
+    Perhaps the gain step can be fixed point, e.g. Q20.12, which could
+    give fractional step resolution useful for small gain steps.
+
+    Want fairly efficient execution since it is in the inner loop.
+    Although ... 50 us per sample (20 kSPS) is pretty long.
+
+    In general the final gain will not be divisible by an integer number
+    of cycles.  Ways to handle:
+    A) Use fixed point with enough precision.
+ >  B) Last ramp step could be smaller to exactly hit final gain.  Clamp.
+    C) Approximate final gain, not exact.
+    D) Let GainInc = 1, and accept up to 2048 steps.  Too slow.
+
+    Possibly incorporate gain ramp into dNcScaler class.
+
+Three phases of ramp:
+    1) Ramp up.
+    2) Hold steady.
+    3) Ramp down.
+
+Algorithm concept:  (rough ideas)
+
+    FinalGain   = 1024;
+    DesiredRamp = 100;		// estimate of number of cycles desired
+
+    gain_inc = FinalGain / DesiredRamp;		// integer division
+    ramp_cnt = FinalGain / gain_inc;		// ramp number of cycles
+		// trying to count cycles during ramp
+
+    while (inner loop)	// (B) Clamp at final gain
+    {
+	if ( (new cycle) && ramp_cnt ) {
+	    ramp_cnt--;
+	    Gain = Gain + gain_inc;
+	    if ( Gain >= FinalGain ) { Gain=FinalGain;  ramp_cnt = 0; }
+	    if ( Gain <= 0         ) { Gain=0;          ramp_cnt = 0;  break; }
+	}
+	...
+    }
+
+    Change the sign of gain_inc to ramp down.
+
+    The "break" could exit the loop after ramp-down.
+
+    The ramp_cnt could be a boolean flag, since it is forced to zero when
+    the Gain value is clamped.
+
+    Put this into Q20.12 fixed-point arithmetic.
+
+Refine Code:  (Q20.12 fixed-point arithmetic)
+
+    int32_t		hold_cnt        = Opx.ncyc.Val;
+    bool		ramp_flag       = 1;
+    int32_t		ramp_cnt        = 0;
+    int32_t		final_gain_Qd12 = Opx.gain.Val << 12;
+    int32_t		gain_step_Qd12  = final_gain_Qd12 / Opx.nramp.Val;
+    int32_t		gain_Qd12       = Sox.get_Gain() << 12;
+
+    while ( hold_cnt || ramp_flag )	// inner loop
+    {
+	if ( (new cycle) && ramp_flag ) {	// in the ramp
+	    ramp_cnt++;
+	    gain_Qd12 += gain_step_Qd12;
+
+	    if ( gain_Qd12 >= final_gain_Qd12 ) {	// clamp final
+		gain_Qd12 = final_gain_Qd12;
+		ramp_flag = 0;
+	    }
+	    if ( gain_Qd12 <= 0 ) {			// clamp zero
+		gain_Qd12 = 0;
+		ramp_flag = 0;
+	    }
+
+	    Sox.set_Gain( gain_Qd12 >> 12 );
+	}
+	else if (new cycle) {			// in the hold period
+	    hold_cnt--;
+	    if ( hold_cnt <= 0 ) {
+		ramp_flag = 1;
+		gain_step_Qd12 = - gain_step_Qd12;
+	    }
+	}
+	...
+    }
+
+    This makes a little state machine inside the main loop to ramp up, hold,
+    and ramp down.
+
+    Implimented prototype code in sine_mcp4822 program.  Seems to work, but
+    is hard to test, with quite a lot of complexity and things that could
+    go wrong.
+
+Ramp Class:  (dNcRamp)
+
+    Implement the gain ramping as a class derived from dNcScaler.
+
+    Function to evolve one ramp step:
+    ramp_step()
+    {
+	switch (state) {
+	case 3:		// ramp up
+	    gain_Qd12 += gain_step_Qd12;
+	    if ( gain_Qd12 >= final_gain_Qd12 ) {	// clamp final
+		gain_Qd12 = final_gain_Qd12;
+		state = 2;
+	    }
+	    break;
+	case 2:		// hold
+	    hold_cnt--;
+	    if ( hold_cnt <= 0 ) {
+		state = 1;
+	    }
+	    break;
+	case 1:		// ramp down
+	    gain_Qd12 -= gain_step_Qd12;
+	    if ( gain_Qd12 <= 0 ) {			// clamp zero
+		gain_Qd12 = 0;
+		state = 0;
+	    }
+	    break;
+	}
+
+	set_Gain( gain_Qd12 >> 12 );
+	return  state;		// 0 when done
+    }
+
+    while ( notdone )	// inner loop
+    {
+	if (new cycle) {
+	    notdone = ramp_step();
+	}
+	...
+    }
+
+    This algorithm works only for positive gain, simpler to start.
+
+----------------------------------------------------------------------------
 ## Current Implementation
 ----------------------------------------------------------------------------
 
@@ -626,7 +800,7 @@ Try Gated LED on camera:
     It works!
 
     Turn-ON/OFF of the signal makes a thump on exciter and transient
-    resonance as fiber motion stabalizes.
+    resonance as fiber motion stabilizes.
     Transient may kick it into Mode2.
     Frequency well below Mode2 minimum is needed to see Mode1.
 
@@ -656,7 +830,7 @@ Need:
 
     Way to select sync marks for measuring frequency on scope.
 
-    Recompute rgUniSpi Speed_12 for 17 bits of data.
+ v  Recompute rgUniSpi Speed_12 for 17 bits of data.
 
     Digital noise on analog signal.  How to avoid?
 
@@ -664,5 +838,5 @@ Need:
 
     Avoid transients on exciter stimulating other fiber modes.
 
-    bin/sine_mcp4822.init  is not committed
+ v  src/sine_mcp4822.init  is not committed
 

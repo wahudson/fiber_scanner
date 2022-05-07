@@ -27,6 +27,8 @@ src/		Source code
 		    Object Classes
     dNcOsc.cpp		Numeric Controlled Oscillator class
     dNcOsc.h
+    dNcRamp.cpp		Gain Ramp class
+    dNcRamp.h
     dNcScaler.cpp	Signal Scaler class
     dNcScale.h
     dNcWave.cpp		Wave Table class

@@ -10,11 +10,12 @@
 //--------------------------------------------------------------------------
 
 class dNcScaler {
-  private:
+  protected:
     uint32_t		Nbits;		// output number of bits full scale
     uint32_t		MaskFS;		// full scale mask ((1 << Nbits) - 1)
 					//     is maximum FS output.
 
+  private:
     int32_t		Gain;		// multiplier [-MaskFS to MaskFS]
     int32_t		Offset;		// offset     [0 to MaskFS]
 

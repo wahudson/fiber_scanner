@@ -20,6 +20,7 @@ INCS       = \
 	$(IH)/yOpVal.h \
 	$(IH)/yOption.h \
 	$(IH)/dNcOsc.h \
+	$(IH)/dNcRamp.h \
 	$(IH)/dNcScaler.h \
 	$(IH)/dNcWave.h
 
@@ -29,6 +30,7 @@ OBJS       = \
 	$(OJ)/yOpVal.o \
 	$(OJ)/yOption.o \
 	$(OJ)/dNcOsc.o \
+	$(OJ)/dNcRamp.o \
 	$(OJ)/dNcScaler.o \
 	$(OJ)/dNcWave.o
 
@@ -77,6 +79,9 @@ $(BINDIR)/sine_mcp4822:	 sine_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
 
 $(OJ)/dNcOsc.o:		dNcOsc.cpp  dNcOsc.h  dNcWave.h
 	g++ $(CXXFLAGS) -o $@  -c dNcOsc.cpp
+
+$(OJ)/dNcRamp.o:	dNcRamp.cpp  dNcRamp.h
+	g++ $(CXXFLAGS) -o $@  -c dNcRamp.cpp
 
 $(OJ)/dNcScaler.o:	dNcScaler.cpp  dNcScaler.h
 	g++ $(CXXFLAGS) -o $@  -c dNcScaler.cpp
