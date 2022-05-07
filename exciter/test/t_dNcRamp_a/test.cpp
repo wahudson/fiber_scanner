@@ -1,6 +1,7 @@
-// 2022-03-10  William A. Hudson
+// 2022-05-03  William A. Hudson
 //
-// Testing:  dNcScaler  Signal Scaler class for Numeric Controlled Oscillator.
+// Testing:  dNcRamp  Gain Ramp class for Numeric Controlled Oscillator.
+//    Parallels t_dNcScaler/ base class test.
 //    10-19  Constructors
 //    20-29  Configure set_Gain(), set_Offset()
 //    30-39  Scale values scale()  v= Q2.30
@@ -12,7 +13,7 @@
 #include <stdexcept>	// std::stdexcept
 
 #include "utLib1.h"		// unit test library
-#include "dNcScaler.h"
+#include "dNcRamp.h"
 
 using namespace std;
 
@@ -25,7 +26,7 @@ int main()
 //## Shared object
 //--------------------------------------------------------------------------
 
-dNcScaler		Tx  ( 12 );	// constructor
+dNcRamp		Tx  ( 12 );	// constructor
 
 
 //--------------------------------------------------------------------------
@@ -34,10 +35,10 @@ dNcScaler		Tx  ( 12 );	// constructor
 
   CASE( "10", "constructor, 10-bit" );
     try {
-	dNcScaler	tx  ( 10 );
+	dNcRamp		tx  ( 10 );
 	CHECK( 10,   tx.get_Nbits() );
 	CHECK( 1023, tx.get_MaskFS() );
-	CHECK( 1,    tx.get_Gain() );
+	CHECK( 0,    tx.get_Gain() );
 	CHECK( 0,    tx.get_Offset() );
     }
     catch (...) {

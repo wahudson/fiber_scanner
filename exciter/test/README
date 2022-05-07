@@ -46,6 +46,8 @@ Test suites:  (2022-03-10)
  p      = Program test (command)
 ------  --------------
  u   s  t_dNcOsc/	dNcOsc		Numeric Controlled Oscillator class
+ u   s  t_dNcRamp/	dNcRamp		Gain Ramp class
+ u   s  t_dNcRamp_a/	dNcRamp		Gain Ramp class, test base class
  u   s  t_dNcScaler/	dNcScaler	Signal Scaler class
  u   s  t_dNcWave/	dNcWave		Wave Table class
 
