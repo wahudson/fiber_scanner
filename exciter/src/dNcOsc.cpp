@@ -68,18 +68,21 @@ dNcOsc::dNcOsc(
 
 /*
 * Set the stride (phase increment).
+*    Stride is a Qm.k fixed point value, where k= Kbits.
+*    The integer part can range over the wave table [0 .. Nsize-1], however
+*    output aliasing will occur when larger than (Nsize/2).
 * call:
-*    set_stride( f )
-*    f = float (double), require (0 < f < (MaxPhase >> Kbits))
+*    set_stride( v )
+*    v = stride (double), require (0 < v < Nsize)
+* exceptions:
+*    range_error
 */
 void
 dNcOsc::set_stride(
-    float		v
+    double		v
 )
 {
     uint32_t		stride;
-
-    stride = float2qmk( v );
 
     if ( v <= 0.0 ) {	// disallow zero stride
 	std::ostringstream	css;
@@ -87,10 +90,19 @@ dNcOsc::set_stride(
 	css << v;
 	throw std::range_error ( css.str() );
     }
-    else if ( stride >= MaxPhase ) {
+    else if ( v >= (double) WTab->get_size() ) {
 	std::ostringstream	css;
-	css << "dNcOsc::set_stride():  stride exceeds MaxPhase:  ";
+	css << "dNcOsc::set_stride():  stride exceeds WaveTable size:  ";
 	css << v;
+	throw std::range_error ( css.str() );
+    }
+
+    stride = float2qmk( v );
+
+    if ( ! (stride <= MaxPhase) ) {	// critical requirement
+	std::ostringstream	css;
+	css << "dNcOsc::set_stride():  Stride exceeds MaxPhase:  ";
+	css << stride << "  MaxPhase=" << MaxPhase;
 	throw std::range_error ( css.str() );
     }
 
@@ -100,18 +112,20 @@ dNcOsc::set_stride(
 
 /*
 * Set the accumulated phase index AccPhase.
+*    Phase is a Qm.k fixed point value, where k= Kbits.
+*    The integer part can range over the wave table [0 .. Nsize-1].
 * call:
-*    set_stride( f )
-*    f = float (double), require (0 < f <= (MaxPhase >> Kbits))
+*    set_stride( v )
+*    v = phase (double), require (0 < v < Nsize)
+* exceptions:
+*    range_error
 */
 void
 dNcOsc::set_phase(
-    float		v
+    double		v
 )
 {
     uint32_t		phase;
-
-    phase = float2qmk( v );
 
     if ( v < 0.0 ) {	// allow zero phase
 	std::ostringstream	css;
@@ -119,10 +133,19 @@ dNcOsc::set_phase(
 	css << v;
 	throw std::range_error ( css.str() );
     }
-    else if ( phase > MaxPhase ) {
+    else if ( v >= (double) WTab->get_size() ) {
+	std::ostringstream	css;
+	css << "dNcOsc::set_phase():  phase exceeds WaveTable size:  ";
+	css << v;
+	throw std::range_error ( css.str() );
+    }
+
+    phase = float2qmk( v );
+
+    if ( ! (phase <= MaxPhase) ) {	// critical requirement
 	std::ostringstream	css;
 	css << "dNcOsc::set_phase():  phase exceeds MaxPhase:  ";
-	css << v;
+	css << phase << "  MaxPhase=" << MaxPhase;
 	throw std::range_error ( css.str() );
     }
 

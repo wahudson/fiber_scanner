@@ -283,13 +283,34 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
     }
 
 //--------------------------------------
-  CASE( "36a", "set_stride( float )" );
+  CASE( "33a", "set_stride( float ) maximum" );
+    try {
+	Tx.set_stride( 127.9999 );
+	CHECKX( 0x0007ffff, Tx.get_stride_qmk() );
+	CHECK(         127, Tx.get_stride_float() );	// convert to int
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "33b", "set_phase( float ) maximum" );
+    try {
+	Tx.set_phase( 127.9999 );
+	CHECKX( 0x0007ffff, Tx.get_phase_qmk() );
+	CHECK(         127, Tx.get_phase_float() );	// convert to int
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "36a", "set_stride( float ) exceed table" );
     try {
 	Tx.set_stride( 128.0 );
 	FAIL( "no throw" );
     }
     catch ( range_error& e ) {
-	CHECK( "dNcOsc::set_stride():  stride exceeds MaxPhase:  128",
+	CHECK( "dNcOsc::set_stride():  stride exceeds WaveTable size:  128",
 	    e.what()
 	);
     }
@@ -297,13 +318,13 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "36b", "set_phase( float )" );
+  CASE( "36b", "set_phase( float ) exceed table" );
     try {
 	Tx.set_phase( 128.0 );
 	FAIL( "no throw" );
     }
     catch ( range_error& e ) {
-	CHECK( "dNcOsc::set_phase():  phase exceeds MaxPhase:  128",
+	CHECK( "dNcOsc::set_phase():  phase exceeds WaveTable size:  128",
 	    e.what()
 	);
     }

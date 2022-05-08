@@ -38,8 +38,8 @@ class dNcOsc {
     uint32_t		get_phase_qmk()    { return AccPhase; }	// Qm.k
     float		get_phase_float()  { return qmk2float( AccPhase ); }
 
-    void		set_stride( float  v );
-    void		set_phase(  float  v );
+    void		set_stride( double  v );
+    void		set_phase(  double  v );
 
     double		qmk2float( int32_t u );
     int32_t		float2qmk( double f );
