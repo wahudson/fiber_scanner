@@ -68,6 +68,9 @@ dNcOsc::dNcOsc(
 
 /*
 * Set the stride (phase increment).
+* call:
+*    set_stride( f )
+*    f = float (double), require (0 < f < (MaxPhase >> Kbits))
 */
 void
 dNcOsc::set_stride(
@@ -78,7 +81,13 @@ dNcOsc::set_stride(
 
     stride = float2qmk( v );
 
-    if ( stride >= MaxPhase ) {
+    if ( v <= 0.0 ) {	// disallow zero stride
+	std::ostringstream	css;
+	css << "dNcOsc::set_stride():  require (stride > 0):  ";
+	css << v;
+	throw std::range_error ( css.str() );
+    }
+    else if ( stride >= MaxPhase ) {
 	std::ostringstream	css;
 	css << "dNcOsc::set_stride():  stride exceeds MaxPhase:  ";
 	css << v;
@@ -91,6 +100,9 @@ dNcOsc::set_stride(
 
 /*
 * Set the accumulated phase index AccPhase.
+* call:
+*    set_stride( f )
+*    f = float (double), require (0 < f <= (MaxPhase >> Kbits))
 */
 void
 dNcOsc::set_phase(
@@ -101,7 +113,13 @@ dNcOsc::set_phase(
 
     phase = float2qmk( v );
 
-    if ( phase > MaxPhase ) {
+    if ( v < 0.0 ) {	// allow zero phase
+	std::ostringstream	css;
+	css << "dNcOsc::set_phase():  require (phase >= 0):  ";
+	css << v;
+	throw std::range_error ( css.str() );
+    }
+    else if ( phase > MaxPhase ) {
 	std::ostringstream	css;
 	css << "dNcOsc::set_phase():  phase exceeds MaxPhase:  ";
 	css << v;
@@ -177,14 +195,14 @@ dNcOsc::next_sample()
 
 /*
 * Convert float to Qm.k format, where k= Kbits.
-*    Precision may be lost.
+*    Precision may be lost.  May overflow.
 * call:
 *    float2qmk( f )
-*    f = positive float (double) (f >= 0).
+*    f = float (double)
 * return:
 *    ()  = phase, in Qm.k format, where k=Kbits, m=(32 - Kbits)
 */
-uint32_t
+int32_t
 dNcOsc::float2qmk(
     double 		f
 )
@@ -194,7 +212,6 @@ dNcOsc::float2qmk(
     phase = (Kmask + 1) * f;
 
     return  phase;
-//#!! check positive, overflow
 }
 
 
@@ -203,16 +220,19 @@ dNcOsc::float2qmk(
 *    Precision may be lost.
 * call:
 *    qmk2float( u )
-*    u = unsigned Qm.k
+*    u = signed Qm.k, where k=Kbits
 * return:
-*    ()  = float
+*    ()  = float (double)
+* Note:  Direct calculation is:  y = (float) u / (Kmask + 1)
+*    Calculation by parts avoids overflow of a float by a 32-bit u, and
+*    is unnecessary with double.
 */
-float
+double
 dNcOsc::qmk2float(
-    uint32_t 		u	// Qm.k
+    int32_t 		u	// Qm.k
 )
 {
-    float		y;
+    double		y;
 
     y = (u & Kmask);		// fractional part as integer, convert to float
     y = y / (Kmask + 1);

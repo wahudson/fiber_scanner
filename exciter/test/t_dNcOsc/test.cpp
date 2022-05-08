@@ -133,17 +133,28 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
 	CHECK(     8192000, Tx.float2qmk( 2000.0 ) );
 	CHECK(         409, Tx.float2qmk(    0.1 ) );
 	CHECK(           4, Tx.float2qmk(    0.001 ) );
+	CHECK(           0, Tx.float2qmk(    0.0 ) );
 	CHECK(       -4096, Tx.float2qmk(   -1.0 ) );
+	CHECK(    -8192000, Tx.float2qmk(-2000.0 ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
   CASE( "22", "qmk2float()" );
+    // Float convert to int, scaled to see frational part.
     try {
-	CHECK(        4096, Tx.float2qmk( Tx.qmk2float(        4096 ) ) );
-	CHECK(       -4096, Tx.float2qmk( Tx.qmk2float(       -4096 ) ) );
-	CHECK(     1024037, Tx.float2qmk( Tx.qmk2float(     1024037 ) ) );
+	CHECK(           0, (1000 * Tx.qmk2float(          0 )) );
+	CHECK(        1000, (1000 * Tx.qmk2float(       4096 )) );
+	CHECK(       -1000, (1000 * Tx.qmk2float(      -4096 )) );
+	CHECK(     -100000, (1000 * Tx.qmk2float(    -409600 )) );
+	CHECK(        7000, (1000 * Tx.qmk2float( 0x00007000 )) );
+	CHECK(       -3000, (1000 * Tx.qmk2float( 0xffffd000 )) );
+	CHECK(      250125, (1000 * Tx.qmk2float(    1024512 )) );
+	CHECK(         244, (1000000 * Tx.qmk2float(         1 )) );
+	CHECK(        -244, (1000000 * Tx.qmk2float(        -1 )) );
+	CHECK(     1000244, (1000000 * Tx.qmk2float(      4097 )) );
+//	cout << "qmk2float:  " << Tx.qmk2float( 0xfffff033 ) <<endl;
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -203,17 +214,21 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
 //## Stride, Phase accessors
 //--------------------------------------------------------------------------
 
-  CASE( "30a", "set_stride( float )" );
+  CASE( "30a", "set_stride( float ) Error =0" );
     try {
 	Tx.set_stride( 0.0 );
-	CHECKX( 0x00000000, Tx.get_stride_qmk() );
-	CHECK(           0, Tx.get_stride_float() );
+	FAIL( "no throw" );
+    }
+    catch ( range_error& e ) {
+	CHECK( "dNcOsc::set_stride():  require (stride > 0):  0",
+	    e.what()
+	);
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "30b", "set_phase( float )" );
+  CASE( "30b", "set_phase( float ) allow =0" );
     try {
 	Tx.set_phase( 0.0 );
 	CHECKX( 0x00000000, Tx.get_phase_qmk() );
@@ -297,13 +312,13 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
     }
 
 //--------------------------------------
-  CASE( "37a", "set_stride( float )" );
+  CASE( "37a", "set_stride( float ) Error negative" );
     try {
 	Tx.set_stride( -42.33 );
 	FAIL( "no throw" );
     }
     catch ( range_error& e ) {
-	CHECK( "dNcOsc::set_stride():  stride exceeds MaxPhase:  -42.33",
+	CHECK( "dNcOsc::set_stride():  require (stride > 0):  -42.33",
 	    e.what()
 	);
     }
@@ -311,13 +326,13 @@ dNcOsc			Tx  ( &Wx, 1, 0 );	// stride int, frac
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "37b", "set_phase( float )" );
+  CASE( "37b", "set_phase( float ) Error negative" );
     try {
 	Tx.set_phase( -42.33 );
 	FAIL( "no throw" );
     }
     catch ( range_error& e ) {
-	CHECK( "dNcOsc::set_phase():  phase exceeds MaxPhase:  -42.33",
+	CHECK( "dNcOsc::set_phase():  require (phase >= 0):  -42.33",
 	    e.what()
 	);
     }

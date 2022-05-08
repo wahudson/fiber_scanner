@@ -83,6 +83,9 @@ Next Sample:
 	the wave table is effectively scanned in the reverse direction.
 	Essentially the waveform becomes under-sampled.
 
+	Perhaps warn of aliasing if (Stride > MaxPhase/2)?
+	Or perhaps the class should allow exploration of aliasing.
+
     Require:  (Stride > 0)  positive
 	One could allow a negative Stride to scan the wave table in reverse,
 	but handling rollover gets more complex.  Keep it simple for now.
@@ -123,6 +126,57 @@ New Cycle:
 
     Note this would not work if the AccPhase rollover calculation (above) was
     not exactly correct.
+
+----------------------------------------------------------------------------
+## Thoughts
+----------------------------------------------------------------------------
+
+Signed vs Unsigned Integer:
+
+    Bit patterns are best represented by an unsigned integer, usually uint32_t.
+
+    Integer numbers could be represented either way.
+
+    Sometimes I use an unsigned int to represent an integer that is
+    never negative.  An unsigned comparison, e.g. (u <= Max), also implicitly
+    implies non-negative.  However at the point of comparison the type of
+    the variable is usually not obvious.
+
+    Signed and unsigned values are frequently interchanged due to the
+    "usual conversions" of the C-language.  The bit pattern is unchanged,
+    in two's complement notation, but the interpretation is different.
+    Thus trying to use unsigned to ensure a value is positive tends to get
+    defeated.
+
+    An unsigned int should not be used as a way to get an extra bit of
+    precision (or range).  [Expert advice from Bjarne Stroustrup, p.50.]
+
+    Another difference is right-shift (>>), where an signed integer is
+    sign-extended, and unsigned is zero-extended.
+
+    In conclusion, I am leaning toward declaring integer numbers as signed.
+    In some cases declaring unsigned might be a useful hint that the value
+    should be positive, but always expect that it could hold a signed value.
+    (2022-05-08)
+
+Float and Qm.k conversion:
+
+    Functions float2qmk() and qmk2float().
+
+    A float is always signed.  Thus the Qm.k value should also be signed
+    for these conversions.
+    If the use of the value requires it be positive, that should be checked
+    elsewhere.
+
+    A single-precision float has about 24-bits of precision, not enough to
+    represent a 32-bit integer.  Thus float2qmk() takes a double-precision
+    argument.
+
+    In this (numeric oscillator) context, qmk2float() is mostly used as
+    an easy way to view the decimal point in the Qm.k value.  For casual
+    use returning float is good enough, which is how it started.
+    Changed to return double - to make it symmetric, and since execution
+    time is generally not critical.
 
 Fixed-point Qm.k:
 

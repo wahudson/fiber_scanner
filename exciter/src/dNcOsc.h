@@ -41,8 +41,8 @@ class dNcOsc {
     void		set_stride( float  v );
     void		set_phase(  float  v );
 
-    float		qmk2float( uint32_t u );
-    uint32_t		float2qmk( double f );
+    double		qmk2float( int32_t u );
+    int32_t		float2qmk( double f );
 
     uint32_t		next_sample();
     uint32_t		next_index();
