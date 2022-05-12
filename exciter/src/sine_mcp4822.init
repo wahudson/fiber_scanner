@@ -7,7 +7,7 @@ set -x
 # show only one set of output
 {
     rgpio uspi -1 --SpiEnable_1=1
-    rgpio uspi -1 --Speed_12=675 --EnableSerial_1=1 --ShiftLength_6=17
+    rgpio uspi -1 --Speed_12=640 --EnableSerial_1=1 --ShiftLength_6=17
 } > /dev/null
 
     rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0

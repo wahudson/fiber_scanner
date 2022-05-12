@@ -32,7 +32,7 @@ using namespace std;
 
 #include "dNcWave.h"
 #include "dNcOsc.h"
-#include "dNcScaler.h"
+#include "dNcRamp.h"
 
 #include "Error.h"
 #include "yOption.h"
@@ -61,6 +61,8 @@ class yOptLong : public yOption {
     bool		wave   = 0;
     bool		raw    = 0;
     const char*		nsamp;
+    yOpVal		ncyc;
+    yOpVal		nramp;
     yOpVal		gain;
     const char*		stride = "1.0";
     yOpVal		warm;
@@ -99,6 +101,8 @@ yOptLong::yOptLong( int argc,  char* argv[] )
     : yOption( argc, argv )
 {
     nsamp       = "";
+    ncyc.Val    = 20;
+    nramp.Val   = 10;
     gain.Val    = 0;
     warm.Val    = 5000000;
 
@@ -121,6 +125,8 @@ yOptLong::parse_options()
 	     if ( is( "--wave"       )) { wave       = 1; }
 	else if ( is( "--raw"        )) { raw        = 1; }
 	else if ( is( "--nsamp="     )) { nsamp      = this->val(); }
+	else if ( is( "--ncyc="      )) { ncyc.set(    this->val() ); }
+	else if ( is( "--nramp="     )) { nramp.set(   this->val() ); }
 	else if ( is( "--gain="      )) { gain.set(    this->val() ); }
 	else if ( is( "--stride="    )) { stride     = this->val(); }
 	else if ( is( "--warm="      )) { warm.set(    this->val() ); }
@@ -177,6 +183,8 @@ yOptLong::print_option_flags()
     cout << "--wave        = " << wave         << endl;
     cout << "--raw         = " << raw          << endl;
     cout << "--nsamp       = " << nsamp        << endl;
+    cout << "--ncyc        = " << ncyc.Val     << endl;
+    cout << "--nramp       = " << nramp.Val    << endl;
     cout << "--gain        = " << gain.Val     << endl;
     cout << "--warm        = " << warm.Val     << endl;
     cout << "--verbose     = " << verbose      << endl;
@@ -214,6 +222,8 @@ yOptLong::print_usage()
     "    --raw               show raw output data\n"
     "  options:\n"
     "    --nsamp=N           number of SPI (Fifo) samples to write\n"
+    "    --ncyc=N            number of waveform cycles to issue\n"
+    "    --nramp=N           number of ramp up/down cycles to issue\n"
     "    --gain=N            gain (N/2048) of full scale\n"
     "    --stride=F          stride (float) in table Nsize\n"
 //  "    --gain_Qd12=N       gain (N/2048) of full scale\n"
@@ -272,11 +282,14 @@ main( int	argc,
 	dNcWave			Wx  ( TabSize, Wtab );	// constructor
 	dNcOsc			Nox  ( &Wx, 2, 0 );	// stride int, frac
 
-	dNcScaler		Sox  ( 12 );		// Nbit
+	dNcRamp			Sox  ( 12 );		// Nbits full scale
 
 	// Scale wave table Q2.30 value.
-	Sox.set_Gain(   Opx.gain.Val );
+	Sox.set_Gain(      0 );		// initial value is replaced
 	Sox.set_Offset( 2048 );		// fixed for +- range
+	Sox.set_HiGain(       Opx.gain.Val );	// gain (N/2048) of full scale
+	Sox.set_RampDuration( Opx.nramp.Val );	// ramp cycles
+	Sox.set_HoldDuration( Opx.ncyc.Val );	// hold cycles
 
 	Nox.set_stride( Opx.stride_f );
 	Nox.set_phase(  0.0 );		// fixed for now
@@ -289,6 +302,10 @@ main( int	argc,
 
 	    cout << "Sox.Gain   = " << Sox.get_Gain()         <<endl;
 	    cout << "Sox.Offset = " << Sox.get_Offset()       <<endl;
+	    cout << "Sox.HiGain_Qd12   = " << Sox.get_HiGain_Qd12()   <<endl;
+	    cout << "Sox.GainStep_Qd12 = " << Sox.get_GainStep_Qd12() <<endl;
+	    cout << "Sox.RampDuration  = " << Sox.get_RampDuration()  <<endl;
+	    cout << "Sox.HoldDuration  = " << Sox.get_HoldDuration()  <<endl;
 
 	    cout << "Nox.Stride = " << Nox.get_stride_float() <<endl;
 	    cout << "Nox.Phase  = " << Nox.get_phase_float()  <<endl;
@@ -346,6 +363,8 @@ main( int	argc,
 
     // Main Loop
 	{
+	    int		notdone      = 1;	// main loop
+	    int		cycle_cnt    = 0;	// cycles output
 	    int		ii           = 0;	// loop counter
 	    int		loop_cnt     = 0;	// total read samples
 	    int		fifo_cnt     = 0;	// number of Tx fifo writes
@@ -385,7 +404,8 @@ main( int	argc,
 	    // Inner loop
 	    //    This loop should never empty the Tx fifo, but a process
 	    //    sleep might.
-	    while ( fifo_cnt < Opx.nsamp_n )
+//	    while ( fifo_cnt < Opx.nsamp_n )	// --nsamp becomes obsolete
+	    while ( notdone )
 	    {
 		loop_cnt++;
 		Uspix.Stat.grab();	// query this sample only
@@ -393,6 +413,15 @@ main( int	argc,
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
 		    Uspix.Fifo.write( vdac );	// previous sample
 		    fifo_cnt++;
+
+		    if ( Nox.is_new_cycle() ) {
+			notdone = Sox.ramp_step();
+			cycle_cnt++;
+			if ( Opx.debug ) {
+			    cout << "cyc= " << cycle_cnt
+				<< "  notdone= " << notdone <<endl;
+			}
+		    }
 
 		    vsin = Nox.next_sample();
 		    vdac = Sox.scale( vsin );
@@ -436,6 +465,7 @@ main( int	argc,
 		ns_fifo      =         ( delta_ns / fifo_cnt );
 	    }
 
+	    cerr << "    cycle_cnt=    " << cycle_cnt <<endl;
 	    cerr << "    loop_cnt=     " << loop_cnt <<endl;
 	    cerr << "    fifo_cnt=     "
 		 <<left  <<setw(8)          << fifo_cnt  << "  "
