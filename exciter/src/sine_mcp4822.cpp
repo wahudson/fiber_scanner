@@ -271,7 +271,7 @@ main( int	argc,
 
 	Amx.open_dev_mem();
 	if ( Amx.is_fake_mem() ) {
-	    cout << "Using Fake memory" <<endl;
+	    cerr << "Using Fake memory" <<endl;
 	}
 
 	const int		TabSize = 128 * 1024;
@@ -296,22 +296,22 @@ main( int	argc,
 
 	// Show configuration
 	{
-	    cout <<dec <<fixed <<setprecision(4);
+	    cerr <<dec <<fixed <<setprecision(4);
 
-	    cout << "Wtab.Nsize = " << Wx.get_size()          <<endl;
+	    cerr << "Wtab.Nsize = " << Wx.get_size()          <<endl;
 
-	    cout << "Sox.Gain   = " << Sox.get_Gain()         <<endl;
-	    cout << "Sox.Offset = " << Sox.get_Offset()       <<endl;
-	    cout << "Sox.HiGain_Qd12   = " << Sox.get_HiGain_Qd12()   <<endl;
-	    cout << "Sox.GainStep_Qd12 = " << Sox.get_GainStep_Qd12() <<endl;
-	    cout << "Sox.RampDuration  = " << Sox.get_RampDuration()  <<endl;
-	    cout << "Sox.HoldDuration  = " << Sox.get_HoldDuration()  <<endl;
+	    cerr << "Sox.Gain   = " << Sox.get_Gain()         <<endl;
+	    cerr << "Sox.Offset = " << Sox.get_Offset()       <<endl;
+	    cerr << "Sox.HiGain_Qd12   = " << Sox.get_HiGain_Qd12()   <<endl;
+	    cerr << "Sox.GainStep_Qd12 = " << Sox.get_GainStep_Qd12() <<endl;
+	    cerr << "Sox.RampDuration  = " << Sox.get_RampDuration()  <<endl;
+	    cerr << "Sox.HoldDuration  = " << Sox.get_HoldDuration()  <<endl;
 
-	    cout << "Nox.Stride = " << Nox.get_stride_float() <<endl;
-	    cout << "Nox.Phase  = " << Nox.get_phase_float()  <<endl;
-	    cout << "NperCycle  = " << Nox.get_nout()         <<endl;
+	    cerr << "Nox.Stride = " << Nox.get_stride_float() <<endl;
+	    cerr << "Nox.Phase  = " << Nox.get_phase_float()  <<endl;
+	    cerr << "NperCycle  = " << Nox.get_nout()         <<endl;
 
-//	    cout << "Stride = 0x" <<hex << Nox.get_stride_qmk() <<endl;
+//	    cerr << "Stride = 0x" <<hex << Nox.get_stride_qmk() <<endl;
 	}
 
 	// Sine Wave table Q2.30 values +1.0 to -1.0
@@ -324,8 +324,8 @@ main( int	argc,
 
 	    istride = Nox.get_stride_float() + 1;	// truncate to int
 
-	    cout << "nsize   = " << nsize   <<endl;
-	    cout << "istride = " << istride <<endl;
+	    cerr << "nsize   = " << nsize   <<endl;
+	    cerr << "istride = " << istride <<endl;
 
 	    for ( int i=0;  i<nsize;  i++ )
 	    {
