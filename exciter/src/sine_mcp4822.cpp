@@ -65,6 +65,7 @@ class yOptLong : public yOption {
     yOpVal		nramp;
     yOpVal		gain;
     const char*		stride = "1.0";
+    yOpVal		syncmode;
     yOpVal		warm;
 
     bool		verbose;
@@ -104,6 +105,7 @@ yOptLong::yOptLong( int argc,  char* argv[] )
     ncyc.Val    = 20;
     nramp.Val   = 10;
     gain.Val    = 0;
+    syncmode.Val = 3;
     warm.Val    = 5000000;
 
     verbose     = 0;
@@ -129,6 +131,7 @@ yOptLong::parse_options()
 	else if ( is( "--nramp="     )) { nramp.set(   this->val() ); }
 	else if ( is( "--gain="      )) { gain.set(    this->val() ); }
 	else if ( is( "--stride="    )) { stride     = this->val(); }
+	else if ( is( "--syncmode="  )) { syncmode.set( this->val() ); }
 	else if ( is( "--warm="      )) { warm.set(    this->val() ); }
 
 	else if ( is( "--verbose"    )) { verbose    = 1; }
@@ -160,6 +163,11 @@ yOptLong::parse_options()
     }
     //#!! could allow gain to be negative, gain.Val is unsigned.
 
+    if ( !((0 <= syncmode.Val) && (syncmode.Val <= 3)) ) {
+	Error::msg( "require --syncmode={0..3}:  "   ) <<
+			       syncmode.Val <<endl;
+    }
+
     txval_n = get_argc();
     if ( txval_n > TxSize ) {
 	Error::msg( "limit 4 Tx_value args:  " ) << txval_n <<endl;
@@ -186,6 +194,7 @@ yOptLong::print_option_flags()
     cout << "--ncyc        = " << ncyc.Val     << endl;
     cout << "--nramp       = " << nramp.Val    << endl;
     cout << "--gain        = " << gain.Val     << endl;
+    cout << "--syncmode    = " << syncmode.Val << endl;
     cout << "--warm        = " << warm.Val     << endl;
     cout << "--verbose     = " << verbose      << endl;
     cout << "--debug       = " << debug        << endl;
@@ -231,6 +240,7 @@ yOptLong::print_usage()
 //  "    --mVpp=F            amplitude in mVpp\n"
 //  "    --ramp_n=N          ramp cycles\n"
 //  "    --hold_n=N          hold cycles\n"
+    "    --syncmode=M        number of sync marks [3..0]\n"
     "    --warm=N            warmup count, default 5000000\n"
     "    --help              show this usage\n"
 //  "  # -v, --verbose       verbose output\n"
@@ -334,9 +344,17 @@ main( int	argc,
 
 	    for ( int i=0;  i<istride;  i++ )
 	    {
-		Wx.WavTab[i+0]       |= 0x1;	// zero crossing rise
-		Wx.WavTab[i+nsize/2] |= 0x1;	// zero crossing fall
-		Wx.WavTab[i+nsize/8] |= 0x1;	// asymmetric mark
+		switch ( Opx.syncmode.Val ) {
+		  default:
+		  case 3:
+		    Wx.WavTab[i+nsize/8] |= 0x1;	// asymmetric mark
+		  case 2:
+		    Wx.WavTab[i+nsize/2] |= 0x1;	// zero crossing fall
+		  case 1:
+		    Wx.WavTab[i+0]       |= 0x1;	// zero crossing rise
+		  case 0:
+		    ;					// no marks
+		}
 	    }
 	}
 
