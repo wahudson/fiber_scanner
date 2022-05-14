@@ -64,7 +64,8 @@ class yOptLong : public yOption {
     yOpVal		ncyc;
     yOpVal		nramp;
     yOpVal		gain;
-    const char*		stride = "1.0";
+    const char*		stride = "";
+    const char*		freq   = "200.0";
     yOpVal		syncmode;
     yOpVal		warm;
 
@@ -76,6 +77,7 @@ class yOptLong : public yOption {
 
     int			nsamp_n;		// number of samples
     float		stride_f;
+    float		freq_f;
 
     static const int	TxSize = 4;		// transmit fifo depth
     uint32_t		txval[TxSize];		// transmit fifo values
@@ -131,6 +133,7 @@ yOptLong::parse_options()
 	else if ( is( "--nramp="     )) { nramp.set(   this->val() ); }
 	else if ( is( "--gain="      )) { gain.set(    this->val() ); }
 	else if ( is( "--stride="    )) { stride     = this->val(); }
+	else if ( is( "--freq="      )) { freq       = this->val(); }
 	else if ( is( "--syncmode="  )) { syncmode.set( this->val() ); }
 	else if ( is( "--warm="      )) { warm.set(    this->val() ); }
 
@@ -148,6 +151,7 @@ yOptLong::parse_options()
 
     string	nsamp_s   ( nsamp );
     string	stride_s  ( stride );
+    string	freq_s    ( freq );
 
     if ( nsamp_s.length() ) {
 	nsamp_n = std::stoi( nsamp_s );
@@ -155,6 +159,10 @@ yOptLong::parse_options()
 
     if ( stride_s.length() ) {
 	stride_f = std::stof( stride_s );
+    }
+
+    if ( freq_s.length() ) {
+	freq_f = std::stof( freq_s );
     }
 
     if (                       gain.Val > 2047 ) {
@@ -207,6 +215,7 @@ yOptLong::print_option_flags()
 
     cout << "nsamp_n       = " << nsamp_n      << endl;
     cout << "stride_f      = " << stride_f     << endl;
+    cout << "freq_f        = " << freq_f       << endl;
 
     cout.fill('0');
     for ( int i=0;  i<txval_n;  i++ )
@@ -235,6 +244,7 @@ yOptLong::print_usage()
     "    --nramp=N           number of ramp up/down cycles to issue\n"
     "    --gain=N            gain (N/2048) of full scale\n"
     "    --stride=F          stride (float) in table Nsize\n"
+    "    --freq=F            output frequency desired, in Hz (float)\n"
 //  "    --gain_Qd12=N       gain (N/2048) of full scale\n"
 //  "    --peak=N            peak amplitude (N/2048 * FS)\n"
 //  "    --mVpp=F            amplitude in mVpp\n"
@@ -294,6 +304,23 @@ main( int	argc,
 
 	dNcRamp			Sox  ( 12 );		// Nbits full scale
 
+		// ShiftLength_6 = 17, Speed_12 = 640, Nsize = 131072
+		// Fsys = 500 MHz
+	float			StridePer_Hz_ = 6.554;	// Tsamp = 50.00 us
+	float			stride;
+	float			freq_Hz;
+
+	if ( *Opx.stride ) {	// override --freq
+	    stride  = Opx.stride_f;
+	    freq_Hz = stride / StridePer_Hz_;
+	    cerr << "--stride" <<endl;
+	}
+	else {
+	    stride  = StridePer_Hz_ * Opx.freq_f;
+	    freq_Hz = Opx.freq_f;
+	    cerr << "--freq" <<endl;
+	}
+
 	// Scale wave table Q2.30 value.
 	Sox.set_Gain(      0 );		// initial value is replaced
 	Sox.set_Offset( 2048 );		// fixed for +- range
@@ -301,13 +328,14 @@ main( int	argc,
 	Sox.set_RampDuration( Opx.nramp.Val );	// ramp cycles
 	Sox.set_HoldDuration( Opx.ncyc.Val );	// hold cycles
 
-	Nox.set_stride( Opx.stride_f );
+	Nox.set_stride( stride );
 	Nox.set_phase(  0.0 );		// fixed for now
 
 	// Show configuration
 	{
 	    cerr <<dec <<fixed <<setprecision(4);
 
+	    cerr << "Frequency  = " << freq_Hz                <<endl;
 	    cerr << "Wtab.Nsize = " << Wx.get_size()          <<endl;
 
 	    cerr << "Sox.Gain   = " << Sox.get_Gain()         <<endl;

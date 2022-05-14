@@ -189,8 +189,9 @@ Conversion Factors:  Gain, Stride
     (7)  Stride = Fcyc * Stride_Hz
 
 	#!! The name Stride_Hz is a bit confusing.  StrideCyc  StridePerHz ?
-	StridePer_Hz
-	GainPer_mVpp
+	    StridePer_Hz_
+	    GainPer_mVpp_
+	Trailing underscore indicates 1/unit.
 
 SPI Frequency:  (rgUniSpi)
 
@@ -229,6 +230,29 @@ SPI Frequency:  (rgUniSpi)
 	Speed_12 = ((2.70 us * 500 MHz) / 2) - 1  = 674.7
 
 	Speed_12 = 640.03,  for ShiftLength_6 = 17
+
+Frequency option:  --freq=F
+
+    Assume Tsamp is known or found from reading rgUniSpi.
+
+	ShiftLength_6 = 17,	read from rgUniSpi
+	Speed_12      = 640,	read from rgUniSpi
+	Fsys          = 500 MHz, RPi4
+	Nsize         = 128 * 1024 = 131072
+
+	Nsclk = ShiftLength_6 + 2.5
+	      = 19.5
+
+	Tsclk = 2 * (Speed_12 + 1) / Fsys	eq (9)
+	      = 2.564 us
+
+	Tsamp = Tsclk * Nsclk
+	      = 50.00 us
+
+	StridePer_Hz_ = Tsamp * Nsize
+		      = 6.554 s
+
+	Stride = StridePer_Hz_ * Fcyc		eq (7)
 
 Frequency Resolution:
 
