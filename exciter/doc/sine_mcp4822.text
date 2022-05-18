@@ -392,7 +392,68 @@ Jitter in the Sync Mark:
 
 	Stride * M = Nsize		Zero jitter, where M= integer
 
-	Stride / Nsize = M
+	Nsize / Stride = M   = AnSamp	which is number of samples per cycle
+
+    Apply the frequency calculation equations above to find conditions for
+    zero jitter in terms of controllable parameters Nsize and Tsamp.
+
+	Tcyc = AnSamp * Tsamp			eq (2)
+
+	Tsamp = Tsclk * Nsclk			sample period definition
+
+	Tsclk = 2 * (Speed_12 + 1) / Fsys	eq (9)
+
+    thus the cycle period is
+
+	Tcyc = AnSamp * Nsclk * 2 * (Speed_12 + 1) / Fsys
+
+    where, for zero jitter, AnSamp = (Nsize / Stride) is an integer.
+    So Tcyc is proportional to the product of 3 integers that we can choose,
+    within constraints, and perhaps can give reasonable frequency resolution.
+
+    Table size and stride must be an integer ratio for zero jitter, and thus
+    cannot be used for fine frequency resolution of the sync marks, unlike
+    the situation without sync marks where they are a great frequency control
+    mechanism.
+
+    Example:  (Zero jitter configuration)
+	Fcyc = 500 Hz,  Tcyc = 2 ms,  ShiftLength_6 = 17
+	Nsize    = 131072  = 128 K
+	Fsys     = 500 MHz,  Tsys = 2 ns
+	Speed_12 = 640
+	Nsclk    = 19.5
+	Stride   = StridePer_Hz_ * Fcyc = (6.554 s) * (500 Hz) = 3277
+	AnSamp   = 131072 / 3277 = 40		integer for zero jitter
+
+					2 * Tsys = 4 ns
+	AnSamp	Nsclk	Speed_12+1	Tcyc		Fcyc
+	------	-----	----------	---------	---------
+	40	19.5	641		1.9999 ms	500.02 Hz
+
+	41	19.5	641		2.0499 ms	487.82 Hz
+	40	20.5	641		2.1025 ms	475.63 Hz
+	40	19.5	642		2.0030 ms	499.24 Hz
+
+	39	19.5	641		1.9499 ms	512.84 Hz
+	39	19.5	642		1.9530 ms	512.04 Hz
+	39	19.5	643		1.9560 ms	511.25 Hz
+
+	Note delta 1 on each parameter has an effect proportional to the
+	size of the parameter.  Thus Speed_12 has the finest resolution,
+	about 0.8 Hz per step, and a step size percentage of
+	    1/Speed_12 = 1/641 = 0.156%
+	Normal jitter from Stride is
+	    1/AnSamp   = 1/40  = 2.50 %
+
+	The idea would be to increment Speed_12 for fine control, then
+	step AnSamp to keep both in a reasonable range.
+	Speed_12 effects Tsamp, which has an upper limit from FIFO underflow.
+	AnSamp has a lower limit of not enough samples per cycle.
+	Nsclk is mostly fixed by number of bits shifted, but we could add
+	throw-away bits.
+
+	There is not much opportunity to change factors in opposite directions
+	to get a finer step because they differ by factors of 2 to 16.
 
 Stored Sync Marks:
     The sync mark bits can be stored in the low order bits of the wave table
@@ -839,11 +900,12 @@ Try Gated LED on camera:
     % raspistill -v -o sine_509Hz_a.jpg
 
 Need:
- *  Way to stop waveform at zero volts output.
+ v  Way to stop waveform at zero volts output.
 	Maybe after --nsamp completes add samples to a zero crossing.
+	Ramp down to zero volts.
 
     Calibrated amplitude output.
-    Calibrated frequency output.
+ v  Calibrated frequency output.
 
     Duration of waveform - mostly want continuous while taking picture.
 	Maybe have a Halt button.
@@ -852,7 +914,7 @@ Need:
 	Will need a readout method.
 	Rerunning the program may be good enough if it always stops cleanly.
 
-    Way to select sync marks for measuring frequency on scope.
+ v  Way to select sync marks for measuring frequency on scope.
 
  v  Recompute rgUniSpi Speed_12 for 17 bits of data.
 
@@ -860,7 +922,58 @@ Need:
 
     Output switch on current buffer.
 
-    Avoid transients on exciter stimulating other fiber modes.
+ v  Avoid transients on exciter stimulating other fiber modes.
+	Ramp output up/down.
 
  v  src/sine_mcp4822.init  is not committed
+
+    Leave LED gate enabled (ON) when stopped.
+	Work-around to turn it on, run:  sine_mcp4822 --syncmode=0
+
+----------------------------------------------------------------------------
+## Experiment:  sine_mcp4822 with LED Gate  2022-05-14
+----------------------------------------------------------------------------
+
+Configuration:
+    Same as above.
+    Code:  sine_mcp4822.cpp  (commit  4fe4cb29c2)  2022-05-14  includes:
+	Ramp gain up/down.  Calibrated --freq=F, --syncmode=M.
+
+    % ../bin/sine_mcp4822 --freq=500 --gain=2000 --ncyc=2000 --nramp=3000 --syncmode=1
+    --freq
+    Frequency  = 500.0000
+    Wtab.Nsize = 131072
+    Sox.Gain   = 0
+    Sox.Offset = 2048
+    Sox.HiGain_Qd12   = 8192000
+    Sox.GainStep_Qd12 = 2730
+    Sox.RampDuration  = 3000
+    Sox.HoldDuration  = 2000
+    Nox.Stride = 3277.0000
+    Nox.Phase  = 0.0000
+    NperCycle  = 39.9976
+    nsize   = 131072
+    istride = 3278
+	cycle_cnt=    8002
+	loop_cnt=     170746195
+	fifo_cnt=     320022     50003 ns/fifo_write
+	overflow_cnt= 0
+	delta_ns= 16002319120 ns,    93 ns/loop
+    Fsamp =    19998.8 Hz
+    Fcyc  =      500.0 Hz
+
+    Ramp works great.  Sync mode works great.
+
+    Observe jitter on the sync mark.  Visible on the ellipse with above
+    configuration.  Looks like a slow sweep change of position with jump
+    back to start position, i.e. sawtooth ramp.
+    Jitter is visible on scope - when triggered on sync mark, the other sync
+    marks on scope screen appear to jitter.
+    Guess that this is the stride walking over a single sample period.
+
+    An even divisor of Nsize does not seem to jitter.  i.e. --stride=2048
+
+    I was initially bummed to see noticeable jitter, but this is expected
+    from the relatively large sample period of 40 samples per cycle giving
+    about 2.5% jitter.  (See Sync Marks above)
 
