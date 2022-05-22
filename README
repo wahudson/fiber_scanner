@@ -15,7 +15,7 @@ Files:
     doc/	general doc
     exp/
     led_light/	LED fiber light source
-    lissajous/
+    lissajous/	Lissajous pattern and ellipse theory
     photo/
     piezo/	piezo tube scanner design
 	notes.text	main notes
