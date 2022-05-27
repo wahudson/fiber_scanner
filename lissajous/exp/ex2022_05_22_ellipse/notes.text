@@ -1,0 +1,201 @@
+2022-05-22  William A. Hudson
+
+		Plotting Ellipses with R
+		------------------------
+
+Get a feel for how equation parameters affect ellipse shape.
+
+    Equation notation is like C-code:
+	^2   = square operator
+
+----------------------------------------------------------------------------
+## Standard Ellipse in XY plane
+----------------------------------------------------------------------------
+
+See:  wikipedia
+	https://en.wikipedia.org/wiki/Ellipse
+
+    (1)  (x^2 / a^2) + (y^2 / b^2) = 1
+
+    where
+	2 * a = width  along X-axis
+	2 * b = height along Y-axis
+
+	Is an ellipse centered on the origin and aligned with the axis.
+
+The parametric representation is:
+
+    (2)  x = a * cos( u )
+	 y = b * sin( u )
+
+    where  u is the independent parameter
+	0 <= u <= 2*Pi		Pi = 3.14159  value of Pi
+
+	This range covers the ellipse, but may be larger with duplication.
+
+    Substituting (2) into (1) is the known trigonometric identity:
+
+	( cos( u ) )^2 + ( sin( u ) )^2 = 1
+
+    Eq (2) is a circle with x and y axis scaled by a and b.
+    The ellipse axis are the x and y axis.
+
+We are interested in the parametric form because both the drive and
+response of a resonant fiber cantilever are sinusoidal.
+
+----------------------------------------------------------------------------
+## Plot Ellipse in XY plane
+----------------------------------------------------------------------------
+Using R
+
+    rn <- c(0:99)
+
+    Pi <- 3.14159
+
+    u <- (2 * Pi / 100) * c(0:99)
+    u <- (2 * Pi / 100) * c(0:95)	# leave out last 4 points to mark start
+
+    x <- cos( u )
+    y <- sin( u )
+
+    plot( x, y )
+    plot( x, y, ylim=c(-2,2), xlim=c(-2,2) )
+	# circle
+
+    plot( 0.5*x, 2*y, ylim=c(-2,2), xlim=c(-2,2) )
+	# vertical ellipse
+
+    plot( 2.0*x, 0.5*y, ylim=c(-2,2), xlim=c(-2,2) )
+	# horizontal ellipse
+
+Now explore a phase difference between X and Y.
+
+    x <- cos( u )
+
+    y <- sin( u + 1.0 )
+    plot( x, y, ylim=c(-2,2), xlim=c(-2,2) )
+	# ellipse on 45 degrees
+
+    y <- sin( u - 1.0 )
+    plot( x, y, ylim=c(-2,2), xlim=c(-2,2) )
+	# ellipse on -45 degrees
+
+    y <- sin( u + (Pi / 2) )
+    plot( x, y, ylim=c(-2,2), xlim=c(-2,2) )
+	# line on 45 degrees
+
+    y <- sin( u + (Pi / 2) + 0.5 )
+    plot( x, y, ylim=c(-2,2), xlim=c(-2,2) )
+
+    points( x, sin( u ) )
+    points( x, sin( u + 1.0 ) )
+
+    A phase offset always puts the ellipse on a 45 degree axis.
+    Zero offset is a circle, symmetric on all axis angles, and is why the
+    standard form appears to be aligned with the XY axis.
+
+Color points to identify beginning of the parameter u.
+    The missing points did not look so good.
+
+    Make 100 points from 0 to 2*Pi
+    u <- (2 * Pi / 100) * c(0:99)
+
+    cr <- rep( 'black', 100 )
+    cr[1] <- 'red'	# mark zero, vectors number from 1
+    cr[2] <- 'green'
+    cr[10] <- 'green'	# extra mark visible when points are packed
+
+    x <- cos( u )
+    y <- sin( u + 1.0 )
+
+    plot( x, y, col=cr )
+
+    abline( h=0 );  abline( v=0 )
+
+    plot( cos(u), sin(u + 1.0), col=cr )
+
+    plot( cos(u), sin(u + 0.0), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Circle, u=0 at right edge, progress CCW
+
+    plot( cos(u), sin(u + 1.4), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Narrow ellipse, u=0 at right edge, progress CCW
+
+    plot( cos(u), sin(u + 1.8), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Narrow ellipse, u=0 at right edge, progress CW
+
+    plot( cos(u), sin(u + Pi), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Circle, u=0 at right edge, progress CW
+
+  With x = cos(u), always start with u=0 at right edge, x = +1 (above).
+  With x = sin(u), always start with u=0 at center, x = 0 (below).
+
+    plot( sin(u), sin(u + 0.0), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Line at 45 degrees, u=0 at center x=0.
+
+    plot( sin(u), sin(u + 0.2), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Ellipse at 45 degrees, u=0 at center x=0 y=+0.2, progress CW
+
+    plot( sin(u), sin(u - 0.2), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Ellipse at 45 degrees, u=0 at center x=0 y=-0.2, progress CCW
+
+    plot( sin(u), sin(u + Pi), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Line at -45 degrees, u=0 at center x=0.
+
+    plot( sin(u), sin(u + 3.0), col=cr, ylim=c(-1,1), xlim=c(-1,1) )
+	Ellipse at -45 degrees, u=0 at center x=0 y+, progress CW.
+
+    plot( sin(u), sin(u + Pi/2), col=cr, ylim=c(-1,1), xlim=c(-1,1))
+	Circle, u=0 at top edge, progress CW.
+
+  Standard form circle (ellipse):
+
+    plot( 1.0 * cos(u), 0.2 * sin(u), col=cr, ylim=c(-1,1), xlim=c(-1,1))
+	Ellipse on X-axis, u=0 at right edge, progress CCW
+
+    plot( 1.0 * sin(u), 0.2 * cos(u), col=cr, ylim=c(-1,1), xlim=c(-1,1))
+	Ellipse on X-axis, u=0 at top edge, progress CW
+
+Summary:
+    Parameter u can start anywhere, the exact same ellipse (other than sample
+    points) is traced as u moves thru zero to 2*Pi.
+
+    The direction of progress with u changes between CCW and CW as the
+    ellipse changes thru a +-45 degree line.
+
+    When applying a phase difference, X and Y can be any combination of
+    sin(u) or cos(u).  It only shifts the point where phase difference is
+    zero.
+
+    The X and Y scale factors rotate the ellipse axis to something other
+    than +-45 degrees.
+
+    The phase difference controls how open or closed the ellipse is.
+
+    Only in the circle (degenerate ellipse) does the scale factors affect
+    how open the ellipse is.
+
+ >  The scale factors always affect the extent of the ellipse, i.e. the
+ >  bounding box, and not really the openness.
+ >  The phase difference affects only the openness, and cannot change
+ >  the extent.
+
+    We want to use X as the reference.
+
+    Using x = cos(u) puts u=0 at the right-most edge of the ellipse at x=+1,
+    which is kind of nice, as the trace makes a full sweep across the
+    field and back in 2*Pi (one cycle).
+    A disadvantage is it starts at the peak of a sine wave curve where
+    phase is less distinct.
+
+    Using x = sin(u) puts u=0 at x=0, near the center of a skinny ellipse,
+    or at the top of a circular ellipse.  Being near the center is easier
+    to find (more open samples) and closer to zero crossings.
+    A disadvantage is it starts in the middle of a "scan line".
+    From a driving signal perspective it is nicer to start at zero than
+    at +1.
+
+    Want both X and Y to be sin(u) or both cos(u) so the phase difference
+    is really the difference between X and Y, i.e. not have a Pi/2 offset.
+    Other than this, it really does not matter where u=0 is, especially
+    in continuous operation.
+
