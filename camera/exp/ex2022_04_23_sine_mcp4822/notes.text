@@ -1,0 +1,303 @@
+2022-05-20  William A. Hudson
+
+		sine_mcp4822 with LED Gate  2022-05-14
+		--------------------------------------
+
+Data notes from:  exciter/doc/sine_mcp4822.text
+    See section:
+    ## Experiment:  sine_mcp4822 with LED Gate  2022-05-14
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+This was first capture of an elliptical pattern with LED gate sync marks.
+Want an initial analysis to see how it goes.
+
+This is a full color, full frame capture.
+Image is a vertical narrow ellipse, slightly tilted CCW, progressing CCW.
+Sync marks have jitter, since NperCycle = 39.9976 is not integer.
+
+    % ll
+    -r--r--r-- 1 wah wah 352702 Apr 23 17:43 sine_509Hz_a.jpg
+
+    % file sine_509Hz_a.jpg
+    sine_509Hz_a.jpg: JPEG image data, Exif standard: [TIFF image data, \
+    big-endian, direntries=10, height=0, manufacturer=RaspberryPi, \
+    model=RP_imx477, xresolution=156, yresolution=164, resolutionunit=2, \
+    datetime=2022:04:23 17:40:42, width=0], baseline, precision 8, \
+    4056x3040, frames 3
+
+    % djpeg -grayscale sine_509Hz_a.jpg | pgm_box
+	Ncol   = 4056
+	Nrow   = 3040
+	Npix   = 12330240
+	MaxVal = 255
+	Max    = 213
+	Min    = 0
+	Mean   = 0.102422
+	SD     = 2.36297
+	CGxy   = 2072, 1683
+	  Bounding Box Y:
+	YmaxMean = 68
+	YminMean = 0
+	YhalfMax = 34
+	Ytop     = 1273
+	Ybot     = 2070
+	Yfwhm    = 797
+	  Bounding Box X:
+	XmaxMean = 47
+	XminMean = 0
+	XhalfMax = 23
+	Xleft    = 1994
+	Xright   = 2175
+	Xfwhm    = 181
+
+    % display sine_509Hz_a.jpg
+
+    % jpegtran -crop 1200x1200+1500+1100 sine_509Hz_a.jpg > color_crop.jpg
+    % jpegtran -grayscale -crop 1200x1200+1500+1100 sine_509Hz_a.jpg > crop.jpg
+
+    Note jpegtran made two different image size crop files:
+	1212x1212  color_crop.jpg
+	1204x1204  crop.jpg
+
+    Use djpeg on color_crop.jpg for uniformity.
+
+    % ll
+    -rw-rw-r-- 1 wah wah  67806 May 20 09:08 color_crop.jpg
+    -rw-rw-r-- 1 wah wah  41336 May 20 09:08 crop.jpg
+
+    % djpeg -grayscale color_crop.jpg | pgm_box
+	Ncol   = 1212
+	Nrow   = 1212
+	Npix   = 1468944
+	MaxVal = 255
+	Max    = 213
+	Min    = 0
+	Mean   = 0.851165
+	SD     = 6.79876
+	CGxy   = 600, 597
+	  Bounding Box Y:
+	YmaxMean = 68
+	YminMean = 0
+	YhalfMax = 34
+	Ytop     = 185
+	Ybot     = 982
+	Yfwhm    = 797
+	  Bounding Box X:
+	XmaxMean = 47
+	XminMean = 0
+	XhalfMax = 23
+	Xleft    = 506
+	Xright   = 687
+	Xfwhm    = 181
+
+The color image is more pleasant to view, and color changes from red toward
+yellow as saturation is reached.
+The CGxy looks pretty good, with only perturbation from the 1/8 sync mark.
+
+Pick points by hand:
+    % display color_crop.jpg &
+	Image Edit -> Draw
+
+    Points picked on trace center:  pixel coordinate (x,y)
+	523,190  Ytop
+	667,979  Ybot
+	507,279  Xleft, affected by dark sync mark
+	684,878  Xright
+
+    Sync marks picked in center of the mark:
+	507,241  zero crossing
+	529,485  1/8 cycle
+	683,924  1/2 cycle
+	This ellipse is traced CCW.
+
+    % djpeg -grayscale color_crop.jpg | pgm_swatch --geo=30x1000+505+150 | less
+	View of ellipse upper tip and part of zero crossing sync mark.
+
+    % djpeg -grayscale color_crop.jpg | pgm_swatch --geo=30x1000+667+150 | less
+	View of ellipse lower tip and part of 1/2 cycle sync mark.
+	Has maximum pixel, Max=213
+	Sync mark has a distinct saddle shape, looks easy to numerically find.
+
+    % djpeg -grayscale color_crop.jpg | pgm_swatch --geo=30x1000+495+150 | less
+	View of ellipse zero cycle sync mark.
+
+    % djpeg -grayscale color_crop.jpg | pgm_swatch --geo=30x1000+515+150 | less
+	View of ellipse 1/8 cycle sync mark.
+
+Now the task is to identify the parameters of the response sinusoids (ellipse)
+wrt the drive sinusoid.
+
+Draw axis on the image:  (using ImageMagic 'display' tool)
+
+    X-axis (horizontal) at Y = (Ytop + Ybot) / 2    = 583
+    Y-axis (vertical)   at X = (Xleft + Xright) / 2 = 596
+	This does not look centered.  Bounding box is perturbed by sync marks.
+
+    Put axis at CGxy = (600, 597)  - I missed at x=599 instead of 600
+    Pick zero crossings of axes:  (x,y)
+	+X:  647,597
+	-X:  547,597	delta_x = 100
+	-Y:  599,375
+	+Y:  599,827	delta_y = 452
+
+	Note +Y is down in image coordinates.
+
+    Translate these to the ellipse coordinates:
+	meanX = (647 + 547) / 2  = 597
+	meanY = (827 + 375) / 2  = 601
+	This is close to the CGxy coordinates (600, 597).
+	>> Use this mean origin (597, 601) for consistency.
+
+	+X:  Xa = 647 - 597  = +50
+	-X:  Xb = 547 - 597  = -50
+
+	-Y:  Ya = -(375 - 601)  = +226
+	+Y:  Yb = -(827 - 601)  = -226
+
+	    These should be symmetric, since the origin is chosen from them.
+	    Reverse the Y coordinate so now +Y is up.
+	X =  (Ximage - meanX)    =  (Ximage - 597)
+	Y = -(Yimage - meanY)    = -(Yimage - 601)
+ 
+Parametric representation of ellipse:
+    (1)
+	x = Ex * cos( u )
+	y = Ey * cos( u + Pd )
+
+    where
+	u      = parameter 0 <= u <= 2*Pi
+	Pd     = phase difference to Y from X, radians
+	2 * Ex = X amplitude, bounding width
+	2 * Ey = Y amplitude, bounding height
+
+    thus from pgm_box above:
+	Ex = Xfwhm / 2  = 181 / 2  =  90
+	Ey = Yfwhm / 2  = 797 / 2  = 398
+
+    Distinguish u derived from different sources, from (1).
+    (2)
+	Ux = arccos( x / Ex )
+	Uy = arccos( y / Ey ) - Pd
+
+    (3)
+	Pd = arccos( y / Ey ) - u
+
+	Uxa = arccos( +50 / 90 ) = 0.982	 56.2 deg
+	Uxb = arccos( -50 / 90 ) = 2.160	123.7 deg
+
+	"These are not the droids we are looking for" [Star Wars].
+	The arc-cosine is multi-valued.  The values we are interested in
+	relate to the orientation of the ellipse, and we expect that at the
+	zero crossings (Uxb = Uxa + Pi).
+
+    See:  lissajous/exp/ex2022_05_22_ellipse/notes.text
+
+    For this ellipse, circulation of parameter u is CCW, since the 1/8 cycle
+    scan mark comes after the zero scan mark in that direction.
+    The ellipse is oriented in the 2nd quadrant, i.e. tilted toward -45 degrees.
+    [Quadrants number CCW, with 1 above +X and right of +Y.]
+
+    We label the axis zero crossing such that:
+	Xb <= 0 <= Xa
+	Yb <= 0 <= Ya
+
+----------------------------------------
+Oops:  point (Xb, Ya) is NOT on ellipse!
+{vvvvvvvv
+
+    Thus point (Xb, Ya) is on the ellipse in 2nd quadrant, and point (Xa, Yb)
+    is on the ellipse in 4th quadrant.
+
+	Xb = -50,  Ya = +226
+
+	Uba = arccos( Xb / Ex )
+	    = arccos( -50 / 90 ) = 2.160	(123.7 deg)
+
+	Pba = arccos( Ya / Ey ) - Uba
+	    = arccos( +226 / 398 ) - 2.160
+	    = 0.967 - 2.160  = -1.193		(-68.36 deg)
+	    += 2*Pi	add 2*Pi
+	    = 5.090				(291.6 deg)
+	    Phase difference computed from point (Xb, Ya).
+
+    Confirm result:
+	Xb = Ex * cos( Uba ) = 90 * cos( 2.160 ) = -50.0
+
+	Ya = Ey * cos( Uba + Pba ) = 398 * cos( 2.160 + 5.090 ) = 226.0
+
+    The zero crossing point on the ellipse in quadrant 4:
+	It is symmetric, so the u parameter advances by Pi.
+
+	Uab = Uba + Pi
+	    = 2.160 + 3.14159  = 5.302
+
+	Xa = Ex * cos( Uab ) = 90 * cos( 5.302 ) = +50.0
+
+	Yb = Ey * cos( Uab + Pba ) = 398 * cos( 5.302 + 5.090 ) = -225.9
+
+	This is consistent with measured (Xa, Yb).
+
+Now find u for the zero (first) sync mark at point (507,241).
+
+    Translate Sync mark coordinates:  (as above)
+	Xellipse =  (Ximage - meanX)
+	Yellipse = -(Yimage - meanY)
+	where
+	    meanX = (647 + 547) / 2  = 597
+	    meanY = (827 + 375) / 2  = 601
+	    
+	Image				Ellipse
+	-----				-------
+	507,241  zero crossing		-90,  360
+	529,485  1/8 cycle		-68,  116
+	683,924  1/2 cycle		 86, -323
+
+	Usync = arccos( x / Ex )
+	      = arccos( -90 / 90 )  = 3.142
+
+	Uy = arccos( y / Ey ) - Pba
+	   = arccos( 360 / 398 ) - (-1.193)  = 1.634  (93.6 deg)
+	#!! alternate, should be more accurate?
+
+    Confirm result:
+	X = Ex * cos( Usync ) = 90 * cos( 3.142 ) = -90.0
+		Is on left edge, looks correct.
+
+	Y = Ey * cos( Usync + Pba ) = 398 * cos( 3.142 + -1.193 ) = -147.0
+	#!! Does not seem correct.  Should be ~+260
+
+^^^^^^^^}
+Above does not seem to have correct values to match the image ellipse.
+----------------------------------------
+Plot ellipses in R and see what matches the image.
+
+    Make 100 points from 0 to 2*Pi:
+    u <- (2 * Pi / 100) * c(0:99)
+
+    L <- 400
+ >  plot( 90*cos(u), 398*cos(u + 3.8), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+	Looks similar to the image ellipse.  Going CCW.
+	Is best match to image.
+
+    plot( 90*cos(u), 398*cos(u + 2.6), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+	Looks similar to the image ellipse.  Going CW.
+
+    plot( 90*cos(u), 398*cos(u + 5.090), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+	This is Pba above, ellipse angled in 1st quadrant (+45 degrees),
+	and more open than image.  Does not match the image.  But is CCW
+	like the image.
+
+ >  plot( 90*cos(u), 398*cos(u + 3.8), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+    abline( h=0 );  abline( v=0 )
+    locator(4)		# zero crossings, CCW from +X
+	$x
+	[1]  54.3684495  -0.3232661 -55.0149816  -0.3232661
+	$y
+	[1]   -0.1448263  243.3181065   -0.1448263 -243.6077591
+
+    df <- data.frame( u, x, y )
+    write.table( df, file="ellipse_p3.8.tab" )
+
