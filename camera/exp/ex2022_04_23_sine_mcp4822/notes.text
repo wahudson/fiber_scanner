@@ -137,32 +137,46 @@ Draw axis on the image:  (using ImageMagic 'display' tool)
 	This does not look centered.  Bounding box is perturbed by sync marks.
 
     Put axis at CGxy = (600, 597)  - I missed at x=599 instead of 600
-    Pick zero crossings of axes:  (x,y)
-	+X:  647,597
-	-X:  547,597	delta_x = 100
-	-Y:  599,375
-	+Y:  599,827	delta_y = 452
+    Label axis crossing points {a,b,c,d}, progressing CCW from +X in the
+	    ellipse coordinates (i.e. +Y up).
+    Pick zero crossings of axes:  (x,y) image coordinates
+	+X a:  647,597
+	-X c:  547,597	delta_x = 100
+	+Y b:  599,375
+	-Y d:  599,827	delta_y = 452
 
 	Note +Y is down in image coordinates.
 
-    Translate these to the ellipse coordinates:
-	meanX = (647 + 547) / 2  = 597
-	meanY = (827 + 375) / 2  = 601
-	This is close to the CGxy coordinates (600, 597).
-	>> Use this mean origin (597, 601) for consistency.
+Translate image coordinates into ellipse coordinates:
+    Image:    +X to the right, +Y down	(Ximage,Yimage)
+    Ellipse:  +X to the right, +Y up	(X,Y)
 
-	+X:  Xa = 647 - 597  = +50
-	-X:  Xb = 547 - 597  = -50
+	X =  (Ximage - Xi)    =  (Ximage - 597)
+	Y = -(Yimage - Yi)    = -(Yimage - 601)
+    where
+	(Xi,Yi) = center of ellipse in image coordinates
+	Xi = (Xia + Xic) / 2  = (647 + 547) / 2  = 597
+	Yi = (Yid + Yib) / 2  = (827 + 375) / 2  = 601
 
-	-Y:  Ya = -(375 - 601)  = +226
-	+Y:  Yb = -(827 - 601)  = -226
+	    >> Use this ellipse origin (597,601) for consistency.
+	    It is close to the CGxy coordinates (600,597), within +-4 pixels.
+    so now
+
+	+X:  Xa = 647 - 597  = +50		Ya = 0
+	-X:  Xc = 547 - 597  = -50		Yc = 0
+
+	+Y:  Yb = -(375 - 601)  = +226		Xb = 0
+	-Y:  Yd = -(827 - 601)  = -226		Xd = 0
+
+		image    ellipse
+	+X a:  647,597   +50, 0
+	-X c:  547,597   -50, 0
+	+Y b:  599,375     0, +226
+	-Y d:  599,827     0, -226
 
 	    These should be symmetric, since the origin is chosen from them.
-	    Reverse the Y coordinate so now +Y is up.
-	X =  (Ximage - meanX)    =  (Ximage - 597)
-	Y = -(Yimage - meanY)    = -(Yimage - 601)
- 
-Parametric representation of ellipse:
+
+Parametric representation of ellipse:  (ellipse coordinates)
     (1)
 	x = Ex * cos( u )
 	y = Ey * cos( u + Pd )
@@ -177,32 +191,127 @@ Parametric representation of ellipse:
 	Ex = Xfwhm / 2  = 181 / 2  =  90
 	Ey = Yfwhm / 2  = 797 / 2  = 398
 
-    Distinguish u derived from different sources, from (1).
+    For point (x,y), from eq (1):
     (2)
 	Ux = arccos( x / Ex )
-	Uy = arccos( y / Ey ) - Pd
+	Ux = arccos( y / Ey ) - Pd
 
     (3)
-	Pd = arccos( y / Ey ) - u
+	Pd = arccos( y / Ey ) - Ux
 
-	Uxa = arccos( +50 / 90 ) = 0.982	 56.2 deg
-	Uxb = arccos( -50 / 90 ) = 2.160	123.7 deg
+    So now the 4 axis crossings are:
+
+	+X a:  +50, 0
+	-X c:  -50, 0
+	+Y b:    0, +226
+	-Y d:    0, -226
+
+	Uxa = arccos( +50 / 90 )  = 0.982		 56.2 deg
+	Uxc = arccos( -50 / 90 )  = 2.160		123.7 deg
+	Uxb = arccos(   0 / 90 )  = 1.571		 90.0 deg
+	Uxd = arccos(   0 / 90 )  = 1.571		 90.0 deg
+
+	Pda = arccos(    0 / 398 ) - 0.982  = +0.589	 +33.8 deg
+	Pdc = arccos(    0 / 398 ) - 2.160  = -0.589	 -33.8 deg
+	Pdb = arccos( +226 / 398 ) - 1.571  = -0.604	 -34.6 deg
+	Pdd = arccos( -226 / 398 ) - 1.571  = +0.604	 +34.6 deg
 
 	"These are not the droids we are looking for" [Star Wars].
-	The arc-cosine is multi-valued.  The values we are interested in
-	relate to the orientation of the ellipse, and we expect that at the
-	zero crossings (Uxb = Uxa + Pi).
+	We expect Uxa .. Uxd to progress around the ellipse, and that
+	Pd = constant, not quite what we see here.
+	We also expect that the zero crossings are related by
+	    Uxc = Uxa + Pi
+	    Uyd = Uyb + Pi
 
-    See:  lissajous/exp/ex2022_05_22_ellipse/notes.text
+	See:  lissajous/exp/ex2022_05_22_ellipse/notes.text
+	See:  Ellipse Modeling below
+
+	Our situation has more constraints that are not embodied in the
+	simple solution given in eq (2).  The arc-cosine is multi-valued.
+
+Constraints:
+
+    The generation of the ellipse is give by eq (1) repeated here:
+	x = Ex * cos( u )
+	y = Ey * cos( u + Pd )
+
+    We label the axis zero crossing such that:
+	Xc <= 0 <= Xa
+	Yd <= 0 <= Yb
+
+    We require the values of u for each zero crossing {Ua, Ub, Uc, Ud}
+	be monotonic increasing, and span a range <= 2*Pi.
+	i.e. We have real sinusoid signals generating the ellipse.
+
+    We require the phase difference Pd to be constant for all values
+	of u.  i.e. The sinusoids on X and Y be constant frequency and
+	have a constant phase relationship.
+
+    We require the circulation direction of u around the ellipse to
+	match the original image.  e.g. As u increases, the point on the
+	ellipse progresses CCW in this image.
+
+    We require the ellipse to have the same tilt orientation as in the
+	original camera image.
+
+    Note that we only care about u spanning a monotonic range of 2*Pi,
+    since the physical model is continuous time waveforms.
 
     For this ellipse, circulation of parameter u is CCW, since the 1/8 cycle
     scan mark comes after the zero scan mark in that direction.
     The ellipse is oriented in the 2nd quadrant, i.e. tilted toward -45 degrees.
     [Quadrants number CCW, with 1 above +X and right of +Y.]
 
-    We label the axis zero crossing such that:
-	Xb <= 0 <= Xa
-	Yb <= 0 <= Ya
+    The 4 axis crossings alone are not enough to specify a unique ellipse.
+    These additional constraints hopefully make it unique and also dictate
+    the ellipse orientation.
+
+Apply constraints to zero crossings:
+
+    From eq (1) we have:
+    (4)  x / Ex = cos( u )
+    (5)  y / Ey = cos( u + Pd )
+
+	Ex = Xfwhm / 2  = 181 / 2  =  90
+	Ey = Yfwhm / 2  = 797 / 2  = 398
+
+	+X a:  +50, 0
+	+Y b:    0, +226
+	-X c:  -50, 0
+	-Y d:    0, -226
+
+    Find u from eq (4)
+	+X a:   +50 / 90 =  0.556 = cos( Ua );  Ua = 0.982
+	+Y b:     0 / 90 =  0.000 = cos( Ub );  Ub = 1.571
+	-X c:   -50 / 90 = -0.556 = cos( Uc );  Uc = 4.124    (Ua + Pi)
+	-Y d:     0 / 90 =  0.000 = cos( Ud );  Ud = 4.712    (Ub + Pi)
+
+	Here we found Ua and Ub with arccos(), then add Pi to get Uc, Ud.
+	Confirm that cos(u) indeed produces the correct value.
+	Now we have u monotonic thru points a,b,c,d.
+
+    Find Pd from eq (5)
+	+X a:     0 / 398  =  0.000  = cos( 0.982 + Pd );  Pd = 3.731
+	+Y b:  +226 / 398  =  0.568  = cos( 1.571 + Pd );  Pd = 3.746
+	-X c:     0 / 398  =  0.000  = cos( 4.124 + Pd );  Pd = 3.731
+	-Y d:  -226 / 398  = -0.568  = cos( 4.712 + Pd );  Pd = 3.746
+						   Average Pd = 3.738
+
+	This is the correct, consistent value for Pd, and agrees with
+	the ellipse produced in Ellipse Modeling below.
+
+	The typical arccos(y/Ey) gave an incorrect Pd = 0.60 which worked for
+	points a,c,d, but not point b (wrong sign).  Essentially the ellipse
+	was circulating CW (instead of CCW) and tilted into quadrant 1
+	(instead of quadrant 2).  Adding Pi to Pd made all 4 points work as
+	shown.
+
+    Measurement uncertainties accumulate and show here as a variation
+	in the calculation of Pd.
+	The variation is:  3.746 - 3.731 = 0.015
+	As a fraction of 2*Pi it is 0.24%
+	Not too bad.
+
 
 ----------------------------------------
 Oops:  point (Xb, Ya) is NOT on ellipse!
@@ -271,11 +380,20 @@ Now find u for the zero (first) sync mark at point (507,241).
 
 ^^^^^^^^}
 Above does not seem to have correct values to match the image ellipse.
-----------------------------------------
+
+----------------------------------------------------------------------------
+## Ellipse Modeling in R
+----------------------------------------------------------------------------
 Plot ellipses in R and see what matches the image.
+    See:  lissajous/exp/ex2022_05_22_ellipse/notes.text
 
     Make 100 points from 0 to 2*Pi:
     u <- (2 * Pi / 100) * c(0:99)
+
+    cr <- rep( 'black', 100 )
+    cr[1] <- 'red'      # mark zero, vectors number from 1
+    cr[2] <- 'green'
+    cr[10] <- 'green'   # extra mark visible when points are packed
 
     L <- 400
  >  plot( 90*cos(u), 398*cos(u + 3.8), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
@@ -298,6 +416,52 @@ Plot ellipses in R and see what matches the image.
 	$y
 	[1]   -0.1448263  243.3181065   -0.1448263 -243.6077591
 
+    Ex <-  90
+    Ey <- 398
+    Pd <- 3.8
+    x <- Ex * cos( u )
+    y <- Ey * cos( u + Pd )
+    plot( x, y, col=cr, ylim=c(-L,L), xlim=c(-L,L) )
     df <- data.frame( u, x, y )
     write.table( df, file="ellipse_p3.8.tab" )
+
+    # Find the axis zero crossings:
+    df
+		    u             x          y
+	1   0.0000000  9.000000e+01 -314.80515
+	...
+	15  0.8796452  5.736821e+01  -13.02970    (a)
+	16  0.9424770  5.290073e+01   11.97323
+	...
+	26  1.5707950  1.194115e-04  243.51902    (b)
+	...
+	65  4.0212352 -5.736839e+01   13.03075    (c)
+	66  4.0840670 -5.290092e+01  -11.97217
+	...
+	76  4.7123850 -3.582346e-04 -243.51819    (d)
+	...
+	100 6.2203482  8.982238e+01 -329.47584
+
+    Thus
+	    u       x       y		Image (x,y) above
+	a)  0.91   55.1     0.0		+50, 0
+	b)  1.57    0.0   243.5		  0, +226
+	c)  4.05  -55.1     0.0		-50, 0
+	d)  4.71    0.0  -243.5		  0, -226
+
+	Uc - Ua = 4.05 - 0.91  = 3.14
+	Ud - Ub = 4.71 - 1.57  = 3.14
+	    Phase difference between points is Pi, as seen in the plot.
+
+	Circulation is CCW as seen in the plot.
+
+	The plot points are somewhat close to the Image above.  Good enough
+	to be a guide to the correct calculation.
+
+    Note Pd = 3.74 looks really close.
+
+    The axis crossings seem the best place to estimate both u and Pd for
+    any ellipse.  Points of constant delta-u are furthest apart in this
+    region, giving better resolution in u.  Looks true for both narrow
+    and circular ellipses.
 
