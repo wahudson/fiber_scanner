@@ -1,11 +1,12 @@
 2022-05-20  William A. Hudson
 
-		sine_mcp4822 with LED Gate  2022-05-14
+		sine_mcp4822 with LED Gate  2022-04-23
 		--------------------------------------
 
 Data notes from:  exciter/doc/sine_mcp4822.text
     See section:
-    ## Experiment:  sine_mcp4822 with LED Gate  2022-05-14
+    ## Experiment:  sine_mcp4822 with LED Gate  2022-04-23
+	[not the 2022-05-14 date]
 
 ----------------------------------------------------------------------------
 ## Analysis
@@ -469,74 +470,6 @@ Next:
     for phase delay.
 
     Jitter in sync marks needs to be accommodated or eliminated.
-
-----------------------------------------
-Oops:  point (Xb, Ya) is NOT on ellipse!
-{vvvvvvvv
-
-    Thus point (Xb, Ya) is on the ellipse in 2nd quadrant, and point (Xa, Yb)
-    is on the ellipse in 4th quadrant.
-
-	Xb = -50,  Ya = +226
-
-	Uba = arccos( Xb / Ex )
-	    = arccos( -50 / 90 ) = 2.160	(123.7 deg)
-
-	Pba = arccos( Ya / Ey ) - Uba
-	    = arccos( +226 / 398 ) - 2.160
-	    = 0.967 - 2.160  = -1.193		(-68.36 deg)
-	    += 2*Pi	add 2*Pi
-	    = 5.090				(291.6 deg)
-	    Phase difference computed from point (Xb, Ya).
-
-    Confirm result:
-	Xb = Ex * cos( Uba ) = 90 * cos( 2.160 ) = -50.0
-
-	Ya = Ey * cos( Uba + Pba ) = 398 * cos( 2.160 + 5.090 ) = 226.0
-
-    The zero crossing point on the ellipse in quadrant 4:
-	It is symmetric, so the u parameter advances by Pi.
-
-	Uab = Uba + Pi
-	    = 2.160 + 3.14159  = 5.302
-
-	Xa = Ex * cos( Uab ) = 90 * cos( 5.302 ) = +50.0
-
-	Yb = Ey * cos( Uab + Pba ) = 398 * cos( 5.302 + 5.090 ) = -225.9
-
-	This is consistent with measured (Xa, Yb).
-
-Now find u for the zero (first) sync mark at point (507,241).
-
-    Translate Sync mark coordinates:  (as above)
-	Xellipse =  (Ximage - meanX)
-	Yellipse = -(Yimage - meanY)
-	where
-	    meanX = (647 + 547) / 2  = 597
-	    meanY = (827 + 375) / 2  = 601
-	    
-	Image				Ellipse
-	-----				-------
-	507,241  zero crossing		-90,  360
-	529,485  1/8 cycle		-68,  116
-	683,924  1/2 cycle		 86, -323
-
-	Usync = arccos( x / Ex )
-	      = arccos( -90 / 90 )  = 3.142
-
-	Uy = arccos( y / Ey ) - Pba
-	   = arccos( 360 / 398 ) - (-1.193)  = 1.634  (93.6 deg)
-	#!! alternate, should be more accurate?
-
-    Confirm result:
-	X = Ex * cos( Usync ) = 90 * cos( 3.142 ) = -90.0
-		Is on left edge, looks correct.
-
-	Y = Ey * cos( Usync + Pba ) = 398 * cos( 3.142 + -1.193 ) = -147.0
-	#!! Does not seem correct.  Should be ~+260
-
-^^^^^^^^}
-Above does not seem to have correct values to match the image ellipse.
 
 ----------------------------------------------------------------------------
 ## Ellipse Modeling in R
