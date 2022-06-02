@@ -147,6 +147,14 @@ Draw axis on the image:  (using ImageMagic 'display' tool)
 
 	Note +Y is down in image coordinates.
 
+ >  Save modified image file:  color_crop_axis.jpg
+	Note:  I re-did the image edit with axis at (599,597), since the
+	original had multiple lines from playing with the draw tool.
+	Also it seems the X position is one less than indicated during drawing.
+	Saving at JPEG quality 75 gives a much smaller file than the original.
+	-rw-rw-r-- 1 wah wah  67806 May 20 09:08 color_crop.jpg
+	-rw-rw-r-- 1 wah wah  18054 May 30 14:43 color_crop_axis.jpg
+
 Translate image coordinates into ellipse coordinates:
     Image:    +X to the right, +Y down	(Ximage,Yimage)
     Ellipse:  +X to the right, +Y up	(X,Y)
@@ -312,6 +320,155 @@ Apply constraints to zero crossings:
 	As a fraction of 2*Pi it is 0.24%
 	Not too bad.
 
+Find Sync Mark points:
+
+    Translate image coordinates:  (as above)
+	X =  (Ximage - Xi)    =  (Ximage - 597)
+	Y = -(Yimage - Yi)    = -(Yimage - 601)
+
+	Image    Sync mark		Ellipse (x,y)   Point
+	-----    -------------		-------------   -----
+	507,241  zero			-90,  360	(p)
+	529,485  1/8 cycle		-68,  116	(q)
+	683,924  1/2 cycle		 86, -323	(r)
+
+    Plot our ellipse above, in R:
+	Ex <-  90
+	Ey <- 398
+	Pd <- 3.738
+	x <- Ex * cos( u )
+	y <- Ey * cos( u + Pd )
+	plot( x, y, col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+	plot( 90*cos(u), 398*cos(u + 3.738), col=cr, ylim=c(-L,L), xlim=c(-L,L) )
+	abline( h=0 );  abline( v=0 )
+	df <- data.frame( u, x, y )
+ >	write.table( df, file="ellipse_p3.738.tab" )
+ >	dev.copy2pdf( file="ellipse_p3.738.pdf" )
+
+    Plot the drive/response waveforms in R:
+	plot( u, 90*cos(u), col=cr, ylim=c(-L,L), xlab='u  (radian)', ylab='Amplitude (pixel)' )
+	points( u, 398*cos(u+3.738), col=cr, ylim=c(-L,L) )
+	points( u, - 100*sin(u - 3.048), col='red' )
+	abline( v=Pi, h=0 )
+	title( main='Ellipse XY waves' )
+	text( 3.4, 300, "y = 398*cos(u+3.738)", pos=4 )
+	text( 1.4, -120, "x = 90*cos(u)", pos=4 )
+	text( 0.5, -300, "drive_Y = 100*sin(u - 3.048)", col='red', pos=4 )
+ >	dev.copy2pdf( file="ellipse_wave.pdf" )
+
+    Now lookup the sync (x,y) coordinates in the df table to find u:
+	df
+		    u             x          y
+	1   0.0000000  9.000000e+01 -329.28882
+	2   0.0628318  8.982241e+01 -314.60248  <
+	3   0.1256636  8.929032e+01 -298.67455  <
+	4   0.1884954  8.840586e+01 -281.56789  < 1/2 cycle (r)
+	5   0.2513272  8.717249e+01 -263.35001  <
+	6   0.3141590  8.559509e+01 -244.09281
+	...
+	48  2.9530946 -8.840581e+01  365.34497
+	49  3.0159264 -8.929029e+01  354.71050  < zero (p)
+	50  3.0787582 -8.982239e+01  342.67615  <
+	51  3.1415900 -9.000000e+01  329.28942  <
+	...
+	61  3.7699080 -7.281170e+01  135.00433
+	62  3.8327398 -6.934638e+01  111.22897  < 1/8 cycle (q)
+	63  3.8955716 -6.560738e+01   87.01464
+	...
+	100 6.2203482  8.982238e+01 -342.67669
+
+	Note both zero and 1/2 cycle are near ends of ellipse and so have
+	more uncertainty in u.
+	The 1/8 cycle point has less uncertainty, so use it to compute
+	the other two points based on their known fraction of 2*Pi.
+
+	Uq = 3.833
+	Up = Uq - ((1/8) * 2 * Pi)  = 3.833 - 0.785  = 3.048
+	Ur = Up + ((1/2) * 2 * Pi)  = 3.048 + 3.142  = 6.190
+
+	Thus we have:
+	    Up = 3.048  zero		(-89.6,  348.7)
+	    Uq = 3.833  1/8 cycle	(-69.3,  111.1)
+	    Ur = 6.190  1/2 cycle	( 89.6, -348.7)
+
+	    This is reasonably close to the original picked points.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+Files:
+------
+    data -> ../../data/ex2022_04_23_sine_mcp4822/
+	sine_509Hz_a.jpg	original camera image
+
+    color_crop_axis.jpg		cropped image with axis drawn
+
+    ellipse_p3.738.pdf		ellipse plot, Pd=3.738
+    ellipse_p3.738.tab		ellipse table (i,u,x,y)
+
+    ellipse_wave.pdf		ellipse drive/response waveforms
+
+    notes.text			this file
+
+Summary:
+    The general process to identify the ellipse parameters is:
+
+    1) Find the bounding box, i.e. extreme X and Y points on the ellipse.
+	Compute the amplitudes Ex, Ey.
+
+    2) Identify center of ellipse from the CG or the Bounding Box.
+	Draw X and Y axis thru the center.
+	Translate all image coordinates to these XY coordinates.
+
+    3) Identify direction of circulation, i.e. CW or CCW, of the ellipse trace
+	by looking at the zero and 1/8 cycle sync marks.
+
+    4) Find zero crossing points on each axis, and order them by the direction
+	of circulation.
+	Compute Ua, Ub, Uc, Ud for each point from eq (4).
+	For each point then compute Pd from eq (5).
+	    (4)  x / Ex = cos( u )
+	    (5)  y / Ey = cos( u + Pd )
+	Choose u and Pd such that these equations are true, and u is ordered
+	in direction of circulation.
+	Perhaps use the average Pd value.
+
+    5) Now Ex, Ey, and Pd are the parameters of the ellipse.
+
+    6) Identify sync mark coordinates.
+	Use eq (4,5) to find the value of u for each sync mark point.
+	Now can relate phase of response to the phase of drive signal.
+
+Conclusions:
+    For this ellipse image, we found:
+	Ex =    90 pixel    X amplitude
+	Ey =   398 pixel    Y amplitude
+	Pd = 3.738 radians  Phase difference of Y from X.
+	Circulation is CCW.
+	Up = 3.048 radians  Phase difference of drive signal from u=0.
+
+    The exciter drive is in the Y-direction, and is a sine wave with rising
+    zero crossing at the zero sync mark:
+	 sin(u - Up)
+    In the plot it leads the Y response and looks quite plausible.
+    Detailed accounting of polarity and phase has not been applied.
+
+    The ellipse parameter extraction process looks manageable, and could be
+    automated.
+
+Next:
+    Need to automate the ellipse extraction process.  pgm_ellipse
+
+    Need ellipse images with and without the sync marks.
+
+    Need ways to pick points and identify center of the trace, which is
+	about 10 pixels wide.
+
+    The DAC has an output low-pass filter, which has not been characterized
+    for phase delay.
+
+    Jitter in sync marks needs to be accommodated or eliminated.
 
 ----------------------------------------
 Oops:  point (Xb, Ya) is NOT on ellipse!
