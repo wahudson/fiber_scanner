@@ -6,10 +6,10 @@ $Descr B 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "avolt_dac_v1/  Voltage DAC"
-Date "2022-04-04"
-Rev "v1.0"
+Date "2022-07-28"
+Rev "v1.1"
 Comp "William A. Hudson"
-Comment1 ""
+Comment1 "v1.1 - Tighten up RPi connections, VDD"
 Comment2 ""
 Comment3 ""
 Comment4 ""
@@ -458,10 +458,6 @@ F 3 "" H 3700 3500 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	2000 600  2000 3400
-Wire Wire Line
-	1700 600  1700 3600
-Wire Wire Line
-	5700 600  5700 3600
 $Comp
 L _Breadboard:MCP4802 U1
 U 1 1 623BA2FE
@@ -522,14 +518,6 @@ Wire Wire Line
 Connection ~ 2000 5600
 Wire Wire Line
 	2000 5600 2000 6800
-Wire Wire Line
-	4800 4200 5700 4200
-Connection ~ 5700 4200
-Wire Wire Line
-	2600 5800 1700 5800
-Connection ~ 1700 5800
-Wire Wire Line
-	1700 5800 1700 10300
 $Comp
 L _Breadboard:R4_4_1 R1a
 U 1 1 623ADF14
@@ -586,8 +574,6 @@ Text GLabel 2600 6000 0    50   Input ~ 0
 CS0n
 Text GLabel 2600 7600 0    50   Input ~ 0
 VNN
-Text GLabel 4800 7000 2    50   Input ~ 0
-VPP
 Wire Wire Line
 	2800 6200 2600 4600
 Wire Wire Line
@@ -597,16 +583,10 @@ Wire Wire Line
 Wire Wire Line
 	3000 6000 4400 4800
 Wire Wire Line
-	4400 4400 4400 4200
-Wire Wire Line
-	4400 5000 4600 4200
-Wire Wire Line
 	3200 4800 3000 4200
 Wire Wire Line
 	2600 4200 1700 4200
 Connection ~ 1700 4200
-Wire Wire Line
-	1700 4200 1700 5800
 Text GLabel 3400 9800 2    50   Input ~ 0
 Colow
 Text GLabel 3400 9600 2    50   Input ~ 0
@@ -811,60 +791,42 @@ Wire Wire Line
 $Comp
 L _Breadboard:C3_3_0 C5
 U 1 1 624E6C27
-P 3700 4000
-F 0 "C5" V 3915 4000 50  0000 C CNN
-F 1 "C3_3_0" V 3824 4000 50  0000 C CNN
-F 2 "" H 3700 4000 50  0001 C CNN
-F 3 "" H 3700 4000 50  0001 C CNN
-	1    3700 4000
+P 3700 3900
+F 0 "C5" V 3915 3900 50  0000 C CNN
+F 1 "C3_3_0" V 3824 3900 50  0000 C CNN
+F 2 "" H 3700 3900 50  0001 C CNN
+F 3 "" H 3700 3900 50  0001 C CNN
+	1    3700 3900
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	3000 5400 2800 4000
-Wire Wire Line
-	4200 4000 4200 4200
-Wire Wire Line
-	5700 4200 5700 10300
+	4000 3900 4200 4200
 Wire Wire Line
 	4400 8600 4300 8800
 Wire Wire Line
 	4300 8800 3400 8800
 Wire Wire Line
-	2800 5800 3200 8800
-Wire Wire Line
 	3000 8000 2800 7400
-Wire Wire Line
-	1700 3600 5700 3600
-Connection ~ 1700 3600
-Wire Wire Line
-	1700 3600 1700 4200
-Connection ~ 5700 3600
-Wire Wire Line
-	5700 3600 5700 4200
 Wire Wire Line
 	5400 600  5400 3400
 Wire Wire Line
 	2000 3400 5400 3400
 Connection ~ 2000 3400
 Wire Wire Line
-	2000 3400 2000 5400
+	2000 3400 2000 5200
 Connection ~ 5400 3400
 Wire Wire Line
 	5400 3400 5400 10300
-Text GLabel 2000 3800 0    50   Input ~ 0
-GND
-Text GLabel 1700 4000 0    50   Input ~ 0
+Text GLabel 1700 5600 0    50   Input ~ 0
 VDD
-Text Notes 700  6450 0    50   ~ 0
+Text Notes 700  6350 0    50   ~ 0
 Gpio20  spi1_MOSI  p38  violet
-Text Notes 700  6250 0    50   ~ 0
-Gpio21  spi1_SCLK  p40  red
-Text Notes 700  6050 0    50   ~ 0
+Text Notes 700  6150 0    50   ~ 0
+Gpio21  spi1_SCLK  p40  white
+Text Notes 700  5950 0    50   ~ 0
 Gpio16  spi1_CE2_n  p36  green
-Text Notes 800  3850 0    50   ~ 0
-GND  p9  black
-Text Notes 700  4050 0    50   ~ 0
-+3.3 V  p1  yellow
+Text Notes 700  5650 0    50   ~ 0
++3.3 V  p17  yellow
 Text Notes 5850 7050 0    50   ~ 0
 VPP  +12 V
 Text Notes 1100 7650 0    50   ~ 0
@@ -875,9 +837,9 @@ Text Notes 12300 9200 0    70   ~ 0
 12-bit DAC, 1 Digital out, 1.3 kHz LP Filter, Full Scale +-256 mV
 Text GLabel 4850 5200 2    50   Input ~ 0
 GATE
-Text Notes 800  5250 0    50   ~ 0
+Text Notes 850  5800 0    50   ~ 0
 GND  p34  brown
-Text GLabel 2000 5200 0    50   Input ~ 0
+Text GLabel 2000 5800 0    50   Input ~ 0
 GND
 Wire Wire Line
 	4600 6400 4800 4800
@@ -912,4 +874,65 @@ Wire Notes Line
 	5000 9900 5000 8900
 Wire Notes Line
 	5000 8900 3400 8900
+Wire Wire Line
+	3200 5400 2900 4000
+Wire Wire Line
+	2900 4000 3400 3900
+Wire Wire Line
+	4600 5000 4800 4200
+Wire Wire Line
+	4600 4400 4600 4200
+Wire Wire Line
+	4400 4200 4300 4000
+Wire Wire Line
+	4300 4000 3200 4000
+Wire Wire Line
+	3200 4000 2800 4200
+Wire Wire Line
+	2600 8800 1700 8800
+Connection ~ 1700 8800
+Wire Wire Line
+	1700 8800 1700 10300
+Text GLabel 2000 6200 0    50   Input ~ 0
+GND
+Text Notes 850  6250 0    50   ~ 0
+GND  p39  black
+Text GLabel 4800 7000 2    50   Input ~ 0
+VPP
+Text GLabel 2000 6400 0    50   Input ~ 0
+GND
+Text Notes 850  6450 0    50   ~ 0
+GND  p34  blue
+Wire Wire Line
+	1700 4200 1700 5200
+Wire Wire Line
+	2600 5800 1700 6000
+Connection ~ 1700 6000
+Wire Wire Line
+	1700 6000 1700 8800
+Text Notes 500  5450 0    50   ~ 0
+RPi Connections:
+Wire Wire Line
+	1700 600  1700 4200
+Wire Wire Line
+	5700 600  5700 10300
+$Comp
+L _Breadboard:C1_1_0 C6
+U 1 1 62E754B5
+P 1900 5200
+F 0 "C6" V 1685 5200 50  0000 C CNN
+F 1 "0.1uF" V 1776 5200 50  0000 C CNN
+F 2 "" H 1900 5200 50  0001 C CNN
+F 3 "" H 1900 5200 50  0001 C CNN
+	1    1900 5200
+	0    1    1    0   
+$EndComp
+Connection ~ 2000 5200
+Wire Wire Line
+	2000 5200 2000 5400
+Wire Wire Line
+	1800 5200 1700 5200
+Connection ~ 1700 5200
+Wire Wire Line
+	1700 5200 1700 6000
 $EndSCHEMATC
