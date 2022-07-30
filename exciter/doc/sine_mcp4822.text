@@ -791,6 +791,9 @@ Need:
 ## Experiment:  sine_mcp4822 with LED Gate  2022-04-23
 ----------------------------------------------------------------------------
 
+See also:  camera/exp/ex2022_04_23_sine_mcp4822/
+    Analysis of ellipse image  sine_509Hz_a.jpg
+
 Configuration:
     Continued from above.
     Code:  sine_mcp4822.cpp  (commit  87807a0edd)  2022-04-23  includes:
@@ -897,7 +900,7 @@ Try Gated LED on camera:
 
     Image capture on rpiTouch:
 	fiber_scanner/camera/data/ex2022_04_23_sine_mcp4822/
-    % raspistill -v -o sine_509Hz_a.jpg
+ >  % raspistill -v -o sine_509Hz_a.jpg
 
 Need:
  v  Way to stop waveform at zero volts output.

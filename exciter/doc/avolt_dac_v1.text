@@ -4,6 +4,19 @@
 		------------------
 
 ----------------------------------------------------------------------------
+## Revision Log
+----------------------------------------------------------------------------
+kicad/avolt_dac_v1/
+
+v1.0  2022-04-04  First version
+
+v1.1  2022-07-28  Tighten up RPi connections, VDD
+	Improve breadboard connections to RPi, adding parallel ground returns
+	to SCLK and MOSI.  All VDD and GND connections on one side of
+	breadboard, minimal VDD loop.  No schematic change.
+	Added C6 0.1 uF bypass VDD near RPi connections.
+
+----------------------------------------------------------------------------
 ## Power
 ----------------------------------------------------------------------------
 
@@ -118,4 +131,217 @@ Adjust RV4 to Vref= 0.512 V
 
     rgpio uspi -1 --tx  0x37ff0000	Voa=  0.001 V  zero
     rgpio uspi -1 --tx  0x27ff0000	Voa=  0.130 V  Shutdown
+
+----------------------------------------------------------------------------
+## Noise on DAC  2022-07-28
+----------------------------------------------------------------------------
+
+Previous:
+    /camera/exp/ex2022_04_23_sine_mcp4822/notes.text
+    /exciter/doc/sine_mcp4822.text
+	    Experiment:  sine_mcp4822 with LED Gate  2022-05-14
+
+Observation in:  /exciter/doc/sine_mcp4822.text
+	    sine_mcp4822 turn-on  2022-04-06
+    Noise on output.
+    Digital noise ~120 mVpp on Voa (final output).  This goes away
+    when SPI stops clocking, i.e. CE2n goes high.
+
+Objective:  Find way to reduce digital noise on DAC output.
+    Idea is to use a separate analog power supply.
+
+Configuration:
+    GIT:  7742ad048d  Wed Jun 1 22:23:23 2022 -0600
+    Schematic:  /exciter/kicad/avolt_dac_v1/ki.pro	v1.0
+    RPi:  rpiFour
+
+    Power supply:  HP6236B Triple Output Power Supply
+	Provides  VPP= +12 V, VNN= -12 V
+	to TLO52 op-amp and Current Buffer.
+
+    VDD= 3.3 V from RPi, to DAC and 74AHC74 D Flip-flop.
+	Is a suspected noise source.
+
+    LED gate not connected.
+
+Noise observation:
+    Ch2  10x probe, AC coupled, 10 mV/div, BW limit OFF
+
+(A) Only VPP and VNN powered, RPi not running.
+	Gnd = Common ground point.
+	Vda = DAC output
+	Voa = final output unity gain buffer
+	All had scope intrinsic noise of 10 mVpp, BW limit OFF.
+
+(B) Power up RPi
+	Ch2 BW limit cuts noise quite a lot.
+	Decide to keep BW limit OFF.
+	VDD = 10 mVpp noise, looks similar to Gnd.
+
+(C) Configure rgUniSpi
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    % ../bin/sine_mcp4822.init
+    % ../bin/sine_mcp4822 --freq=500 --gain=2000 --ncyc=2000 --nramp=3000 \		--syncmode=1
+
+    Timebase:  500 us/div
+    Trigger:  Ch1, 1.0 V
+	See two sync marks, two cycles of sine wave
+    Ch1:  2.0 V/div, LED gate output, pin 9 74AHC74
+    Ch2:  100 mV/div, AC coupled, Voa buffer output
+	See sine wave ramp up and back down.
+	See big noise while rgUniSpi is clocking.
+
+    Voa = 85 mVpp bulk noise, maybe 140 mVpp sparse peaks.
+	Drops to 10 mVpp when SCLK stops toggling.
+
+(D) Try power VDD= 3.3 V from power supply instead of RPi.
+    Connected at same point that RPi connected.
+    Got very similar noise response on Voa.
+    Seems like the digital signals are injecting the noise.
+
+    Vdd= 180 mVpp noise, with sparse spikes to 300 mVpp
+    Gnd=  77 mVpp noise, probe on ground.
+
+    Noise spikes are clearly synchronous with SCLK.
+
+(E) Try VDD from RPi, but only offset pot RV4 from HP power supply.
+    Vdd(Rpi)= 170 mVpp from RPi, about the same.  Drops to 10 mVpp when
+	SCLK stops.
+    Vdd(HP)= 100 mVpp, is a lot less.  But sparse noise spikes of same
+	amplitude continue after SCLK stops with irregular period ~40 us.
+	Ahh... but this is also a 2 foot lead with only a 5 kohm pot on
+	the end, thus can pick up noise.  See amplitude change as the loop
+	size is changed.
+
+Schematic:  kicad/avolt_dac_v1/
+    v1.1  2022-07-28  Tighten up RPi connections and VDD routing.
+    RPi VDD powers both DAC and the offset pot RV4.
+
+(F) Repeat (C) with new v1.1 breadboard wiring.
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    % ../bin/sine_mcp4822.init
+    % ../bin/sine_mcp4822 --freq=500 --gain=2000 --ncyc=1000 --nramp=1000 \
+	--syncmode=1
+	Shorter duration sweep to save time.
+
+    Voa = 65 mVpp bulk noise, maybe 110 mVpp sparse peaks.
+	Looks improved compared to (C)
+
+    Vdd = 50 mVpp bulk noise, maybe 90 mVpp sparse peaks.
+	Looks improved compared to (E)
+
+    SCLK edge rate:  (Ch2, AC coupled)
+	Looks about ~5 ns rise time.
+	Measured 4.1 ns rise time over 1.48 V  (0.36 V/ns, 2.8 ns/V)
+		Slew rate 360 V/us.
+
+	Looks like room to reduce edge rate to help reduce noise.
+
+Conclusions:
+    The large noise on Vdd and DAC output Voa is clearly only present when
+    the SCLK is running, and drops to the scope noise floor (10 mVpp) when
+    SCLK stops.
+
+    Scope probes were set at 10x (10 Mohm input impedance) with 6 inch ground
+    wire.  Could this be simply picking up the SCLK edge transitions?
+    Could it be a probing artifact?
+
+    Try 1x probe (1 Mohm input impedance).
+
+    Try short ground probe, or coax cable.
+
+    Scope BW limit cuts the noise a lot, suggesting it is mainly high-frequency
+    (fast edge rates).
+
+    Try measuring noise frequency components or edge rate of spikes.
+
+    Is it likely these noise spike are really going thru the op-amp?
+    TL052:
+	GBW:  3.3 MHz typ
+	Slew rate:  20 V/us
+
+    This application is a 1 kHz sine wave for driving an exciter.
+    In this case the observed noise would have essentially no effect.
+
+----------------------------------------
+2022-07-28
+
+Explore probing of DAC noise.
+
+    Configuration:  Same as (F) above.
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    % ../bin/sine_mcp4822.init
+    % ../bin/sine_mcp4822 --freq=500 --gain=2000 --ncyc=1000 --nramp=1000 \
+	--syncmode=1
+
+    Timebase:  500 us/div
+	See two sync marks, two cycles of sine wave
+
+(G) Repeat observation (F) above.
+    Ch2 probe 10x, 6 inch ground lead, 10 mV/div, BW limit OFF.
+    Voa = 66 mVpp bulk noise, maybe 110 mVpp sparse peaks.
+	About the same as (F).
+
+(H) Repeat observation (F) above.
+    Ch2 probe 1x, 6 inch ground lead, 10 mV/div, BW limit OFF.
+    Voa = 11 mVpp bulk noise, maybe 22 mVpp sparse peaks.
+	Drops to 2 mVpp when SCLK stops.
+    This is a lot less noise, confirming a large component is probing.
+
+    Note with probe at 10x, min scale is 5   mV/div.
+	 with probe at  1x, min scale is 0.5 mV/div.
+
+(I) Repeat observation (H) with short spring ground lead.
+    Voa = 11 mVpp bulk noise, maybe 22 mVpp sparse peaks.
+    Essentially the same.
+
+(J) Repeat observation (H) with BW limit.
+    Ch2 probe 1x, 6 inch ground lead, 5 mV/div, BW limit ON.
+    Voa = 5 mVpp bulk noise, maybe 10 mVpp sparse peaks.
+	Drops to 1.2 mVpp when SCLK stops.
+	The channel BW limit reduces the noise spikes to about 1/2 amplitude.
+
+(K) Repeat observation (H) to look noise spike.
+    Ch2 probe 1x, 6 inch ground lead, 5 mV/div, BW limit OFF.
+	Timebase 20 ns/div
+    Voa - a single noise pulse shows as ringing with
+	about 20 ns period (50 MHz), about 20 mVpp initial pulse, and
+	about 5 to 7 cycles of ring-down.
+    Noise bursts correspond to each edge of SCLK.
+    Between SCLK clock edges, Voa has little high-frequency noise.
+
+(L) Repeat observation (H) - effect of not probing Ch1
+    % ../bin/sine_mcp4822 --freq=500 --gain=0 --ncyc=1000 --nramp=1 --syncmode=1
+    Timebase 20 us/div.  See ~4 CS cycles of SCLK.
+    Trigger:  Auto, hit Run/Stop to capture running trace.
+    Ch2 probe  1x, 6 inch ground lead,   5 mV/div, BW limit OFF.
+    Ch1 probe 10x, 6 inch ground lead, 2.00 V/div, BW limit OFF.
+	Voa= 17 mVpp for bulk of noise bursts in a CS cycle, with max ~24 mVpp.
+
+    Ch1 probe disconnected (moved to GND):
+	Voa= 10 mVpp for virtually all noise bursts in a CS cycle.  Only one
+	burst in each CS cycle is ~19 mVpp.
+
+    Thus probing SCLK on Ch1 adds apparent noise to Voa observation on Ch2.
+    Similarly for Ch1 probing CS, but effect is less since it has a much lower
+    duty cycle.
+
+Conclusions:
+    A 1x probe on low impedance points picks up a lot less digital noise.
+    Most of the digital noise observed with 10x probe seems to be probing
+    artifacts.
+
+    Probe ground lead did not seem to matter - a 6 inch lead or a short spring
+    lead were about the same.
+
+    The noise on buffer output Voa seems to be ringing from SCLK edges.
+    The ringing is about 20 mVpp and around 50 MHz frequency, when observed
+    with a 1x probe.  Seems likely conducted thru various parasitic paths,
+    and not a direct signal in the low bandwidth op-amps.
+
+    The Voa buffer output noise seems to be around 10 mVpp with sparse peaks
+    to 20 mVpp.  This still may be an artifact, but seems acceptable.
+
+    Note:  Set --gain=0 to look at only the zero DC level.
+    % ../bin/sine_mcp4822 --freq=500 --gain=0 --ncyc=1000 --nramp=1 --syncmode=1
 
