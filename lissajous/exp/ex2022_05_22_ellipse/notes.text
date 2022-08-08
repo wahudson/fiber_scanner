@@ -199,3 +199,36 @@ Summary:
     Other than this, it really does not matter where u=0 is, especially
     in continuous operation.
 
+----------------------------------------------------------------------------
+## Ellipse Table for inverse lookup
+----------------------------------------------------------------------------
+See:  fiber_scanner/camera/exp/ex2022_04_23_sine_mcp4822/notes.text
+
+    Make 100 points from 0 to 2*Pi
+    u <- (2 * Pi / 100) * c(0:99)
+
+    Pd = 1.2
+
+    x <- cos( u )
+    y <- cos( u + Pd )
+
+    Create new data frame from vectors, names are the vector names.
+    df <- data.frame( u, x, y )
+
+    write.table( df, file="ellipse_p1.2.tab" )
+
+Repeat with another phase:
+    Pd = -1.193
+    ...   (generate df as above)
+    write.table( df, file="ellipse_p-1.193.tab" )
+
+Scale ellipse to match image:
+    Ex <-  90
+    Ey <- 398
+    x <- Ex * cos( u )
+    y <- Ey * cos( u + Pd )
+    df <- data.frame( u, x, y )
+    write.table( df, file="phase-1.193.tab" )
+
+Data files not saved as they are easily regenerated.
+
