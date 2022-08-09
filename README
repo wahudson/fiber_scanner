@@ -13,14 +13,17 @@ Files:
     camera/	camera image analysis
     data/
     doc/	general doc
+    exciter/	fiber electromagnetic driver systems
     exp/
     led_light/	LED fiber light source
     lissajous/	Lissajous pattern and ellipse theory
-    photo/
+    niDAQ/	Matlab language and NI DAQ use
+    photo/	photographs
     piezo/	piezo tube scanner design
 	notes.text	main notes
 
     psd_box/	Position Sensing Detector connector box design
+    ref_papers/	copies of reference papers harder to acquire
     tmp/
     tool/
 

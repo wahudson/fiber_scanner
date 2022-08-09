@@ -1,0 +1,233 @@
+2022-07-15
+			niDAQ in Matlab
+			---------------
+
+Matlab language learning and application running the National Instruments DAQ.
+
+We have:  NI USB 6211, Bus powered, M-series DAQ
+
+----------------------------------------------------------------------------
+## Matlab reference
+----------------------------------------------------------------------------
+
+Language Fundamentals
+    https://www.mathworks.com/help/matlab/language-fundamentals.html
+
+Case sensitive:
+    MATLAB is case sensitive for function, script, and variable names for all
+    platforms, but name-value pairs can sometimes be insensitive.
+    e.g.
+    >> plot(1:10,'linewidth',3)
+    >> plot(1:10,'LineWidth',3)
+    >> plot(1:10,'LINEWIDTH',3)
+
+Constants:
+    pi = 3.141592653589793
+
+MATLAB Operators and Special Characters
+    https://www.mathworks.com/help/matlab/matlab_prog/matlab-operators-and-special-characters.html
+    .*   = element-wise multiplication
+    ...  = line continuation
+    :    = vector creation, indexing, for loop
+    ;    = end of row in array, suppress result output (not really termination)
+    ''   = Character array constructor - use for file names, plot labels
+    ""   = String constructor
+    ()   = indexing, operator precedence, function arguments
+    []   = Array construction, concatenation, empty matrix, multiple lvalue
+
+Text in String and Character Arrays
+    +    = string concatenation
+    https://www.mathworks.com/help/matlab/matlab_prog/represent-text-with-character-and-string-arrays.html
+
+colon, :
+    v = a:b
+	Vector with elements a, a+1, a+2, .. b.  Need not be integer.
+    v = a:i:b
+	Vector [a .. b] increment by i
+    Brackets need not enclose the range, but are OK?
+    https://www.mathworks.com/help/matlab/ref/colon.html
+
+linspace()
+    Generate linearly spaced vector, similar to colon
+    v = linspace( x1, x2, n )
+	Generates n points with spacing (x2-x1)/(n-1).
+    Always includes the end points.  Default n=100 (disparaged).
+    https://www.mathworks.com/help/matlab/ref/linspace.html
+
+Creating, Concatenating, and Expanding Matrices
+    Most basic data structure is the matrix.  Even a single number is stored
+    as a matrix.
+    Commas (or <space> for short) separate elements within a row.
+    v = [12, 62, 93, -8]
+    v = [12 62 93 -8]
+	Create a 4 element vector, space is the separator.
+    A = [12 62; 93 -8]
+	Create a 4 element array, semicolon separates rows.
+    https://www.mathworks.com/help/matlab/math/creating-and-concatenating-matrices.html
+
+Matrices and Arrays
+    size( A )  returns a row vector of the dimensions of A.
+    https://www.mathworks.com/help/matlab/matrices-and-arrays.html
+
+Array vs. Matrix Operations
+    https://www.mathworks.com/help/matlab/matlab_prog/array-vs-matrix-operations.html
+
+Analog Input Subsystem
+    General overview of concepts.
+    https://www.mathworks.com/help/daq/analog-input-subsystem.html
+
+daq( vendor )
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.daq.html
+    vendor - Device vendor
+	"ni" | "adi" | "mcc" | "directsound" | "digilent"
+	Return:  DataAcquisition object
+	e.g.
+    dq = daq( 'ni' )
+
+daqlist()
+    Displays a table of all available devices for all supported vendors.
+    https://www.mathworks.com/help/daq/daqlist.html?searchHighlight=daqlist
+
+addoutput( dq, deviceID, channelID, measurementType )
+    deviceID = string defined by the device vendor.
+	Use 'daqlist' to obtain deviceID of currently connected hardware.
+    channelID = numeric or string specific to the vendor and device.
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.addoutput.html
+
+read(dq, ...)
+    Read data acquired by hardware
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.read.html
+
+readwrite()
+    inScanData = readwrite( dq, outScanData )
+    Device writes outScanData, and reads back inScanData matrix, in foreground.
+    outScanData = M-by-N matrix, M= number of scans, N= number of channels.
+    inScanData  = resulting matrix of M rows (scans) of read data.
+    Command blocks until complete.
+    Presume columns are in addoutput/addinput declaration order.
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.readwrite.html
+
+save()
+    Save workspace variables to file.
+    save( 'file.txt', 'v1', v2', .. , '-ascii', '-tabs' );
+	'-ascii'   = ASCII format with 8 digits precision, space separated
+	'-double'  = 16 digits precision, instead of 8
+	'-tabs'    = tab separator, added to spaces
+		    Seems to add tabs to existing spaces, even before the
+		    <CR><LF> line ending, pretty useless.
+    Variable length list of variables, which are probably output sequentially.
+    https://www.mathworks.com/help/matlab/ref/save.html
+
+format()
+    Set the interactive output display format.
+
+----------------------------------------------------------------------------
+## Examine initial script from Cameron:  2022-07-14
+----------------------------------------------------------------------------
+
+niDAQ/exp/ex2022_07_14_piezo/
+    ContinuousDataAcq_withFourierFilteringV3.m
+
+Building up documentation reference of useful script commands.
+
+Acquire Continuous and Background Data Using NI Devices
+    https://www.mathworks.com/help/daq/acquire-continuous-and-background-data-using-ni-devices.html
+
+
+Script:
+    function plotMyData(d, ~, fgui)
+	global data
+	data = read(d, d.ScansAvailableFcnCount, "OutputFormat", "Matrix");
+    end
+
+%% Set rate of data set processing
+    d.ScansAvailableFcnCount = round(62500/2);
+    d.ScansAvailableFcn = @(d,evt) plotMyData(d,evt,fgui);
+
+%% Flush and re-start device
+    flush(d)
+    preload(d,[OutX', OutY'])
+    start(d);
+
+    OutX, OutY are row vectors.  The (') takes transpose into column vectors,
+    then [,] concatenates rows into a matrix (the comma may be optional).
+
+----------------------------------------------------------------------------
+## Dataset script  2022-08-02
+----------------------------------------------------------------------------
+
+Generate an output waveform data set, and read back the corresponding
+input data set from PSD and Photodetector.
+
+%% Destroy previous objects??
+
+%% DAQ configuration
+    % addoutput/addinput order is column order in data matrix
+
+    % construct DataAcquisition object
+    dq = daq( 'ni' );
+
+    % output channels for piezo drive signals
+    chOutX = addoutput( dq, 'Dev1', 'ao0', 'Voltage' );
+    chOutY = addoutput( dq, 'Dev1', 'ao1', 'Voltage' );
+
+    % input channel from photodetector
+    chInSig = addinput( dq, 'Dev1', 'ai1', 'Voltage' ); % Intensity Signal
+
+    % input channels from PSD
+    chInSum = addinput( dq, 'Dev1', 'ai2', 'Voltage' ); % PSD Sum Pin Signal
+    chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
+    chInY   = addinput( dq, 'Dev1', 'ai4', 'Voltage' ); % PSD Y Pin Signal
+
+    chInX.Range = [-5,5];
+    chInY.Range = [-5,5];
+
+    % DAQ sample rate
+    dq.Rate  = 62500;		% set samples per second
+    sampRate = dq.Rate;
+
+%% Parameters
+
+    FreqX_Hz = 805;
+    FreqY_Hz = 806;
+
+    DatasetTime_s = 2.0;	% data set duration
+
+    OutAmp_V = 0.05;		% output amplitude, sine wave voltage peak
+
+    pi = 3.14159;
+
+%% Output waveforms
+
+    % sample interval from DAQ sample rate
+    dt_s = 1 / sampRate;
+
+    nSamps = round( DatasetTime_s / dt_s );
+
+    % vector of time values
+    tVec_s = [0:nSamps] * dt_s;
+
+    wX = 2 * pi * FreqX_Hz;
+    wY = 2 * pi * FreqY_Hz;
+
+    outVecX = OutAmp_V * sin( wX * tVec_s );
+    outVecY = OutAmp_V * sin( wY * tVec_s );
+
+    outScanData = [transpose( outVecX ), transpose( outVecY )];
+	    % transpose into column vectors, then concatenate rows
+
+    % outScanData = transpose( [outVecX; outVecY] );
+	    % concatenate into a 2-row matrix, then transpose
+
+    inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
+
+    ofile = "xyz" + ".txt";
+    save( 'file.txt', 'inScanData', '-ascii' );
+
+
+%% Loop
+
+    for ii = [1 2 3]
+	ofile = "xyz" + ii + ".txt"
+    end
+
