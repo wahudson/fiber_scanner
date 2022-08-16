@@ -1,0 +1,78 @@
+#!/usr/bin/Rscript --vanilla
+# 2022-08-14  William A. Hudson
+
+# Plot XY ellipse from fiber scanner.
+#     All input files plotted to the same output PDF file.
+#
+# usage:  plot_ellipse  inFile.tab ..
+#     inFile = input table file, or literal 'stdin'
+#
+# inFile:
+#     Table, no heading, with columns:  "Vsig", "Vsum", "Vx", "Vy"
+#     sampRate = 62500 sample/s
+#     length   = 125001 samples
+#
+#---------------------------------------------------------------------------
+
+# Script Parameters:
+#    sampRate <- 62500		# sample/s
+#    FreqR_Hz <- 805		# base frequency
+
+    rn     <- c(62501:125001)	# range to plot
+    rnText <- "[62501:125001]"
+
+# Check arguments.
+    argv = commandArgs( trailingOnly=TRUE )
+
+    ok <- TRUE
+
+# Check files
+    for ( inFile in argv )
+    {
+	if ( file.access( inFile, mode=4 ) ) {
+	    warning( "Error:  file not found: ", inFile )
+	    ok <- FALSE
+	}
+    }
+
+    if ( ! ok ) { quit( status=1 ) }
+
+    # open file for multiple plots, one per page
+    pdf( "xxmulti.pdf" )
+
+    for ( inFile in argv )
+    {
+	cat( "inFile=  ", inFile, "\n" )
+
+	fileB <- sub( "\\.txt$", "", inFile )
+	cat( "fileB=   ", fileB, "\n" )
+
+	outFile <- sub( "$", ".pdf", fileB )
+	cat( "outFile= ", outFile, "\n" )
+
+    # Read in data table
+	df <- read.table( inFile, header=FALSE )
+
+	names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    # Plot
+#	pdf( outFile )
+
+	plot( df$Vx[rn], df$Vy[rn], pch='.',
+	    xlim=c( -2.0,  0.5 ),
+	    ylim=c(  0.0,  2.5 ),
+	)
+	# limits set for experiment ex2022_08_09_eigen/
+
+	title( main=paste( 'Ellipse 2D ', rnText, " - ", inFile ) )
+	abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+
+    }
+
+    graphics.off()	# close all plots
+
+#    dev.list()
+#    plot.new()  Create or start a new plot.
+#        Completes plotting of the current plot (if there is one) and
+#        advances to a new graphics frame.
+
