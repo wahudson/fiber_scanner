@@ -12,8 +12,9 @@
     FreqR_Hz = 805;		% single frequency
 
     DatasetTime_s = 2.0;	% data set duration
+    DecayTime_s   = 1.0;	% resonance decay time with data
 
-    OutAmp_V = 0.05;		% output amplitude, sine wave voltage peak
+    OutAmp_V = 0.10;		% output amplitude, sine wave voltage peak
 
     Pi = 3.1415926535;
 
@@ -56,16 +57,37 @@
 
     sineVecR = OutAmp_V * sin( wR * tVec_s );
 
+    % add dead time to see resonance decay
+    nZeros   = round( DecayTime_s / dt_s );
+    sineVecR = [ sineVecR, zeros( 1, nZeros ) ];
+
+    % output status
+    fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz );
+    fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V );
+    fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
+    fprintf( 'DecayTime_s   = %10.3f\n', DecayTime_s   );
+    fprintf( 'dt_s          = %12.4e\n', dt_s   );
+    fprintf( 'nSamps        = %10d\n',   nSamps );
+    fprintf( 'nZeros        = %10d\n',   nZeros );
+
     %>> FILE
-    save( 'sineVecR.txt', 'sineVecR', '-ascii' );
+    ofile = PreFix + "_sineVecR.txt";
+    fprintf( 'sineVecR:  %s\n', ofile );
+    sineColR = transpose( sineVecR );
+    save( ofile, 'sineColR', '-ascii' );
+	% A saved row vector has space separated values.
 
 %% Sweep Axis rotation
 
-    for step = [0:6]
+    pause( 'on' );	% enable process sleep
 
-	AngleR_deg = 30 * step;		% angle from +X axis
+    for step = [0:18]
+
+	AngleR_deg = 10 * step;		% angle from +X axis, integer
 
 	AngleR_rad = AngleR_deg * Pi / 180;
+
+	AngleR_str = sprintf( "%03d", AngleR_deg );
 
 	% rotate axis of applied sine wave
 	outVecX = cos( AngleR_rad ) * sineVecR;
@@ -77,8 +99,13 @@
 	inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
 
 	%>> FILE
-	ofile = PreFix + "_ang_" + AngleR_deg + ".txt";
+	ofile = PreFix + "_ang_" + AngleR_str + ".txt";
+	fprintf( 'outFile:  %s\n', ofile );
 	save( ofile, 'inScanData', '-ascii' );
+
+	% wait for fiber resonance to decay
+	fprintf( 'sleep(5)\n' );
+	pause( 5 );
 
     end
 
