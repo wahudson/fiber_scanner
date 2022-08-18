@@ -1,0 +1,59 @@
+2022-08-03
+		Piezo scanner data frame, anecdotal  2022-08-02
+		-----------------------------------------------
+
+See:  Red Notebook 2022-08-02
+
+Files:
+    amp0.10V_2bar.txt
+
+Anecdotal data frame left after running Cameron's piezo scanner and
+Fourier interpolation.
+That image is a bright vertical bar, slightly tilted, with dark area at
+bottom of the bright bar.
+
+
+Using R
+
+    df <- read.table( "amp0.10V_2bar.txt", header=FALSE )
+
+    names( df )
+    [1] "V1" "V2" "V3" "V4"
+
+	V1 = signal
+	V2 = sum
+	V3 = X
+	V4 = y
+
+Assign column names:
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    rn <- c(10000:20000)
+
+    plot( df$Vy[rn], pch='.' )
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+
+Plot 5 cycles of signal, overlay Vx waveform for reference.
+    rn <- c(10000:10400)
+    plot( (df$Vsig[rn] - 4.48), type='b' )
+    # points( (df$Vx[rn] * 0.01), pch='.' )
+
+Find range of signal:
+    plot( df$Vsig )
+    values 4.05 to 4.40, delta= 0.35
+
+    Offset and scale points for a grayscale range 0..1
+
+    iu <- (df$Vsig - 4.05) / 0.36
+
+    rn <- c(10000:13800)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+	Shrink window until dots merge.
+ >  dev.copy2pdf( file="field_10000:13800.pdf" )
+	Is an ellipse tilted +45 degrees, progressing CW outside to inside.
+	i.e. Last points are on the inside.
+
+    rn <- c(13000:13500)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+	Is similar ellipse with only 6 cycles.
+

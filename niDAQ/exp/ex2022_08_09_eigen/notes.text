@@ -1,0 +1,420 @@
+2022-08-09  William A. Hudson
+
+		Single Axis Scan Experiments -- ex2022_08_09_eigen/
+		----------------------------
+
+Two datasets:
+    eigen_axis.m	rotate eigen axis at single frequency
+    d1_*.txt		raw data tables
+    d1_sineVecR.txt	drive waveform, added newlines to original sineVecR.txt
+
+    eigen_freq.m	sweep frequency and axis of 1-D scan
+    f1_f*_ang_*.txt	raw data tables
+    f1_f*sine.txt	raw drive waveforms (no new-lines)
+
+Contents:
+    ## eigen_axis.m  Analysis
+    ## eigen_freq.m  Analysis
+    ## plot_ellipse - Script to plot 2D ellipse from data.
+    ## LockIn Analysis (Phase measurement)
+    ## PSD (Position Sensing Detector) Observations
+
+Note:  PSD is at an angle wrt piezo tube axis, i.e. not aligned.
+    Thus driving on X-axis only appears to stimulate both X and Y displacement.
+
+----------------------------------------------------------------------------
+## eigen_axis.m  Analysis
+----------------------------------------------------------------------------
+
+Files:
+    eigen_axis.m	script as run
+
+    sineVecR.txt	driving sinusoid
+
+    d1_ang_0.txt
+    d1_ang_30.txt
+    d1_ang_60.txt
+    d1_ang_90.txt
+    d1_ang_120.txt
+    d1_ang_150.txt
+    d1_ang_180.txt
+
+	Number is scan axis angle in degrees.
+
+Script Parameters:
+    PreFix = 'd1';              % output file set prefix
+    FreqR_Hz = 805;             % single frequency
+    DatasetTime_s = 2.0;        % data set duration
+    OutAmp_V = 0.05;            % output amplitude, sine wave voltage peak
+
+    sampRate = 62500 sample/s
+    dt_s = 1 / sampRate  = 16 us  sample period
+
+    1 / FreqR_Hz = 1.2422 ms  period
+
+    sampRate / FreqR_Hz = (62500 sample/s) / (805 Hz)  = 77.64 sample/cycle
+
+Analyze driving sinusoid:
+
+    Original file  sineVecR.txt  is 125000 values space separated (no
+    new-lines).  Change spaces into a single new-line:
+
+    % perl -pe's/\s+/\n/g' < sineVecR.txt > d1_sineVecR.txt
+
+    Note end up with a leading blank line (R will ignore).
+    % R
+
+    df <- read.table( "d1_sineVecR.txt", header=FALSE )
+
+    dim(df)
+    [1] 125001      1
+
+    names( df )
+    [1] "V1"
+
+    rn <- c(0:200)
+    plot( df$V1[rn] )
+	See nice sine wave, about 79 samples per cycle.
+	Sample 0 starts at V1=0.00 V and rises.  Peak values +-0.05 V.
+	Pretty boring, no need to actually save this file.
+	Good confirmation of expected waveform.
+
+Analyze data sets with R:
+
+    df <- read.table( "d1_ang_0.txt", header=FALSE )
+
+    names( df )
+    [1] "V1" "V2" "V3" "V4"
+
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    dim(df)
+    [1] 125001      4
+
+    rn <- c(0:2000)
+
+    plot( df$Vx[rn], pch='.' )
+    plot( df$Vy[rn], pch='.' )
+	Plots show displacement envelope over full 2 s dataset.
+	Vx settles after 45000 samples, larger overshoot, faster rise.
+	Vy settles after 60000 samples, smaller overshoot.
+
+
+    rn <- c(60000:122500)	# one second
+
+    max( df$Vx[rn] )
+    [1] 0.1722128
+    min( df$Vx[rn] )
+    [1] -1.987684
+
+    max( df$Vy[rn] )
+    [1] 1.925686
+    min( df$Vy[rn] )
+    [1] 0.5228746
+	These values agree with eyeball on plot.
+
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+    title( main='Ellipse 2D, 60000:122500' )
+    abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+    dev.copy2pdf( file="d1_ang_0.2d.pdf" )
+	Plot in 2D.  See large circle (of 805 cycles) with retrace very
+	good in lower half and somewhat wider in upper left.
+
+    mean( df$Vx[rn] )
+    [1] -0.8950794
+    mean( df$Vy[rn] )
+    [1] 1.217849
+
+----
+    df <- read.table( "d1_ang_90.txt", header=FALSE )
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+    rn <- c(60000:122500)
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+    title( main='Ellipse 2D, 60000:122500' )
+    abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+    dev.copy2pdf( file="d1_ang_90.2d.pdf" )
+	Fairly open ellipse, thicker trace in upper left.
+
+Analysis not complete.  Mostly a quick look.
+
+----------------------------------------------------------------------------
+## eigen_freq.m  Analysis
+----------------------------------------------------------------------------
+
+#!!
+Quick look at frequency sweep:
+
+    df <- read.table( "f1_f785_ang_0.txt", header=FALSE )
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+    rn <- c(62501:125001)
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+    title( main='Ellipse 2D, 62501:125001' )
+    abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+    dev.copy2pdf( file="f1_f785_ang_0.2d.pdf" )
+
+    Amplitude response is too low away from resonant peak.
+
+Compute Position from PSD:  (not applied)
+
+	Dx = (10 * df$Vx) / (2 * df$Vsum)
+	Dy = (10 * df$Vy) / (2 * df$Vsum)
+
+Tool:  plot_ellipse
+    Initial development to plot a set of measurement files.
+
+Issues:
+
+ >> See initial oscillation remaining from previous run.
+	Need settling time between runs.
+
+ >> Vsum= 4.22 V, may be saturated.
+	Need lower light intensity on PSD.
+
+Need:
+    Translate PSD voltage into position.
+    Subtract mean from position series.
+    Plot with fixed scale.
+    Script to analyze data file.
+    Try lockin calculation.
+
+----------------------------------------------------------------------------
+## plot_ellipse - Script to plot 2D ellipse from data.
+----------------------------------------------------------------------------
+2022-08-18
+    Script:  plot_ellipse  Git 5f397f9a79  Aug 15 22:31:45 2022 -0600
+
+eigen_axis.m  data:  (rotate 1D drive angle)
+
+    % ls -tr d1_ang_*.txt > xin.list
+	Put files in time (angle) sequential order.
+
+    % plot_ellipse $(< xin.list )
+	Plot ellipses to file:  xxmulti.pdf
+    % mv xxmulti.pdf  xd1_multi.pdf
+
+eigen_freq.m  data:  (sweep frequency and axis of 1D drive)
+
+    % plot_ellipse f1_f*_ang_0.txt
+    % mv xxmulti.pdf  xf1_ang_0_multi.pdf
+
+    % plot_ellipse f1_f*_ang_90.txt
+    % mv xxmulti.pdf  xf1_ang_90_multi.pdf
+
+Interpret plots:
+    Plot Files:
+	xd1_multi.pdf
+	xf1_ang_0_multi.pdf
+	xf1_ang_90_multi.pdf
+
+    The title identifies the input file and the index (sample points) range.
+    These plots have fixed scales:  (hardwired in script for this data)
+	X:  -2.0 to +0.5,  delta= 2.5
+	Y:   0.0 to +2.5,  delta= 2.5
+    Mean values of Vx and Vy are computed/plotted for each plot.
+    These mean values mark the center of the ellipse, and are remarkably
+    consistent over all plots.
+
+    Each plot is 1 second of data, 805 cycles of the drive sinusoid, taken
+    after an initial 1 second of settling time.  Sample range [62501:125001],
+    62500 samples.
+
+    Note plotted ellipses all have thicker lines (more dispersion in data
+    points) in the upper left half (-X, +Y quadrant).  Seems to indicate
+    more noise on that part of the ellipse cycle.
+
+d1_ang_*.txt  (rotate 1D drive angle)  xd1_multi.pdf
+    AngleR_deg:  0, 30, 60, 90, 120, 150, 180  degrees
+    FreqR_Hz = 805	near/at resonance peak
+    OutAmp_V = 0.05	output amplitude, sine wave voltage peak
+
+    A linear (1D) drive sinusoid, of constant amplitude OutAmp_V, and angle
+    AngleR_rad to the piezo tube axis, is accomplished by
+
+	outVecX = cos( AngleR_rad ) * sineVecR;
+	outVecY = sin( AngleR_rad ) * sineVecR;
+
+    where
+	sineVecR   = a sine wave vector of amplitude OutAmp_V
+	AngleR_rad = the angle to rotate
+
+    Driving at AngleR_deg=0   is along the +X axis.  (piezo tube axis)
+    Driving at AngleR_deg=90  is along the +Y axis.
+    Driving at AngleR_deg=180 is along the -X axis.
+
+    Driving angle is wrt piezo tube, not the PSD.
+
+    View as separate PDF files:
+    % pdfseparate xd1_multi.pdf  yd1_a%d.pdf
+    % ls yd1*.pdf | arg_cmd 'xpdf ${1} &'
+
+    The plots show two angles where the ellipse is very narrow:
+    At AngleR_deg= 60, narrow ellipse at 113 deg major axis.
+    At AngleR_deg=150, narrow ellipse at   7 deg major axis.
+    In between the ellipse opens to nearly a circle at AngleR_deg=120.
+    The tilt of the ellipse axis also seems to vary slightly with drive angle.
+
+    The eigen axis are where the ellipse collapses to a line.
+    The open ellipse on either side of this line is due to the whirling
+    effect, essentially cross coupling.
+
+    The response angle we see includes the PSD angle wrt piezo tube axis.
+
+    I suspect the direction of circulation around the ellipse path changes
+    as the ellipse passes thru a straight line.
+
+    It is likely the eigen axis (where ellipse collapses to a line) are
+    reasonably close to the actual physical drive axis.  My conjecture.
+
+f1_f*_ang_*.txt	 (frequency sweep at two angles)
+    AngleR_deg:  0, 90 degrees
+    FreqR_Hz = 785, 795, 805, 815, 825 Hz   sweep in 10 Hz steps
+    OutAmp_V = 0.05	output amplitude, sine wave voltage peak
+
+    Same setup and data collection as the angle sweep above.
+
+    Plot Files:
+	xf1_ang_0_multi.pdf	5 frequencies at  0 degrees
+	xf1_ang_90_multi.pdf	5 frequencies at 90 degrees
+
+    Here we sweep frequency thru resonance at two different drive angles.
+
+    Near/ON resonance the ellipse is open, while away from resonance the
+    ellipse collapses to a straight line.
+
+    Off resonance the straight line is at roughly the same angle both above
+    and below resonance (perhaps a few degrees change).  This angle is
+    different than the eigen axis angles seen above.
+
+	At AngleR_deg= 0  response line is ~170 degrees.
+	At AngleR_deg=90  response line is  ~80 degrees.
+
+    Perhaps the off-resonance straight line response is close to the actual
+    driving axis?  Far from resonance there is no resonant gain, and the
+    only displacement would be the driven root, i.e. cantilever is not
+    oscillating.
+
+Need:
+    Need phase measurement!
+
+    Need finer frequency sweep near resonance.
+
+    Need finer angle sweep near eigen axis.
+
+    It would be nice to plot the drive axis, but be aware of a systematic
+    rotation between the piezo tube drive axis and the PSD response axis.
+
+    Simulate cross-coupling and whirling response.  Explore effects.
+    Thinking of only a simple cross-coupling mathematical model, not actual
+    bending beam modeling.
+
+    Research the whirling effect.
+
+    Try driving a circle and measure response deviation from a circle.
+
+----------------------------------------------------------------------------
+## LockIn Analysis (Phase measurement)
+----------------------------------------------------------------------------
+Multiply by sine wave, and average over 805 cycles.
+
+    Pi = 3.1415926535
+    FreqR_Hz = 805
+    sampRate = 62500
+    dt_s     = 1 / sampRate
+
+    tVec_s   = c(0:125000) * dt_s
+
+    wR       = 2 * Pi * FreqR_Hz
+    sineVecR = sin( wR * tVec_s )
+    coseVecR = cos( wR * tVec_s )
+
+    Note vector index numbers from 1, i.e. [1:125001]
+
+    plot( sineVecR[0:600] )
+	Wave starts at zero, i.e. sineVecR[1] = 0
+
+    plot( sineVecR[124500:125001] )
+	Wave ends at zero, i.e. sineVecR[125001] = 0
+
+	Find an approximate half way point where sineVecR = 0
+	1 / (805 cycle/s * 16e-6 s/sample) = 77.640 sample/cycle
+	1 second in is exactly 805 cycles and 62500 samples.
+
+    plot( sineVecR[62501:62800] )
+	Wave starts at zero, i.e. sineVecR[62501] = 0
+
+    Use this range c(62501:125001) as reference sine wave for phase sensitive
+    (lock-in) detection.
+
+    rn <- c(62501:125001)
+
+    a <- sineVecR[rn] * df$Vx[rn]
+    plot( a[0:200] )
+
+    Gxi <- mean( sineVecR[rn] * df$Vx[rn] )
+    [1] 0.2604234
+
+    Gxq <- mean( coseVecR[rn] * df$Vx[rn] )
+    [1] -0.09997285
+
+    Gyi <- mean( sineVecR[rn] * df$Vy[rn] )
+    [1] -0.3882706
+
+    Gyq <- mean( coseVecR[rn] * df$Vy[rn] )
+    [1] -0.4123019
+
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+    abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+
+    plot( sineVecR[rn], df$Vy[rn], pch='.' )
+	Ellipse wrt ref sine wave.
+
+    sn <- c(62501:62701)
+    plot( sineVecR[sn], ylim=c(-2,2) )
+    points( df$Vx[sn], ylim=c(-2,2) )
+    abline( h=mean( df$Vx[rn] ) )
+    abline( h=0 )
+	See Vx wave wrt sineVecR wave.  About 2.5 cycles.
+
+Development not complete.
+
+----------------------------------------------------------------------------
+## PSD (Position Sensing Detector) Observations
+----------------------------------------------------------------------------
+2022-08-16
+
+In the d1_ang_* measurements, the position voltage amplitude is ~2.5 Vpp.
+Vsum = ~4.2 V.
+
+    OutAmp_V = 0.05;	% output amplitude, sine wave voltage peak
+	This is 120 * 0.05 V = 6 V peak voltage on piezo tube.
+	Really small!
+
+    Dxy = 10 mm * 2.5 V / (2 * 4.2 V) = 2.98 mm
+
+    Measured displacement:
+	From lab notebook (8-2-2022).
+	250 um is about the FOV from micrometer stage movement of test target.
+
+    The 4f lens magnification is 2x (reduction to the sample).
+    Thus the fiber must be moving about
+	2x * 250 um = 0.5 mm
+
+    The PSD magnification is PSD displacement / fiber displacement:
+	3.0 mm / 0.5 mm = 6x
+
+    Thus spot size from 5 um core (MFD) is
+	5 um * 6x = 30 um
+
+    Thus the PSD spot diameter is about 0.3 mm moving over 3 mm range.
+    PSD sensor is only 9 mm across, so cannot have more than 3x this voltage
+    amplitude; proportional to fiber displacement and stay on sensor, assuming
+    spot is centered (it is not).
+
+    Thus can only go 2x voltage amplitude.
+
+    Is not the PSD recommended minimum spot size is 0.2 mm (200 um).  Smaller
+    spots increase position error.
+
+    What is the maximum power density on the PSD?
+    i.e. What is the smallest spot diameter for 40 uA sensor current?
+

@@ -1,0 +1,109 @@
+2022-07-16
+		Piezo scanner data frame, anecdotal  2022-07-14
+		-----------------------------------------------
+
+Files:
+    foo_data.txt
+
+Anecdotal data frame left after running Cameron's piezo scanner and
+Fourier interpolation.
+Image is a dark horizontal bar, slightly tilted, with brighter patches
+above and below.
+
+
+Using R
+
+    df <- read.table( "foo_data.txt", header=FALSE )
+
+    names( df )
+    [1] "V1" "V2" "V3" "V4"
+
+	V1 = signal
+	V2 = sum
+	V3 = X
+	V4 = y
+
+Assign column names:
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    rn <- c(0:10000)
+    plot( df$Vy[rn], pch='.' )
+
+    rn <- c(10000:20000)
+
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+
+Plot 5 cycles of signal, overlay Vx waveform for reference.
+    rn <- c(10000:10400)
+    plot( (df$Vsig[rn] - 4.48), type='b' )
+    points( (df$Vx[rn] * 0.01), pch='.' )
+
+Find range of signal:
+    plot( df$Vsig )
+    values 4.40 to 4.70, delta= 0.3
+
+    Offset and scale points for a grayscale range 0..1
+
+    iu <- (df$Vsig - 4.40) * 3
+
+    rn <- c(10000:13000)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+	Is an ellipse tilted +45 degrees, progressing CW outside to inside.
+
+    rn <- c(13000:13500)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+	Is similar ellipse with only 6 cycles.
+
+    rn <- c(13300:13500)
+    plot( df$Vsig[rn], type='b' )
+	Rise/fall times is mostly about 1 sample period.
+
+	This is with fx = 804 Hz, fy = 807 Hz
+	At 62500 samples/s  (16 us/sample)
+	800 Hz is 1.25 ms/cycle
+	One cycle is  (1.25 ms/cycle / 16 us/sample) = 78 samples/cycle
+	One half cycle, one line, is 39 samples.
+
+    rn <- c(13400:13500)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+ >  dev.copy2pdf( file="cycle_13400:13500.pdf" )
+	Here we see 1.4 cycles with about 32 useful samples per line.
+
+    plot( df$Vsig[rn], type='b' )
+ >  dev.copy2pdf( file="sig_13400:13500.pdf" )
+
+    From these two we see:
+	Dark at ends of ellipse, 14 samples on left end, 21 samples on
+	right end.
+	There is one dark band in the middle, 5 or 6 samples wide.
+	The left white band has an asymmetric slope, 7 or 8 samples wide.
+	The right white band is twice as briht, about 6 samples wide.
+
+    rn <- c(10000:13700)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+	Filled ellipse.  Edges of dark bar do not align between opposit sides
+	of ellipse trace.
+	Sample rate is not high enough for good resolution.
+	Shrink the plot window so samples nearly touch.  Notice possible
+	Moire patterns in the right white bar.  Pattern is a pin-cushion on
+	the left side of ellipse, and is circular on the right side like
+	inteferance fringes.  Interesting!
+ >  dev.copy2pdf( file="ellipse_10000:13700a.pdf" )
+	Small window size.
+ >  dev.copy2pdf( file="ellipse_10000:13700b.pdf" )
+	Normal size.
+
+    The sampling positions of adjacent ellipse lines are offset by one half
+    a sample periond.  This helps to compensate for the sparce sampling as
+    two adjacent ellipse lines are also about a half sample width apart.
+
+    rn <- c(19000:24000)
+    plot( df$Vx[rn], df$Vy[rn], pch=20, col=gray( iu[rn] ) )
+ >  dev.copy2pdf( file="ellipse_19000:24000a.pdf" )
+	Ellipse tilted -45 degrees.  Dark bar in center surrounded by white
+	bar top and bottom.
+
+    Fringe pattern still visible in same position as earlier, but the
+    pincushion is gone.  Thus the circular fringe pattern may be real,
+    but the pincushion may be an artifact.
+
