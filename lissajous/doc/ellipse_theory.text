@@ -1,0 +1,99 @@
+2022-08-08  William A. Hudson
+
+		Ellipses Theory for Image Scanning
+		----------------------------------
+
+See also:
+    lissajous/exp/ex2022_05_22_ellipse/notes.text
+	Initial ideas and simulation in R.
+
+    camera/exp/ex2022_04_23_sine_mcp4822/notes.text
+	First application extracting ellipse parameters from an image.
+
+Equation notation is like C-code:
+	^2   = square operator
+
+----------------------------------------------------------------------------
+## Standard Ellipse in XY plane
+----------------------------------------------------------------------------
+
+See:  wikipedia
+	https://en.wikipedia.org/wiki/Ellipse
+
+    (1)  (x^2 / a^2) + (y^2 / b^2) = 1
+
+    where
+	2 * a = width  along X-axis
+	2 * b = height along Y-axis
+
+	Is an ellipse centered on the origin and aligned with the axis.
+
+    The parametric representation is:
+
+    (2)  x = a * cos( u )
+	 y = b * sin( u )
+
+    where  u is the independent parameter
+	0 <= u <= 2*Pi		Pi = 3.14159  value of Pi
+
+	This range covers the ellipse, but may be larger with duplication.
+
+    Substituting (2) into (1) is the known trigonometric identity:
+
+	( cos( u ) )^2 + ( sin( u ) )^2 = 1
+
+    Eq (2) is a circle with x and y axis scaled by a and b.
+    The ellipse axis are the x and y axis.
+
+Representation of ellipse for fiber scanner:
+
+    We are interested in the parametric form because both the drive and
+    response of a resonant fiber cantilever are sinusoidal.
+
+    (3)	 x <- Ex * sin( u )
+	 y <- Ey * sin( u + Pd )
+
+    where  Ex and Ey is one half the extent of the ellipse on each axis, i.e. 
+	2 * Ex = width  along X-axis
+	2 * Ey = height along Y-axis
+
+	Pd = phase difference between X and Y waveforms.
+
+Interpretation and Observations:
+	(from  lissajous/exp/ex2022_05_22_ellipse/notes.text)
+
+    Parameter u can start anywhere.  The exact same ellipse (other than sample
+    points) is traced as u moves over a range of 2*Pi.
+
+    The direction of progress with u changes between CCW and CW as the
+    ellipse changes thru a +-45 degree line.
+
+    The X and Y scale factors rotate the ellipse axis to something other
+    than +-45 degrees.
+
+    The phase difference controls how open or closed the ellipse is.
+    It affects only the openness, and cannot change the extent or orientation.
+
+    The scale factors always affect the extent of the ellipse, i.e. the
+    bounding box, and not really the openness.
+    e.g. in a straight line (Pd = 0, degenerate ellipse), the scale factors
+    cannot open up the ellipse, but do alter the orientation.
+    In a circle (Pd = Pi/2) the scale factors appear to affect how open the
+    ellipse is, but only in one orientation of the ellipse. 
+
+    Using x = cos(u) puts u=0 at the right-most edge of the ellipse at x=+1,
+    which is kind of nice, as the trace makes a full sweep across the
+    field and back in 2*Pi (one cycle).
+    A disadvantage is it starts at the peak of a sine wave curve where
+    phase is less distinct.
+
+    Using x = sin(u) puts u=0 at x=0, near the center of a skinny ellipse,
+    or at the top of a circular ellipse.  Being near the center is easier
+    to find (more open samples) and closer to zero crossings.
+    A disadvantage is it starts in the middle of a "scan line".
+    From a driving signal perspective it is nicer to start at zero than
+    at +1.
+
+    We choose to use the X-axis as the reference, and let Pd be the phase
+    difference between the sinusoids, as in equation (3).
+
