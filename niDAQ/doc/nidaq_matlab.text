@@ -47,6 +47,12 @@ colon, :
     Brackets need not enclose the range, but are OK?
     https://www.mathworks.com/help/matlab/ref/colon.html
 
+zeros( Nrow, Ncol, ..)		Create array of all zeros.
+ones(  Nrow, Ncol, ..)		Create array of all ones.
+    zeros( 1, Ncol )		A row vector.
+    zeros( Nrow, 1 )		A column vector.
+    zeros( N )			An NxN matrix (disparaged, inconsistent).
+
 linspace()
     Generate linearly spaced vector, similar to colon
     v = linspace( x1, x2, n )
@@ -92,7 +98,17 @@ addoutput( dq, deviceID, channelID, measurementType )
     deviceID = string defined by the device vendor.
 	Use 'daqlist' to obtain deviceID of currently connected hardware.
     channelID = numeric or string specific to the vendor and device.
+    return:  ch= channel object
     https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.addoutput.html
+
+addinput( dq, deviceID, channelID, measurementType )
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.addinput.html
+
+Channel Properties
+    ch.Range		= [min, max] voltage values
+    ch.Coupling		= 'AC', 'DC'
+    ch.TerminalConfig	= 'Differential', 'SingleEnded', ..
+    https://www.mathworks.com/help/daq/channel-properties.html
 
 read(dq, ...)
     Read data acquired by hardware
@@ -116,10 +132,22 @@ save()
 		    Seems to add tabs to existing spaces, even before the
 		    <CR><LF> line ending, pretty useless.
     Variable length list of variables, which are probably output sequentially.
+    matrix:  is in rows, with new-line on each row.
+    vector:  is a single line of space separated values.
+	(maybe transpose to get one value per line?)
     https://www.mathworks.com/help/matlab/ref/save.html
 
 format()
     Set the interactive output display format.
+
+pause( n )		Stop Matlab execution temporarily.
+    n = number of seconds to sleep.
+    pause( 'on' )	enable sleep
+    pause( 'off' )	disable sleep
+
+fprintf( formatSpec, vars, .. )		print to screen, or file
+sprintf( formatSpec, vars, .. )		return a string
+    Similar to standard C.
 
 ----------------------------------------------------------------------------
 ## Examine initial script from Cameron:  2022-07-14
