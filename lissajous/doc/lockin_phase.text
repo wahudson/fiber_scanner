@@ -1,0 +1,337 @@
+2022-08-26  William A. Hudson
+
+	    Lockin Phase Detection Theory for Image Scanning
+	    ------------------------------------------------
+
+See also:
+    eniDAQ/exp/2022_08_09_eigen/notes.text
+	LockIn Analysis (Phase measurement)
+
+Equation notation is like C-code:
+	^2   = square operator
+
+----------------------------------------------------------------------------
+## Basic Lock-in amplifier
+----------------------------------------------------------------------------
+    from:  https://en.wikipedia.org/wiki/Lock-in_amplifier
+
+The essential idea is to multiply the input signal f(t) by a reference
+sine wave and average (integrate) over very many cycles of the reference.
+The result is a DC value proportional to the signal component matching the
+frequency and phase of the reference sine wave.
+
+(1)
+    Vout(t) = (1/T) * integral[ t-T, t:  sin(Wref * s) * f(s) * ds ]
+
+(2)
+    Vout = (1/2) * Vsig cos( TH )
+
+----------------------------------------------------------------------------
+## My Derivation
+----------------------------------------------------------------------------
+
+The idea is to measure the amplitude and phase of an unknown sine wave f(t)
+with respect to a reference sine wave using the lockin method.
+Here we derive the DC output.
+
+Unknown sinusoid represented as:
+
+    f(t) = A * sin( W*t + Pd )
+	where
+	A  = the amplitude
+	W  = radian frequency of the sinusoid
+	t  = time
+	Pd = phase difference from the reference sinusoid
+
+    The idea is the lockin calculation should be able to find both A and Pd.
+
+The reference sinusoid is
+
+    sin( W*t )
+
+The lockin product function for in-phase output, before averaging, is
+
+    g(t) = sin( W*t ) * f(t)
+
+    g(t) = A * sin( W*t ) * sin( W*t + Pd )
+
+Identity:
+    sin( A + B ) = sin(A) * cos(B) + cos(A) * sin(B)
+
+    g(t) = A * sin( W*t ) * [sin( W*t ) * cos( Pd ) + cos( W*t ) * sin( Pd )]
+
+Now we compute the average (mean) over one cycle of the reference sinusoid.
+One cycle is sufficient because the unknown waveform has no other components.
+
+    Vo = (1/T) * integral[ 0, T:  g(t) * dt ]
+	where
+	T  = time period of one cycle
+	dt = differential time element
+
+	and we have period T such that W is the radian frequency:
+	    i.e. one cycle is (2*Pi) radians in time T
+	W = (2*Pi) / T
+	T = (2*Pi) / W
+
+Identity:  (Table of integrals 430.20)
+
+    integral[ ( sin(x) )^2 * dx] = x/2 - sin( 2*x ) / 4
+				 = (1/2) * [x - sin(x) * cos(x)]
+
+Identity:  (Table of integrals 450.11)
+
+    integral[ sin(x) * cos(x) * dx] = (1/2) * ( sin(x) )^2
+
+    so let
+	x = W*t
+    and
+	dx = d( W*t )  = W * dt
+
+    integral[ sin(W*t) * sin(W*t) * W * dt] = (1/2) * [W*t - sin(W*t) * cos(W*t)]
+
+    integral[ sin(W*t) * cos(W*t) * W * dt] = (1/2) * ( sin(W*t) )^2
+
+so now
+
+    Vo = (1/T) * integral[ 0, T:  g(t) * dt ]
+
+    Vo = (1/T) * integral[ 0, T:  A * sin(W*t) * sin(W*t) * cos(Pd) * dt ]
+       + (1/T) * integral[ 0, T:  A * sin(W*t) * cos(W*t) * sin(Pd) * dt ]
+
+    Vo = (A/T) * cos(Pd) * integral[ 0, T:  sin(W*t) * sin(W*t) * dt ]
+       + (A/T) * sin(Pd) * integral[ 0, T:  sin(W*t) * cos(W*t) * dt ]
+
+    Vo = (A/T)/W * cos(Pd) * integral[ 0, T:  sin(W*t) * sin(W*t) * W * dt ]
+       + (A/T)/W * sin(Pd) * integral[ 0, T:  sin(W*t) * cos(W*t) * W * dt ]
+
+    Vo = (A/T)/W * cos(Pd) * (1/2) * [W*t - sin(W*t) * cos(W*t)]
+       + (A/T)/W * sin(Pd) * (1/2) * ( sin(W*t) )^2
+       evaluated_at( 0, (2*Pi) / W )
+
+    Vo = (A/T)/W * cos(Pd) * (1/2) *
+	{ [W*t - sin(W*t) * cos(W*t)] + ( sin(W*t) )^2 }
+	evaluated_at( 0, (2*Pi)/W )
+
+    Vo = (A/T)/W * cos(Pd) * (1/2) * {
+	  [ [W*t - sin(W*t) * cos(W*t)] + ( sin(W*t) )^2 ] at t=(2*Pi)/W
+	- [ [W*t - sin(W*t) * cos(W*t)] + ( sin(W*t) )^2 ] at t=0
+	}
+
+    at both points, the sin(W*t) is zero, leaving only
+
+    Vo = (A/T)/W * cos(Pd) * (1/2) * { 2*Pi }
+
+    substituting  T = (2*Pi) / W
+
+    Vo = (A*W/(2*Pi))/W * cos(Pd) * (1/2) * { 2*Pi }
+
+ >> Vo = (A/2) * cos(Pd)
+
+    which matches the Wikipedia result.
+
+----------------------------------------------------------------------------
+## Quadrature Measurement
+----------------------------------------------------------------------------
+
+The same lockin calculation is typically done in quadrature, that is using
+two reference sinusoids at Pi/2 radians apart.
+
+    f(t) = A * sin( W*t + Pd )	the unknown sinusoid
+
+    Hi(t) = sin( W*t )		in-phase reference
+    Hq(t) = sin( W*t + Pi/2 )	quadrature reference  = cos( W*t )
+
+ >> Voi = (A/2) * cos(Pd)	in-phase result   for Hi(t)
+ >> Voq = (A/2) * sin(Pd)	quadrature result for Hq(t)
+
+Find lockin result for quadrature reference:
+
+    Here we represent the sinusoidal signals on a phase diagram,
+    i.e. as vectors in polar coordinates (r, phi) in the XY plane.
+
+    The unknown sinusoid f(t) is plotted as (r=A, phi=Pd) where phase phi is
+    measured from the +X axis.
+
+    The in-phase reference   Hi(t) is (r=1, phi=0)    along the +X axis.
+    The quadrature reference Hq(t) is (r=1, phi=Pi/2) along the +Y axis.
+
+    Now the lockin result for the in-phase reference, derived above, is
+
+	Voi = (A/2) * cos(Pd)		in-phase result   for Hi(t)
+
+    The quadrature result is the same unknown vector, but now measured
+    from the +Y axis, so now the phase is (+Pi/2 - Pd).
+    i.e. Add Pi/2 to get to the Y-axis and subtract Pd to get to the unknown
+    vector.
+
+	Voq = (A/2) * cos(Pi/2 - Pd)
+
+	Voq = (A/2) * sin(Pd)		quadrature result for Hq(t)
+
+    Note that Voi is essentially a projection of the unknown vector onto the
+    X-axis, and Voq a projection onto the Y-axis.
+
+Find unknown parameters from the quadrature lockin results:
+
+    Voi:  f(t) * Hi(t)
+    Voq:  f(t) * Hq(t)
+
+    The parameters of f(t) are then calculated as:
+
+    >>  A = 2 * sqrt( Voi^2 + Voq^2 )
+
+	A = 2 * sqrt( ( (A/2) * cos(Pd) )^2 + ( (A/2) * sin(Pd) )^2 )
+
+	A = 2 * (A/2) * sqrt( ( cos(Pd) )^2 + ( sin(Pd) )^2 )
+
+	    using the identity sin^2 + cos^2 = 1
+
+	A = A
+
+    And Pd is:
+
+	Voq / Voi = sin(Pd) / cos(Pd)
+		  = tan(Pd)
+
+    >>  Pd = arctan( Voq / Voi )
+
+    >>  Pd = atan2( Voq, Voi )
+
+	One must attend to which quadrant the result should be in.
+
+----------------------------------------------------------------------------
+## Validation with Simulation
+----------------------------------------------------------------------------
+
+Idea is to do the lockin calculation in R.
+A perfect "unknown" sinusoid is used as the signal, and the lockin calculation
+should be able to extract its parameters.
+
+	f(t) = A * sin( W*t + Pd )	the unknown sinusoid
+
+	Hi(t) = sin( W*t )		in-phase   reference
+	Hq(t) = sin( W*t + Pi/2 )	quadrature reference  = cos( W*t )
+
+	Li = mean( f(t) * Hi(t) )	lockin calculation
+	Lq = mean( f(t) * Hq(t) )
+
+	Voi = (A/2) * cos(Pd)		in-phase   result for Hi(t)
+	Voq = (A/2) * sin(Pd)		quadrature result for Hq(t)
+
+	A  = 2 * sqrt( Voi^2 + Voq^2 )
+	Pd = atan2( Voq, Voi )
+
+    We expect that
+	Li == approximatly( Voi )
+	Lq == approximatly( Voq )
+
+R code
+------
+    Pi <- 3.14159
+
+    FreqR_Hz <- 10
+
+    dt <- 0.001
+
+    Au <- 2.14
+    Pu <- 0.4
+    Wu <- FreqR_Hz * 2 * Pi
+
+    WTvec <- Wu * dt * c(0:10000)
+
+    WTvec[1:10]
+    	# Note vector index starts at 1, not zero.
+
+    Uvec <- Au * sin( WTvec + Pu )
+	# Unknown sinusoid
+
+    RIvec <- sin( WTvec )
+    RQvec <- cos( WTvec )
+	# Reference sinusoids
+
+    Verify RIvec begins and ends at a zero crossing:
+    WTvec[1:10]
+     [1] 0.00000000 0.06279047 0.12533313 0.18738116 0.24868968 0.30901674
+     [7] 0.36812426 0.42577896 0.48175330 0.53582639
+
+    RIvec[9999:10001]
+     [1] -0.1258596437 -0.0633201284 -0.0005307179
+    
+    rn <- c(1:101)
+
+    plot( Uvec[rn] )
+    points( RIvec[rn] )
+    points( RQvec[rn] )
+    abline( h=0 )
+
+	There are 100 samples per cycle, and 100 cycles.
+
+# The lockin calculation over 100 cycles
+
+    LIvec <- Uvec * RIvec
+    LQvec <- Uvec * RQvec
+	Multiply by reference sinusoids.
+
+    points( LIvec[rn] )
+    points( LQvec[rn] )
+
+    Li <- mean( LIvec )
+    Lq <- mean( LQvec )
+	Lockin result is the mean.
+
+	> Li
+	[1] 0.9854375
+	> Lq
+	[1] 0.4167189
+
+    LA <- 2 * sqrt( Li^2 + Lq^2 )
+    LP <- atan2( Lq, Li )
+
+	> LA
+	[1] 2.139852
+	> LP
+	[1] 0.4000711
+		LA magnitude agrees with original Au= 2.14
+		LP phase     agrees with original Pu= 0.4
+
+    Voi <- (Au/2) * cos(Pu)
+    Voq <- (Au/2) * sin(Pu)
+
+	> Voi
+	[1] 0.9855353
+	> Voq
+	[1] 0.4166776
+		These agree with Li, Lq lockin result above.
+
+# The lockin calculation over 1 cycle
+
+    rn <- c(1:100)
+	This is closer to exactly one cycle.
+
+	> mean( LIvec[rn] )
+	[1] 0.9855361
+	> mean( LQvec[rn] )
+	[1] 0.4166773
+
+    rn <- c(25:125)
+	> mean( LIvec[rn] )
+	[1] 0.9957323
+	> mean( LQvec[rn] )
+	[1] 0.4138079
+
+    rn <- c(1:9950)
+	> mean( LIvec[rn] )
+	[1] 0.9855361
+	> mean( LQvec[rn] )
+	[1] 0.4166773
+
+Conclusions:
+
+    It works!  We see agreement to 3 significant digits in the ideal case.
+
+    Averaging over many cycles reduces the error contribution of partial cycles
+    at each end of the sample segment.
+
+    In a real data stream, averaging over many cycles also helps reduce
+    noise, and essentially fits the sine wave.
+

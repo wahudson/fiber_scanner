@@ -16,7 +16,7 @@ Files:
     exciter/	fiber electromagnetic driver systems
     exp/
     led_light/	LED fiber light source
-    lissajous/	Lissajous pattern and ellipse theory
+    lissajous/	Lissajous pattern, ellipse, and lockin theory
     niDAQ/	Matlab language and NI DAQ use
     photo/	photographs
     piezo/	piezo tube scanner design
