@@ -1,0 +1,179 @@
+#!/usr/bin/Rscript --vanilla
+# 2022-09-03  William A. Hudson
+
+# Compute Lockin Phase and Magnitude from data table.
+#     Hardwired parameters.
+#
+# usage:  lockin_phase  inFile.tab ..
+#     inFile = input table file, or literal 'stdin'
+#
+# inFile:
+#     Table, no heading, with columns:  "Vsig", "Vsum", "Vx", "Vy"
+#     sampRate = 62500 sample/s
+#     length   = 125001 samples
+#
+#---------------------------------------------------------------------------
+
+# Data Parameters:
+    sampRate <- 62500		# sample/s
+    FreqR_Hz <- 805		# base frequency, the lockin reference
+
+    rn     <- c(62501:125001)	# range to compute
+    rnText <- "[62501:125001]"
+
+    Pi <- 3.1415926535;
+
+# Check arguments.
+    argv = commandArgs( trailingOnly=TRUE )
+
+    ok <- TRUE
+
+# Check files
+    for ( inFile in argv )
+    {
+	if ( file.access( inFile, mode=4 ) ) {
+	    warning( "Error:  file not found: ", inFile )
+	    ok <- FALSE
+	}
+    }
+
+    if ( ! ok ) { quit( status=1 ) }
+
+# Reference sine waves
+
+    dt_s <- 1 / sampRate
+    Wr <- FreqR_Hz * 2 * Pi
+
+    WTvec <- Wr * dt_s * rn
+
+    RIvec <- sin( WTvec )	# in-phase   reference
+    RQvec <- cos( WTvec )	# quadrature reference
+
+# Output context
+    cat( sep='', "FreqR_Hz = ", FreqR_Hz, "\n" )
+    cat( sep='', "dt_s     = ", dt_s,     "\n" )
+    cat( sep='', "rnText   = ", rnText,   "\n" )
+    cat( "loop:\n" )
+
+# Compute results for each file
+
+    # open file for multiple plots, one per page
+#    pdf( "xxmulti.pdf" )
+
+    for ( inFile in argv )
+    {
+	cat( sep='',"inFile  =  ", inFile, "\n" )
+
+	fileB <- sub( "\\.txt$", "", inFile )
+#	cat( "fileB=   ", fileB, "\n" )
+
+#	outFile <- sub( "$", ".pdf", fileB )
+#	cat( "outFile= ", outFile, "\n" )
+
+    # Read in data table
+	df <- read.table( inFile, header=FALSE )
+
+	names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    # Compute PSD position for X and Y measurements
+	Dx_mm <- 5 * df$Vx[rn] / df$Vsum[rn]
+	Dy_mm <- 5 * df$Vy[rn] / df$Vsum[rn]
+
+    # Mean values for reference
+	Meanx_mm <- mean( Dx_mm )
+	Meany_mm <- mean( Dy_mm )
+
+    # Lockin calculation
+	Lxi_mm <- mean( Dx_mm * RIvec )
+	Lxq_mm <- mean( Dx_mm * RQvec )
+
+	Lyi_mm <- mean( Dy_mm * RIvec )
+	Lyq_mm <- mean( Dy_mm * RQvec )
+
+    # Compute amplitude and phase relative to +X axis (the ellipse extent)
+	Ex_mm  <- 2 * sqrt( Lxi_mm^2 + Lxq_mm^2 )
+	Px_rad <- atan2( Lxq_mm, Lxi_mm )
+	Px_deg <- Px_rad * 180 / Pi
+
+	Ey_mm  <- 2 * sqrt( Lyi_mm^2 + Lyq_mm^2 )
+	Py_rad <- atan2( Lyq_mm, Lyi_mm )
+	Py_deg <- Py_rad * 180 / Pi
+
+    # Compute ellipse phase #!! ??
+	PE_rad <- Py_rad - Px_rad
+	PE_deg <- PE_rad * 180 / Pi
+
+    # Output results
+	if ( 0 ) {
+	    cat( sep='', "Meanx_mm = ", Meanx_mm, "\n" )
+	    cat( sep='', "Meany_mm = ", Meany_mm, "\n" )
+	    cat( sep='', "Lxi_mm  = ", Lxi_mm,   "\n" )
+	    cat( sep='', "Lxq_mm  = ", Lxq_mm,   "\n" )
+	    cat( sep='', "Lyi_mm  = ", Lyi_mm,   "\n" )
+	    cat( sep='', "Lyq_mm  = ", Lyq_mm,   "\n" )
+	    cat( sep='', "Ex_mm   = ", Ex_mm,    "\n" )
+	    cat( sep='', "Px_deg  = ", Px_deg,   "\n" )
+	    cat( sep='', "Ey_mm   = ", Ey_mm,    "\n" )
+	    cat( sep='', "Py_deg  = ", Py_deg,   "\n" )
+	    cat( sep='', "PE_deg  = ", PE_deg,   "\n" )
+	    cat( "\n" )
+	}
+
+	if ( ! exists( "file_names" ) ) {
+	    file_names <- fileB
+	}
+	else {
+	    file_names <- c( file_names, fileB )
+	}
+
+	if ( ! is.data.frame( qf ) ) {
+
+	    qf <- data.frame(
+		Lxi_mm, Lxq_mm,
+		Lyi_mm, Lyq_mm,
+		Ex_mm,  Px_deg,
+		Ey_mm,  Py_deg,
+		PE_deg,
+		Meanx_mm, Meany_mm
+	    )
+	}
+	else {
+	    qf <- rbind( qf, c(
+		Lxi_mm, Lxq_mm,
+		Lyi_mm, Lyq_mm,
+		Ex_mm,  Px_deg,
+		Ey_mm,  Py_deg,
+		PE_deg,
+		Meanx_mm, Meany_mm
+		)
+	    )
+	}
+
+    # Plot
+#	pdf( outFile )
+
+#	plot( df$Vx[rn], df$Vy[rn], pch='.',
+#	    xlim=c( -2.0,  0.5 ),
+#	    ylim=c(  0.0,  2.5 ),
+#	)
+	# limits set for experiment ex2022_08_09_eigen/
+
+#	title( main=paste( 'Ellipse 2D ', rnText, " - ", inFile ) )
+#	abline( v=Meanx_mm, h=Meanx_mm ) )
+#	abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
+
+    }
+
+    row.names( qf ) <- file_names
+
+    print( qf, digits=4 )
+    	# neatly formatted table, with multiple sections
+
+
+#    graphics.off()	# close all plots
+
+#    dev.list()
+#    plot.new()  Create or start a new plot.
+#        Completes plotting of the current plot (if there is one) and
+#        advances to a new graphics frame.
+
