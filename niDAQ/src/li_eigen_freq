@@ -1,0 +1,147 @@
+#!/usr/bin/Rscript --vanilla
+# 2022-09-03  William A. Hudson
+
+# Compute Lockin Phase and Magnitude from data table of "eigen_freq.m".
+#     Driven by a configuration file.
+#
+# usage:  lockin_phase < control_file
+#     control_file = table of input files and attributes, with headings:
+#         InFile	# input data file name
+#         FreqR_Hz	# base frequency, the lockin reference
+#         DrvAng_deg	# angle of driving sinusoid
+#
+# InFile:  (each data file named in control_file)
+#     Data Table, no heading, with columns:  "Vsig", "Vsum", "Vx", "Vy"
+#     sampRate = 62500 sample/s
+#     length   = 125001 samples
+#
+# See also:  lissajous/doc/lockin_phase.text
+#            lissajous/doc/ellipse_theory.text
+#---------------------------------------------------------------------------
+
+# Data Parameters:
+    sampRate <- 62500		# sample/s
+    dt_s <- 1 / sampRate
+
+    rn     <- c(62501:125001)	# range to compute
+    rnText <- "[62501:125001]"
+
+    Pi <- 3.1415926535;
+
+# Output context
+    cat( sep='', "sampRate = ", sampRate, "\n" )
+    cat( sep='', "dt_s     = ", dt_s,     "\n" )
+    cat( sep='', "rnText   = ", rnText,   "\n" )
+    cat( "\n" )
+
+# Read control table into data frame, with headings:
+    cf <- read.table( file("stdin"), header=TRUE, stringsAsFactors=FALSE )
+
+# Compute results for each file
+
+    for ( kk in c(1:nrow( cf )) )
+    {
+	InFile     <- cf$InFile[kk]
+	FreqR_Hz   <- cf$FreqR_Hz[kk]
+	DrvAng_deg <- cf$DrvAng_deg[kk]
+
+	fileB <- sub( "\\.txt$", "", InFile )
+
+#	cat( sep='',"kk         = ", kk,         "\n" )
+#	cat( sep='',"InFile     = ", InFile,     "\n" )
+#	cat( sep='',"FreqR_Hz   = ", FreqR_Hz,   "\n" )
+#	cat( sep='',"DrvAng_deg = ", DrvAng_deg, "\n" )
+#	cat( sep='',"fileB      = ", fileB,      "\n" )
+
+    # Output control values
+	cat( sep=' ', kk, " ", InFile, " FreqR_Hz=", FreqR_Hz,
+		" DrvAng_deg=", DrvAng_deg )
+	cat( sep='', "\n" )
+
+    # Reference sine waves
+
+	Wr <- FreqR_Hz * 2 * Pi
+
+	WTvec <- Wr * dt_s * rn
+
+	RIvec <- sin( WTvec )	# in-phase   reference
+	RQvec <- cos( WTvec )	# quadrature reference
+
+    # Read in data table
+	df <- read.table( InFile, header=FALSE )
+
+	names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    # Compute PSD position for X and Y measurements
+	Dx_mm <- 5 * df$Vx[rn] / df$Vsum[rn]
+	Dy_mm <- 5 * df$Vy[rn] / df$Vsum[rn]
+
+    # Mean values for reference
+	Meanx_mm <- mean( Dx_mm )
+	Meany_mm <- mean( Dy_mm )
+
+    # Lockin calculation
+	Lxi_mm <- mean( Dx_mm * RIvec )
+	Lxq_mm <- mean( Dx_mm * RQvec )
+
+	Lyi_mm <- mean( Dy_mm * RIvec )
+	Lyq_mm <- mean( Dy_mm * RQvec )
+
+    # Compute amplitude and phase relative to +X axis (the ellipse extent)
+	Ex_mm  <- 2 * sqrt( Lxi_mm^2 + Lxq_mm^2 )
+	Px_rad <- atan2( Lxq_mm, Lxi_mm )
+	Px_deg <- Px_rad * 180 / Pi
+
+	Ey_mm  <- 2 * sqrt( Lyi_mm^2 + Lyq_mm^2 )
+	Py_rad <- atan2( Lyq_mm, Lyi_mm )
+	Py_deg <- Py_rad * 180 / Pi
+
+    # Compute ellipse phase, as in
+	    # x <- Ex * sin( u )
+	    # y <- Ey * sin( u + Pe )
+	Pe_rad <- Py_rad - Px_rad
+	Pe_deg <- Pe_rad * 180 / Pi
+
+    # Accumulate results
+
+	if ( ! exists( "file_names" ) ) {
+	    file_names <- fileB
+	}
+	else {
+	    file_names <- c( file_names, fileB )
+	}
+
+	if ( ! is.data.frame( qf ) ) {
+	    qf <- data.frame(
+		Lxi_mm, Lxq_mm,
+		Lyi_mm, Lyq_mm,
+		Ex_mm,  Px_deg,
+		Ey_mm,  Py_deg,
+		Pe_deg,
+		Meanx_mm, Meany_mm
+	    )
+	}
+	else {
+	    qf <- rbind( qf, c(
+		Lxi_mm, Lxq_mm,
+		Lyi_mm, Lyq_mm,
+		Ex_mm,  Px_deg,
+		Ey_mm,  Py_deg,
+		Pe_deg,
+		Meanx_mm, Meany_mm
+		)
+	    )
+	}
+
+    }
+
+# Output results
+    options( width=120 )
+	# line wrapping for printing output data frame
+
+    row.names( qf ) <- file_names
+
+    cat( sep='', "\n" )
+    print( qf, digits=4 )
+	# neatly formatted table, folded on wrapping width
+
