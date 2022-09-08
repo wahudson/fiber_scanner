@@ -97,3 +97,95 @@ Interpretation and Observations:
     We choose to use the X-axis as the reference, and let Pd be the phase
     difference between the sinusoids, as in equation (3).
 
+Ellipse Axis:  (2022-09-06)
+
+    We would like to find the values of u for points on the major and minor
+    axis of the ellipse, i.e. the points on the ellipse that intersect the
+    major/minor axis.  Using the parametric form of eq (3), repeated here.
+
+	(3)  x <- Ex * sin( u )
+	     y <- Ey * sin( u + Pd )
+
+    When Pd=0, the ellipse is a diagonal line and sin(u) is maximum at
+	u = Pi/2  and  u = 3 * Pi/2
+
+    When Pd=Pi/2, the ellipse is a circle, and all points are at maximum.
+
+    The radial distance Ru(u) from the origin to a point u on the ellipse is
+
+	Ru(u) = sqrt( x^2 + y^2 )
+	      = sqrt( ( Ex * sin( u ) )^2 + ( Ey * sin( u + Pd ) )^2 )
+
+    The ellipse axis are when Ru(u) is a maximum or minimum.
+    Not obvious what values of u do that.
+    A numerical method could find u for any given Pd.
+
+    We know the minima and maxima are well behaved, and the derivative is
+    zero at those points.
+    Try it:  (on paper)  Tricky to get the expression correct, and not sure
+    I did.
+    Table of Integrals:
+	(66.)  d/dx[f(u)] = d/du[f(u)] * d/dx[u]
+	(64.1) d/dx[ sqrt(x) ] = 1 / (2 * sqrt(x))
+
+		Replace (u -> s) and (x -> u) in above identities.
+	(66.)  d/du[f(s)] = d/ds[f(s)] * d/du[s]
+	(64.1) d/ds[ sqrt(s) ] = 1 / (2 * sqrt(s))	# Replace (x -> s)
+
+    d/du[Ru(U)] = 0  at u=U
+
+    d/du[Ru(u)] = d/du[ sqrt( x^2 + y^2 ) ]		# s = x^2 + y^2
+
+    d/du[Ru(u)] = 1/( 2 * sqrt( x^2 + y^2 ) ) * d/du[ x^2 + y^2 ]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot be zero,
+    thus
+	0 = d/du[ x^2 + y^2 ]
+
+	0 = 2 * x * dx/du + 2 * y * dy/du
+
+	dx/du = d/du[ Ex * sin( u ) ]			# from eq (3)
+	      = Ex * cos( u )
+
+	dy/du = d/du[ Ey * sin( u + Pd ) ]		# from eq (3)
+	      = Ey * cos( u + Pd ) * d/du[ u + Pd ]
+	      = Ey * cos( u + Pd )
+
+	0 = Ex * sin( u )      * Ex * cos( u ) +
+	    Ey * sin( u + Pd ) * Ey * cos( u + Pd )
+
+	0 = Ex^2 * sin( u ) * cos( u ) +
+	    Ey^2 * sin( u + Pd ) * cos( u + Pd )
+
+    From this we see the zeros (values of u) depend on all three parameters
+	Ex, Ey, and Pd.
+
+    Still is not obvious where the zeros are.
+    Cannot find a closed form solution?
+    Numerically finding the zeros of the derivative is probably better (less
+    uncertainty in u) than finding the maxima/minima.
+
+    The main reason we wanted the axis is to find the maximum excursion Ru(u)
+    of the ellipse trace.  Best to do that numerically.
+
+Ellipse zero crossings:  (i.e. XY axis crossings)
+
+    Much easier to find.
+
+    The XY axis zero crossings occur at:
+	x = 0  at u= {0, Pi}
+	y = 0  at u= {0, Pi} - Pd
+
+## Next:  Energy in elliptical path of resonant fiber cantilever.
+    Energy stored is the proper measure for resonance.
+    Other measures are analogs.
+
+    One-dimension resonance - all energy in bent fiber at extreme points,
+    all energy in velocity of fiber at axis zero crossing.
+
+    Elliptical 2D path - decompose into X and Y directions.
+    Ellipse minor axis is point of max velocity and minimum bending energy.
+    Major axis is point of maximum bending energy, but still has kinetic E.
+    Use velocity at minor axis point, is energy above baseline bending energy.
+
+    Kinetic energy can be calculated from velocity, which is d/dt[Position].
+
