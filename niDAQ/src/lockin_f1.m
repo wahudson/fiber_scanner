@@ -24,7 +24,7 @@
 
     DatasetTime_s = 2.0;	% data set duration
 
-    OutAmp_V = 0.10;		% output amplitude, sine wave voltage peak
+    OutAmp_V = 0.05;		% output amplitude, sine wave voltage peak
 
     Pi = 3.1415926535;
 
@@ -82,10 +82,10 @@
 %% Output Table heading
     % oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px     Ey    Py    Pe    Mex   Mey
     oTabFormat  = "%8.2f %8.5f %8.5f %8.5f %8.5f %8.4f %8.3f  %8.4f %8.3f %8.3f %8.4f %8.4f\n";
-    oTabHeading = "FreqR_Hz Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm   Ex_mm    Px_deg   Ey_mm    Py_deg   Pe_deg   Meanx_mm Meany_mm"
+    oTabHeading = "FreqR_Hz Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm   Ex_mm    Px_deg   Ey_mm    Py_deg   Pe_deg   Meanx_mm Meany_mm";
 
-    fprintf(          "%s\n", TabHeading );
-    fprintf( oFileID, "%s\n", TabHeading );
+    fprintf(          "%s\n", oTabHeading );
+    fprintf( oFileID, "%s\n", oTabHeading );
 
 %% Sweep Frequency
     % resonance center is ~805 Hz
@@ -93,11 +93,10 @@
     FreqCenter_Hz = 805;
     FreqStep_Hz   = 0.5;
 
-    SetNums     = [ -10:+10 ];
+    SetNums     = [ 1:3 ];
     SaveSetNums = zeros( 1, length( SetNums ) );	% logical row vector
 
-    i = find( SetNumbers == 0 );
-    SaveSetNums( [i-3, i, i+3] ) = 1;		% save only these sets
+    SaveSetNums( [2,3] ) = 1;		% save only these sets
 
     for jSetNum = SetNums	% foreach integer in range i.e. [-10:+10]
 	fprintf( 'jSetNum       = %10d\n',   jSetNum );
@@ -144,29 +143,16 @@
 
     % extract stable portion of data trace
 	kB     = round( 1.0 / dt_s );		% index for begin stable
-	kEnd   = length( inScanData[:,2] );	% last element in source array
+	kEnd   = length( inScanData(:,2) );	% last element in source array
 			% should have kEnd == nSamps
 
-	fprintf( 'jSetNum       = %10d\n',   jSetNum );
 	fprintf( 'kB            = %10d\n',   kB   );
 	fprintf( 'kEnd          = %10d\n',   kEnd );
-
-	Vsum_V = inScanData(kB:kEnd,2);
-	Vx_V   = inScanData(kB:kEnd,3);
-	Vy_V   = inScanData(kB:kEnd,4);
-		    % column vectors
-%#!!
-size( Vsum_V )
-isrow( Vsum_V )
-iscolumn( Vsum_V )
 
 	Vsum_V = transpose( inScanData(kB:kEnd,2) );
 	Vx_V   = transpose( inScanData(kB:kEnd,3) );
 	Vy_V   = transpose( inScanData(kB:kEnd,4) );
 		    % row vectors
-size( Vsum_V )
-isrow( Vsum_V )
-iscolumn( Vsum_V )
 
     % compute PSD position for X and Y measurements (row vectors)
 	Dx_mm = 5 * (Vx_V ./ Vsum_V);
@@ -210,24 +196,24 @@ iscolumn( Vsum_V )
     % output results
 	% oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px     Ey    Py    Pe    Mex   Mey
 
-	fprintf(          oTabFormat,
-	    FreqR_Hz,
-	    Lxi_mm, Lxq_mm,
-	    Lyi_mm, Lyq_mm,
-	    Ex_mm,  Px_deg,
-	    Ey_mm,  Py_deg,
-	    Pe_deg,
-	    Meanx_mm, Meany_mm
+	fprintf(          oTabFormat, ...
+	    FreqR_Hz, ...
+	    Lxi_mm, Lxq_mm, ...
+	    Lyi_mm, Lyq_mm, ...
+	    Ex_mm,  Px_deg, ...
+	    Ey_mm,  Py_deg, ...
+	    Pe_deg, ...
+	    Meanx_mm, Meany_mm ...
 	);
 
-	fprintf( oFileID, oTabFormat,
-	    FreqR_Hz,
-	    Lxi_mm, Lxq_mm,
-	    Lyi_mm, Lyq_mm,
-	    Ex_mm,  Px_deg,
-	    Ey_mm,  Py_deg,
-	    Pe_deg,
-	    Meanx_mm, Meany_mm
+	fprintf( oFileID, oTabFormat, ...
+	    FreqR_Hz, ...
+	    Lxi_mm, Lxq_mm, ...
+	    Lyi_mm, Lyq_mm, ...
+	    Ex_mm,  Px_deg, ...
+	    Ey_mm,  Py_deg, ...
+	    Pe_deg, ...
+	    Meanx_mm, Meany_mm ...
 	);
 
     % wait for fiber resonance to decay
@@ -235,4 +221,6 @@ iscolumn( Vsum_V )
 	pause( 5 );
 
     end		% for loop
+
+    fclose( oFileID );
 
