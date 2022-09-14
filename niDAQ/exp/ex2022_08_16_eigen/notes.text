@@ -1,0 +1,199 @@
+2022-08-16  William A. Hudson
+
+		Single Axis Scan Experiments -- ex2022_08_16_eigen/
+		----------------------------
+
+Follows from:  niDaq/exp/ex2022_08_09_eigen/
+
+Two datasets:
+    eigen_axis.m	rotate eigen axis at single frequency
+    d1_*.txt		raw data tables
+    d1_sineVecR.txt	drive waveform (now with new-lines)
+
+    eigen_freq.m	sweep frequency and axis of 1-D scan
+    f1_f*_ang_*.txt	raw data tables
+    f1_f*_sine.txt	raw drive waveforms
+
+    Improved file names.
+    Data in:  /var/tmp/csu2022_08_16/
+
+    console_2022_08_16.txt	Console output from scripts
+
+Contents:
+    ## Resonance Decay
+
+Note:  PSD is at an angle wrt piezo tube axis, i.e. not aligned.
+    Thus driving on X-axis only appears to stimulate both X and Y displacement.
+
+Files:
+------
+data/		-> ../data/ex2022_08_16_eigen
+f1_ang_000.control	control file for li_eigen_freq
+f1_ang_000.lockin	output of li_eigen_freq
+f1_ang_000.lockin.tab	table extracted from f1_ang_000.lockin
+notes.text		this file
+raw/		-> /var/tmp/csu2022_08_16
+
+----------------------------------------------------------------------------
+## Resonance Decay
+----------------------------------------------------------------------------
+
+Files:
+    eigen_axis.m	script as run, includes dead time at end to see decay
+
+    d1_sineVecR.txt	driving sinusoid
+
+    d1_ang_000.txt
+    d1_ang_010.txt
+    d1_ang_020.txt
+    d1_ang_030.txt
+    d1_ang_040.txt
+    d1_ang_050.txt
+    d1_ang_060.txt
+    d1_ang_070.txt
+    d1_ang_080.txt
+    d1_ang_090.txt
+    d1_ang_100.txt
+    d1_ang_110.txt
+    d1_ang_120.txt
+    d1_ang_130.txt
+    d1_ang_140.txt
+    d1_ang_150.txt
+    d1_ang_160.txt
+    d1_ang_170.txt
+    d1_ang_180.txt
+	Number is scan axis angle in degrees.
+
+Parameters dumped to console:
+    FreqR_Hz      =    805.000		single frequency
+    OutAmp_V      =      0.100		output amplitude, sine wave peak
+    DatasetTime_s =      2.000		data set duration
+    DecayTime_s   =      1.000		added drive zero time
+    dt_s          =   1.6000e-05
+    nSamps        =     125000		driven samples
+    nZeros        =      62500		drive zero samples
+
+    sampRate = 62500 sample/s
+    dt_s = 1 / sampRate  = 16 us  sample period
+
+    1 / FreqR_Hz = 1.2422 ms  period
+
+    sampRate / FreqR_Hz = (62500 sample/s) / (805 Hz)  = 77.64 sample/cycle
+
+Examine resonance decay with R:
+
+    df <- read.table( "d1_ang_060.txt", header=FALSE )
+	This dataset is a fairly narrow ellipse, tilted ~100 degrees.
+
+    names( df )
+    [1] "V1" "V2" "V3" "V4"
+
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    dim(df)
+    [1] 187501      4
+
+    plot( df$Vx, pch='.' )
+	Rapid rise, fairly long ring-down, about 35000 samples.
+	Wiggly tail of finite amplitude.
+
+    plot( df$Vy, pch='.' )
+	Much cleaner envelope, rapid rise, smooth decay to zero amplitude.
+
+    See ring-down tail of envelope
+    rn <- c(124000:180000)
+    plot( df$Vx[rn], pch='.' )
+    plot( df$Vy[rn], pch='.' )
+
+    Ring-down takes about 40000 samples, about 0.6 seconds.
+    A full 1 second seems safe.
+
+    plot( df$Vx[rn], df$Vy[rn], pch='.' )
+	See shrinking ellipse to a small line.
+
+    rn <- c(140000:140200)
+    plot( df$Vy[rn], type='p' )
+	See sine waveform, noise in sample positions.
+
+    rn <- c(187000:187501)
+    plot( df$Vy[rn], type='p' )
+	See noise at end of decay, no drive.
+	Vy noise ~0.015 V
+	Vx noise ~0.008 V
+
+    plot( df$Vx, df$Vy, pch='.' )
+	See full data set ellipse.
+
+    plot( df$Vx, df$Vy, pch='.', xlim=c(-1.5,1.0), ylim=c(-0.5,2.0))
+	With equal axis.
+
+Conclusions:
+    Resonance decay time (ring-down) is significant, about 0.6 seconds.
+    The 5 second sleep between data sets seems good.
+
+    Overall envelope shape is quite different for X and Y, over time from
+    start to full ring-down.
+
+    I wonder what off-resonance ring-down looks like.  Driven should be
+    at drive frequency, undriven should be at the resonant frequency?
+
+    Maybe plot a moving RMS value?
+
+----------------------------------------------------------------------------
+## Lockin Phase (2022-09-06)
+----------------------------------------------------------------------------
+
+Analysis of frequency sweep data from "eigen_freq.m" script.
+
+scripts:
+li_eigen_freq		Compute Lockin Phase from data table of "eigen_freq.m".
+config_li_eigen_freq.pl	Configure file names for "li_eigen_freq" input.
+
+Files:
+    raw -> /var/tmp/csu2022_08_16	raw data files
+
+
+Process:
+Generate control file
+
+    % ls raw/f1_f*_ang_000.txt |
+	../../src/config_li_eigen_freq.pl > f1_ang_000.control
+
+    % less f1_ang_000.control
+       InFile          FreqR_Hz  DrvAng_deg
+    raw/f1_f785_ang_000.txt  785  000
+    raw/f1_f787_ang_000.txt  787  000
+    raw/f1_f789_ang_000.txt  789  000
+    ...
+
+Compute lockin results
+    % ../../src/li_eigen_freq < f1_ang_000.control | tee f1_ang_000.lockin
+    sampRate = 62500
+    dt_s     = 1.6e-05
+    rnText   = [62501:125001]
+
+    1   raw/f1_f785_ang_000.txt  FreqR_Hz= 785  DrvAng_deg= 0
+    2   raw/f1_f787_ang_000.txt  FreqR_Hz= 787  DrvAng_deg= 0
+    3   raw/f1_f789_ang_000.txt  FreqR_Hz= 789  DrvAng_deg= 0
+    ...
+
+    Edit result into table:  f1_ang_000.lockin.tab
+
+Plot results with R
+    df <- read.table( "f1_ang_000.lockin.tab", header=TRUE )
+
+    plot( df$Lxi_mm )
+
+    plot(   df$Lxi_mm, ylim=c(-0.5,0.5) )
+    points( df$Lxq_mm, col='red' )
+    points( df$Lyi_mm, col='blue' )
+    points( df$Lyq_mm, col='green' )
+
+    plot(   df$Ex_mm, ylim=c(0.0,1.6) )
+    points( df$Ey_mm, col='red' )
+
+    plot(   df$Px_deg, ylim=c(-180,180) )
+    points( df$Py_deg, col='red' )
+
+    plot(   df$Pe_deg, ylim=c(-180,180) )
+
