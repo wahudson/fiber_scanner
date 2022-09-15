@@ -1,0 +1,74 @@
+2022-09-13
+		Lockin Frequency Sweep Experiment -- ex2022_09_13_lockin/
+		---------------------------------
+
+Follows from:  niDaq/exp/ex2022_08_16_eigen/
+
+Initial turn-on data set of Matlab script 'lockin_f1.m'.
+    Piezo Fiber Scanner.
+
+Files:
+------
+    k1_LItable.txt		lockin results, turn-on run
+    k1_console_2022_09_13.txt	stdout lockin_f1b.m generating k1_*
+
+    k2_LItable.txt		lockin results, main run
+    k2_console_2022_09_13.txt	stdout lockin_f1b.m generating k2_*
+
+    lockin_f1b.m		script generating k2_*
+
+    notes.text			this file
+
+data/	-> ../data/ex2022_09_13_lockin/  (not in git)
+    console_2022_09_13.txt	total console output
+    lockin_f1.m			checkpoint fixes, before set k1_*
+
+    k1LItable.txt		raw table output, renamed k1_LItable.txt
+    k1_set_1_daq.txt
+    k1_set_1_sine.txt
+    k1_set_3_daq.txt
+    k1_set_3_sine.txt
+
+    lockin_f1b.m		script generating k2_*
+
+    k2_LItable.txt		raw table output
+    k2_set_10_daq.txt
+    k2_set_10_sine.txt
+    k2_set_13_daq.txt
+    k2_set_13_sine.txt
+    k2_set_7_daq.txt
+    k2_set_7_sine.txt
+
+----------------------------------------------------------------------------
+## Data Collection - Red Notebook (2022-09-13)
+----------------------------------------------------------------------------
+
+Running the Piezo Fiber Scanner, same setup as before.
+
+Ran Cameron's  ContinuousDataAcq_withFourierFilteringV3.m  to see live
+update of scanner output as a confirmation of proper operation.
+
+Turn-on of script:  src/lockin_f1.m  (git 1d7b2e79acc6  Sep 12 14:35:39)
+    Fiber scanner DAQ with lockin calculation.
+
+    Fix many syntax bugs, including line continuation "..." and array indexing.
+    Mostly hack to get working.  Fixes then incorporated in source.
+
+The console log files have the data set context.  Is the map from set numbers
+to actual frequency points.
+
+Data set  k1_*:  turn-on with only 3 frequency points
+    OutAmp_V      =      0.050
+    DatasetTime_s =      2.000
+    dt_s          =   1.6000e-05
+    nSamps        =     125000
+    FreqR_Hz = 805.500, 806.000, 806.500
+
+Data set  k2_*:  main run, 21 frequency points
+    script:  lockin_f1b
+    OutAmp_V      =      0.100
+    DatasetTime_s =      2.000
+    dt_s          =   1.6000e-05
+    nSamps        =     125000
+    FreqR_Hz = 800.500 .. 810.500  step 0.500 Hz
+

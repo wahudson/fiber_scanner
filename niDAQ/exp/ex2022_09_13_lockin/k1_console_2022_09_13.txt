@@ -1,0 +1,34 @@
+
+# Matlab console running 'lockin_f1b.m', which was a copy of 'lockin_f1.m'
+# with some bug fixes, and then later modified for data set k2_*.
+
+>> lockin_f1b
+OutAmp_V      =      0.050
+DatasetTime_s =      2.000
+dt_s          =   1.6000e-05
+nSamps        =     125000
+
+FreqR_Hz Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm   Ex_mm    Px_deg   Ey_mm    Py_deg   Pe_deg   Meanx_mm Meany_mm
+jSetNum       =          1
+FreqR_Hz      =    805.500
+outFile:  k1_set_1_daq.txt
+outFile:  k1_set_1_sine.txt
+kB            =      62500
+kEnd          =     125001
+  805.50 -0.10690  0.27381 -0.15575 -0.03679   0.5879  111.327    0.3201 -166.711 -278.037  -0.0893   0.3714
+sleep(5)
+jSetNum       =          2
+FreqR_Hz      =    806.000
+kB            =      62500
+kEnd          =     125001
+  806.00  0.00806  0.35614 -0.12313  0.02744   0.7125   88.703    0.2523  167.437   78.734  -0.0899   0.3722
+sleep(5)
+jSetNum       =          3
+FreqR_Hz      =    806.500
+outFile:  k1_set_3_daq.txt
+outFile:  k1_set_3_sine.txt
+kB            =      62500
+kEnd          =     125001
+  806.50  0.17335  0.31109 -0.06132  0.04674   0.7122   60.872    0.1542  142.683   81.811  -0.0903   0.3718
+sleep(5)
+
