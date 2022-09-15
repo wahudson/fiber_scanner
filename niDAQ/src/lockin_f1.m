@@ -20,15 +20,15 @@
 
 %% Parameters
 
-    PreFix = 'k1';		% output file set prefix
+    PreFix = 'k2';		% output file set prefix
 
     DatasetTime_s = 2.0;	% data set duration
 
-    OutAmp_V = 0.05;		% output amplitude, sine wave voltage peak
+    OutAmp_V = 0.10;		% output amplitude, sine wave voltage peak
 
     Pi = 3.1415926535;
 
-    oFileName = PreFix + "LItable.txt";		% lockin output table file
+    oFileName = PreFix + "_LItable.txt";		% lockin output table file
 
     oFileID = fopen( oFileName, 'Wt' );
 	% 'Wt' = write with automatic flushing, text mode
@@ -80,9 +80,10 @@
     fprintf( '\n' );
 
 %% Output Table heading
-    % oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px     Ey    Py    Pe    Mex   Mey
-    oTabFormat  = "%8.2f %8.5f %8.5f %8.5f %8.5f %8.4f %8.3f  %8.4f %8.3f %8.3f %8.4f %8.4f\n";
-    oTabHeading = "FreqR_Hz Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm   Ex_mm    Px_deg   Ey_mm    Py_deg   Pe_deg   Meanx_mm Meany_mm";
+    % oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
+    oTabFormat  = "%8.2f %8.5f %8.5f %8.5f %8.5f %8.4f %8.3f %8.4f %8.3f %8.3f %8.4f %8.4f\n";
+    oTabHeading = "FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm    Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm";
+    %                805.00 -0.24257  0.30519 -0.26231 -0.31579   0.7797  128.478   0.8210 -129.714 -258.192  -0.0971   0.3758
 
     fprintf(          "%s\n", oTabHeading );
     fprintf( oFileID, "%s\n", oTabHeading );
@@ -93,15 +94,19 @@
     FreqCenter_Hz = 805;
     FreqStep_Hz   = 0.5;
 
-    SetNums     = [ 1:3 ];
+    SetNums     = [ 1:21 ];
+
     SaveSetNums = zeros( 1, length( SetNums ) );	% logical row vector
 
-    SaveSetNums( [2,3] ) = 1;		% save only these sets
+%    SaveSetNums( [2,3] ) = 1;		% save only these sets
+    SaveSetNums(10) = 1;
+    SaveSetNums(13) = 1;
+    SaveSetNums(7) = 1;
 
     for jSetNum = SetNums	% foreach integer in range i.e. [-10:+10]
 	fprintf( 'jSetNum       = %10d\n',   jSetNum );
 
-	FreqR_Hz = FreqCenter_Hz + (FreqStep_Hz * jSetNum);
+	FreqR_Hz = FreqCenter_Hz + (FreqStep_Hz * (jSetNum - 10));
 
     % Single axis sine wave
 	fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz );
@@ -136,7 +141,7 @@
 	    ofile = PreFix + "_set_" + jSetNum + "_sine.txt";
 	    fprintf( 'outFile:  %s\n', ofile );
 	    sineColR = transpose( sineVecR );
-	    save( sfile, 'sineColR', '-ascii' );
+	    save( ofile, 'sineColR', '-ascii' );
 		% A saved row vector has space separated values.
 	    %#!! perhaps combine in one file
 	end
@@ -194,7 +199,7 @@
 	Pe_deg = Pe_rad * 180 / Pi;
 
     % output results
-	% oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px     Ey    Py    Pe    Mex   Mey
+	% oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
 
 	fprintf(          oTabFormat, ...
 	    FreqR_Hz, ...
