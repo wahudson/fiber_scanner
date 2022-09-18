@@ -72,3 +72,36 @@ Data set  k2_*:  main run, 21 frequency points
     nSamps        =     125000
     FreqR_Hz = 800.500 .. 810.500  step 0.500 Hz
 
+----------------------------------------------------------------------------
+## Compare lockin calculation with 'li_eigen_freq'
+----------------------------------------------------------------------------
+
+The k2_* data set has 3 frequency points we can compare.  Make a control file:
+
+    % vi li_eigen_freq.control
+       InFile          FreqR_Hz  DrvAng_deg
+    data/k2_set_7_daq.txt   803.500  000
+    data/k2_set_10_daq.txt  805.000  000
+    data/k2_set_13_daq.txt  806.500  000
+
+    % ../../src/li_eigen_freq < li_eigen_freq.control > li_eigen_freq.out
+    sampRate = 62500
+    dt_s     = 1.6e-05
+    rnText   = [62501:125001]
+
+    1   data/k2_set_7_daq.txt  FreqR_Hz= 803.5  DrvAng_deg= 0
+    2   data/k2_set_10_daq.txt  FreqR_Hz= 805  DrvAng_deg= 0
+    3   data/k2_set_13_daq.txt  FreqR_Hz= 806.5  DrvAng_deg= 0
+
+			Lxi_mm Lxq_mm   Lyi_mm  Lyq_mm  Ex_mm Px_deg  Ey_mm  Py_deg  Pe_deg Meanx_mm Meany_mm
+    data/k2_set_7_daq  -0.2159 0.1867  0.09544 -0.2178 0.5709 139.14 0.4755  -66.33 -205.47 -0.09737   0.3766
+    data/k2_set_10_daq -0.2426 0.3052 -0.26231 -0.3158 0.7797 128.48 0.8211 -129.71 -258.19 -0.09716   0.3758
+    data/k2_set_13_daq  0.2603 0.6421 -0.22247  0.1049 1.3857  67.93 0.4919  154.76   86.83 -0.10234   0.3789
+
+Conclusions:
+    These three frequency points match  k2_LItable.txt  to 4 significant
+    figures for all parameters (i.e. within +-1 in the 4th digit).
+
+    Scripts  li_eigen_freq  and  lockin_f1.m  make comparable lockin
+    calculations.
+
