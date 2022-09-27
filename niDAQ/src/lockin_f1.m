@@ -20,9 +20,11 @@
 
 %% Parameters
 
-    PreFix = 'k2';		% output file set prefix
+    PreFix = 'k3';		% output file set prefix
 
-    DatasetTime_s = 2.0;	% data set duration
+    Tbegin_s      = 1.0;	% settling time to begin analysis
+    DatasetTime_s = 2.0;	% total data set duration
+    Twait_s       = 5.0;	% wait time between points
 
     OutAmp_V = 0.10;		% output amplitude, sine wave voltage peak
 
@@ -70,12 +72,19 @@
     nSamps = round( DatasetTime_s / dt_s );
 
     % vector of time values
-    tVec_s = [0:nSamps] * dt_s;		% row vector
+    tVec_s = [0:nSamps] * dt_s;		% row vector (nSamps+1)
+
+    % index for stable portion of data trace
+    kB     = round( Tbegin_s / dt_s );	% index for begin stable
+    kEnd   = nSamps;			% last element to analyze
 
     % output status
     fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V );
+    fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
     fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
     fprintf( 'dt_s          = %12.4e\n', dt_s   );
+    fprintf( 'kB            = %10d\n',   kB   );
+    fprintf( 'kEnd          = %10d\n',   kEnd );
     fprintf( 'nSamps        = %10d\n',   nSamps );
     fprintf( '\n' );
 
@@ -147,13 +156,6 @@
 	end
 
     % extract stable portion of data trace
-	kB     = round( 1.0 / dt_s );		% index for begin stable
-	kEnd   = length( inScanData(:,2) );	% last element in source array
-			% should have kEnd == nSamps
-
-	fprintf( 'kB            = %10d\n',   kB   );
-	fprintf( 'kEnd          = %10d\n',   kEnd );
-
 	Vsum_V = transpose( inScanData(kB:kEnd,2) );
 	Vx_V   = transpose( inScanData(kB:kEnd,3) );
 	Vy_V   = transpose( inScanData(kB:kEnd,4) );
@@ -168,12 +170,8 @@
 	Meany_mm = mean( Dy_mm );
 
     % Reference sine waves, wrt original t=0
-	Wr = FreqR_Hz * 2 * Pi;		% radian frequency
-
-	WTvec = Wr * dt_s * [kB:kEnd];	% linear radian row vector wrt t=0
-
-	RIvec = sin( WTvec );		% in-phase   reference
-	RQvec = cos( WTvec );		% quadrature reference
+	RIvec = sin( wR * tVec_s[kB:kEnd] );	% in-phase   reference
+	RQvec = cos( wR * tVec_s[kB:kEnd] );	% quadrature reference
 		    % row vectors
 
     % compute quadrature lockin result (row vector element-wise product)
@@ -222,8 +220,8 @@
 	);
 
     % wait for fiber resonance to decay
-	fprintf( 'sleep(5)\n' );
-	pause( 5 );
+	fprintf( 'sleep(%3.1f)\n', Twait_s );
+	pause( Twait_s );
 
     end		% for loop
 
