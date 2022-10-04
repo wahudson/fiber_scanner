@@ -24,7 +24,7 @@
 
     pause( 'on' );		% enable process sleep
 
-%% DAQ configuration
+%% DAQ configuration - NI USB 6211
     % addoutput/addinput order is column order in data matrix
 
     % construct DataAcquisition object
@@ -42,15 +42,15 @@
     chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
     chInY   = addinput( dq, 'Dev1', 'ai4', 'Voltage' ); % PSD Y Pin Signal
 
-    chInSig.Range = [-10,10];
-    chInSum.Range = [-10,10];
-    chInX.Range   = [-5,5];
+    chInSig.Range = [-10,10];	%  0 V to 10 V  ThorLabs PDA36A2 at Hi-Z
+    chInSum.Range = [-5,5];	%  0 V to +4 V  ThorLabs PDP90A  PSD
+    chInX.Range   = [-5,5];	% -4 V to +4 V
     chInY.Range   = [-5,5];
 	% Range [-10,10] is the default.
 	% Note a single-ended range [0,10] is not accepted.
 
     % DAQ sample rate
-    dq.Rate   = 62500;		% set samples per second
+    dq.Rate  = 62500;		% set samples per second
     sampRate = dq.Rate;
 
 %% Sample time vector
@@ -84,7 +84,7 @@
 
 %% Output Table heading
     oTabFormat  = "%4d %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f\n";
-    oTabHeading = " Num  SdSig_V  MnSig_V    SdX_V    MnX_V    SdY_V    MnY_V  SdSum_V  MnSum_V";
+    oTabHeading = " Num  MnSig_V  SdSig_V    MnX_V    SdX_V    MnY_V    SdY_V  MnSum_V  SdSum_V";
     %                 1  0.01049  2.57573  0.00113 -0.93703  0.00043  0.28489  0.00451  3.37882
 
     fprintf( "%s\n", oTabHeading );
@@ -121,10 +121,10 @@
     % output results
 	fprintf(          oTabFormat, ...
 	    jSetNum, ...
-	    SdSig_V, MnSig_V, ...
-	    SdX_V,   MnX_V, ...
-	    SdY_V,   MnY_V, ...
-	    SdSum_V, MnSum_V ...
+	    MnSig_V, SdSig_V, ...
+	    MnX_V,   SdX_V, ...
+	    MnY_V,   SdY_V, ...
+	    MnSum_V, SdSum_V ...
 	);
 
     % peak detection
