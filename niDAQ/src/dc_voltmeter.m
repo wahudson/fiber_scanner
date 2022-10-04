@@ -13,11 +13,11 @@
 
     % PreFix = 'v1';		% output file set prefix
 
-    nMeas      = 1000;		% number of measurements
+    nMeas      = 7;		% number of measurements
 
-    Tbegin_s   = 1.0;		% settling time to begin analysis
+    Tbegin_s   = 0.2;		% settling time to begin analysis
     Tmeasure_s = 1.0;		% measurement analysis time
-    Twait_s    = 1.0;		% wait time between points
+    Twait_s    = 0.0;		% wait time between points
     DatasetTime_s = Tbegin_s + Tmeasure_s;	% total data set duration
 
     Pi = 3.1415926535;
@@ -42,11 +42,12 @@
     chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
     chInY   = addinput( dq, 'Dev1', 'ai4', 'Voltage' ); % PSD Y Pin Signal
 
-    chInX.Range = [-5,5];
-    chInY.Range = [-5,5];
-	%#!! what about other channels?
-    chInSig.Range
-    chInSum.Range
+    chInSig.Range = [-10,10];
+    chInSum.Range = [-10,10];
+    chInX.Range   = [-5,5];
+    chInY.Range   = [-5,5];
+	% Range [-10,10] is the default.
+	% Note a single-ended range [0,10] is not accepted.
 
     % DAQ sample rate
     dq.Rate   = 62500;		% set samples per second
@@ -75,15 +76,16 @@
     fprintf( '\n' );
 
 % Drive output row vector
-    outVecX = zero( 1, nSamps );	% row vector
-    outVecY = zero( 1, nSamps );
+    outVecX = zeros( 1, nSamps );	% row vector
+    outVecY = zeros( 1, nSamps );
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
 
 %% Output Table heading
     oTabFormat  = "%4d %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f\n";
-    oTabHeading = " Num SdSig_V  MnSig_V  SdX_V    MnX_V    SdY_V    MnY_V    SdSum_V  MnSum_V";
+    oTabHeading = " Num  SdSig_V  MnSig_V    SdX_V    MnX_V    SdY_V    MnY_V  SdSum_V  MnSum_V";
+    %                 1  0.01049  2.57573  0.00113 -0.93703  0.00043  0.28489  0.00451  3.37882
 
     fprintf( "%s\n", oTabHeading );
 
@@ -102,12 +104,19 @@
 		    % row vectors
 
     % voltage measurements
-	[SdSig_V, MnSig_V] = std( VSig_V );
-	[SdSum_V, MnSum_V] = std( VSum_V );
-	[SdX_V,   MnX_V]   = std( VX_V );
-	[SdY_V,   MnY_V]   = std( VY_V );
+	MnSig_V = mean( VSig_V );
+	MnSum_V = mean( VSum_V );
+	MnX_V   = mean( VX_V );
+	MnY_V   = mean( VY_V );
+
+	SdSig_V = std( VSig_V );
+	SdSum_V = std( VSum_V );
+	SdX_V   = std( VX_V );
+	SdY_V   = std( VY_V );
+
 	% Note SD is the RMS AC amplitude, using 1/(N-1) instead of 1/N.
-	% True RMS includes the mean value.
+	% True RMS includes the DC offset (i.e. mean) value.
+	% Matlab std() returning both SD and mean did not work (R2022a feature).
 
     % output results
 	fprintf(          oTabFormat, ...
@@ -115,7 +124,7 @@
 	    SdSig_V, MnSig_V, ...
 	    SdX_V,   MnX_V, ...
 	    SdY_V,   MnY_V, ...
-	    SdSum_V, MnSum_V, ...
+	    SdSum_V, MnSum_V ...
 	);
 
     % peak detection
