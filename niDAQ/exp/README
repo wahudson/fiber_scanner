@@ -4,7 +4,7 @@
 			-----------------
 Files:
 ------
-README
+README			this file
 data/			Bulk data, not in Git.
 
 ex2022_07_14_piezo/	my very first run of Camerons Fourier script
@@ -12,5 +12,8 @@ ex2022_08_02_piezo/	my copy saving Lissajous data
 ex2022_08_04_piezo/	my first Matlab script sweep.m
 ex2022_08_09_eigen/	single axis eigen_axis.m, eigen_freq.m
 ex2022_08_16_eigen/	single axis more detailed sweeps
-ex2022_09_13_lockin/	lockin frequency sweep, initial lockin_f1.m
+ex2022_09_13_lockin/	lockin frequency sweep, initial lockin_f1.m (bad data)
+
+New fiber scanner configuration - v3.2.2 ??
+ex2022_09_27_dcvolt/	dc_voltmeter.m  script turn-on
 

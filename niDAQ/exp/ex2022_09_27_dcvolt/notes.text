@@ -1,0 +1,75 @@
+2022-09-27
+		dc_voltmeter.m  Script Turn-on -- ex2022_09_27_dcvolt/
+		------------------------------
+
+See:  red notebook  9-27-2022
+
+Files:
+------
+    console.txt		all console output of this session
+    dc_voltmeter1.m	working copy as used in turn-on
+    notes.text		this file
+
+This is really only script turn-on, and any data is secondary.
+
+----------------------------------------------------------------------------
+## Fiber Scanner condition
+----------------------------------------------------------------------------
+Essentially a new configuration.
+
+Scanner PSD beam splitter has been reconfigured:
+    PSD is on a magnet post on optical table.
+    Cover slip beam splitter is replaced with a thick glass slide.
+
+Cameron was exploring effects of polarization change when the fiber out of
+the laser is moved (bend radius changed), causing a relative shift in
+intensity of the two reflections off the cover slip front and back surfaces,
+which form two spots on the PSD, which results in an apparent position shift.
+
+I only operated it for DC signals out of the PSD and photodetector.
+
+----------------------------------------------------------------------------
+## Matlab Console Output
+----------------------------------------------------------------------------
+
+Error setting chInSum.Range = [0,10]:
+    >> dc_voltmeter1
+    Warning: Cannot support range of 0 to +10 Volts.  \
+	Range set to -10 to +10 Volts.
+
+Error trying std() to return both SD and Mean:
+    Error using std
+    Too many output arguments.
+    Error in dc_voltmeter1 (line 107)
+	    [SdSig_V, MnSig_V] = std( VSig_V );
+
+----
+Enter comments in the console window to help identify condition.
+Sample output with Laser, PSD, photodetector all powered OFF:
+
+>> %vvv power OFF PSD and photodiode
+>> dc_voltmeter1
+Tbegin_s      =      0.200
+Tmeasure_s    =      1.000
+DatasetTime_s =      1.200
+dt_s          =   1.6000e-05
+kB            =      12500
+nSamps        =      75000
+
+ Num SdSig_V  MnSig_V  SdX_V    MnX_V    SdY_V    MnY_V    SdSum_V  MnSum_V
+   1  0.00024 -0.00081  0.00012 -0.00028  0.00013 -0.00042  0.00023 -0.00086
+   2  0.00024 -0.00080  0.00012 -0.00028  0.00013 -0.00042  0.00023 -0.00085
+   3  0.00024 -0.00080  0.00012 -0.00028  0.00013 -0.00042  0.00024 -0.00085
+   4  0.00024 -0.00080  0.00012 -0.00027  0.00013 -0.00042  0.00024 -0.00085
+   5  0.00024 -0.00079  0.00012 -0.00027  0.00013 -0.00041  0.00023 -0.00084
+   6  0.00024 -0.00079  0.00012 -0.00027  0.00013 -0.00041  0.00023 -0.00084
+   7  0.00024 -0.00080  0.00012 -0.00028  0.00013 -0.00042  0.00023 -0.00085
+>>
+
+All signals less than 1 mV, which is expected.
+----
+
+Played with measurements.
+Think about parameter output.
+Interrupt with <cntl-C> was very messy.
+
