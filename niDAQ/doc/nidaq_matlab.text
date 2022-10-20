@@ -21,6 +21,15 @@ Case sensitive:
     >> plot(1:10,'LineWidth',3)
     >> plot(1:10,'LINEWIDTH',3)
 
+Namespace clash:
+    A variable may have the same name as a function.
+    Ambiguity clash with no error, variable wins.
+	e.g. function call  sin( w*t )  vs array indexing  sin( i ).
+
+Loading new script:
+    Best to clear the workspace to avoid bugs inheriting variables from the
+    previous script.  e.g. Inheriting an array named "sin".
+
 Constants:
     pi = 3.141592653589793
 
@@ -42,6 +51,8 @@ MATLAB Operators and Special Characters
 Text in String and Character Arrays
     +    = string concatenation
     https://www.mathworks.com/help/matlab/matlab_prog/represent-text-with-character-and-string-arrays.html
+    'text'  - is a character array
+    "text"  - is a string
 
 colon, :
     v = a:b
@@ -163,6 +174,15 @@ save()
 	(maybe transpose to get one value per line?)
     https://www.mathworks.com/help/matlab/ref/save.html
 
+diary - Log Command Window text to file
+    diary file.txt	file to write console text output
+    diary off		turn off writing
+    diary on		turn on  writing
+	Note - turn off diary to flush file buffer before viewing file.
+
+type - Display contents of a file in command window
+    type file.txt
+
 format()
     Set the interactive output display format.
 
@@ -174,6 +194,22 @@ pause( n )		Stop Matlab execution temporarily.
 fprintf( formatSpec, vars, .. )		print to screen, or file
 sprintf( formatSpec, vars, .. )		return a string
     Similar to standard C.
+
+----------------------------------------------------------------------------
+## User Suggestions
+----------------------------------------------------------------------------
+My thoughts running experiments from a USB drive on a Windows box.
+    Code and data is prepared/analyzed from Linux.
+
+Source files:
+    Make them read-only to have a safe reference copy.
+    Save modified Matlab script to file with an added suffix.
+    Save/run major modifications with a new name for better tracking in
+	console window.
+
+Console (comand) Window output:
+    Make copy in a log file.
+    >> diary console_2022_10_18.txt
 
 ----------------------------------------------------------------------------
 ## Examine initial script from Cameron:  2022-07-14

@@ -30,7 +30,7 @@
 
     Pi = 3.1415926535;
 
-    oFileName = PreFix + "_LItable.txt";		% lockin output table file
+    oFileName = PreFix + "_LItable.txt";	% lockin output table file
 
     oFileID = fopen( oFileName, 'Wt' );
 	% 'Wt' = write with automatic flushing, text mode
@@ -79,6 +79,7 @@
     kEnd   = nSamps;			% last element to analyze
 
     % output status
+    fprintf( 'PreFix        = %s\n',     PreFix   );
     fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V );
     fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
     fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
@@ -170,8 +171,8 @@
 	Meany_mm = mean( Dy_mm );
 
     % Reference sine waves, wrt original t=0
-	RIvec = sin( wR * tVec_s[kB:kEnd] );	% in-phase   reference
-	RQvec = cos( wR * tVec_s[kB:kEnd] );	% quadrature reference
+	RIvec = sin( wR * tVec_s(kB:kEnd) );	% in-phase   reference
+	RQvec = cos( wR * tVec_s(kB:kEnd) );	% quadrature reference
 		    % row vectors
 
     % compute quadrature lockin result (row vector element-wise product)
