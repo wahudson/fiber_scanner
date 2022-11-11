@@ -1,24 +1,32 @@
-%% 2022-09-20  William A. Hudson
+%% 2022-11-11  William A. Hudson
 %#! Matlab
 %
-% Fiber scanner DAQ - DC Voltmeter for testing channels.
+% Fiber scanner DAQ - AC Voltmeter for measuring scanner response.
+%     Use to find sample focus by scanning a stripe pattern.
 
 % Configuration in the code.
-% Drive out zero volts, measure input channels, repeat loop.
+% Drive out sine wave, measure input channels, repeat loop.
+% Output is PSD mm position and photodiode Vsig voltage - mean and SD.
+% Note SD (standard deviation) is a good estimate of AC RMS amplitude deviation
+% from the mean.
 %
 % Try to use only row-vectors, since we want element-wise operations and
 % NOT matrix results.
 
 %% Parameters
 
-    % PreFix = 'v1';		% output file set prefix
+    % PreFix = 'm1';		% output file set prefix
 
     nMeas      = 7;		% number of measurements
 
     Tbegin_s   = 0.2;		% settling time to begin analysis
     Tmeasure_s = 1.0;		% measurement analysis time
-    Twait_s    = 0.0;		% wait time between points
+    Twait_s    = 1.0;		% wait time between points
     DatasetTime_s = Tbegin_s + Tmeasure_s;	% total data set duration
+
+    OutAmp_V   = 0.10;		% output amplitude, sine wave voltage peak
+    FreqR_Hz   = 803;		% single frequency
+    AngleR_deg = 0;		% angle from +X axis
 
     Pi = 3.1415926535;
 
@@ -64,6 +72,9 @@
     kEnd   = nSamps;			% last element of measurement
 
     % output status
+    fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz      );
+    fprintf( 'AngleR_deg    = %10.1f\n', AngleR_deg    );
+    fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V      );
     fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
     fprintf( 'Tmeasure_s    = %10.3f\n', Tmeasure_s    );
     fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
@@ -74,16 +85,27 @@
     fprintf( 'nSamps        = %10d\n',   nSamps );
     fprintf( '\n' );
 
-    % stimulus array
-    outVecX = zeros( 1, nSamps );	% row vector
-    outVecY = zeros( 1, nSamps );
+    % vector of time values, sample[1] is time t=0
+    tVec_s = [0:nSamps] * dt_s;		% row vector, (nSamps+1) elements
 
+    % single axis sine wave
+    wR = 2 * Pi * FreqR_Hz;			% angular frequency
+
+    sineVecR = OutAmp_V * sin( wR * tVec_s );	% row vector
+
+    % rotate axis of applied sine wave
+    AngleR_rad = AngleR_deg * Pi / 180;
+
+    outVecX = cos( AngleR_rad ) * sineVecR;	% row vector
+    outVecY = sin( AngleR_rad ) * sineVecR;
+
+    % stimulus array
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
 
 %% Output Table heading
     oTabFormat  = "%4d %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f\n";
-    oTabHeading = " Num  MnSig_V  SdSig_V    MnX_V    SdX_V    MnY_V    SdY_V  MnSum_V  SdSum_V";
+    oTabHeading = " Num  MnSig_V  SdSig_V    MnX_mm   SdX_mm   MnY_mm   SdY_mm MnSum_V  SdSum_V";
     %                 1  0.01049  2.57573  0.00113 -0.93703  0.00043  0.28489  0.00451  3.37882
 
     fprintf( "%s\n", oTabHeading );
@@ -104,24 +126,34 @@
     % voltage measurements (row vectors)
 	MnSig_V = mean( VSig_V );
 	MnSum_V = mean( VSum_V );
-	MnX_V   = mean( VX_V );
-	MnY_V   = mean( VY_V );
+	%MnX_V   = mean( VX_V );
+	%MnY_V   = mean( VY_V );
 
 	SdSig_V = std( VSig_V );
 	SdSum_V = std( VSum_V );
-	SdX_V   = std( VX_V );
-	SdY_V   = std( VY_V );
+	%SdX_V   = std( VX_V );
+	%SdY_V   = std( VY_V );
 
 	% Note SD is the RMS AC amplitude, using 1/(N-1) instead of 1/N.
 	% True RMS includes the DC offset (i.e. mean) value.
 	% Matlab std() returning both SD and mean did not work (R2022a feature).
 
+    % PSD position measurements (row vectors)
+	DX_mm = 5 * (VX_V ./ VSum_V);
+	DY_mm = 5 * (VY_V ./ VSum_V);
+
+	MnX_mm = mean( DX_mm );
+	MnY_mm = mean( DY_mm );
+
+	SdX_mm = std( DX_mm );
+	SdY_mm = std( DY_mm );
+
     % output results
 	fprintf( oTabFormat, ...
 	    jSetNum, ...
 	    MnSig_V, SdSig_V, ...
-	    MnX_V,   SdX_V, ...
-	    MnY_V,   SdY_V, ...
+	    MnX_mm,  SdX_mm, ...
+	    MnY_mm,  SdY_mm, ...
 	    MnSum_V, SdSum_V ...
 	);
 
