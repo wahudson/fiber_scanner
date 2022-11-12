@@ -71,7 +71,7 @@
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s   );
     fprintf( 'kB            = %10d\n',   kB     );
-    fprintf( 'nSamps        = %10d\n',   nSamps );
+    fprintf( 'kEnd          = %10d\n',   kEnd   );
     fprintf( '\n' );
 
     % stimulus array

@@ -15,18 +15,22 @@
 
 %% Parameters
 
-    % PreFix = 'm1';		% output file set prefix
+    PreFix = 'ac1';		% output file set prefix
+    SaveStimulus = 1;		% flag to save sineVecR
 
     nMeas      = 7;		% number of measurements
 
-    Tbegin_s   = 0.2;		% settling time to begin analysis
-    Tmeasure_s = 1.0;		% measurement analysis time
-    Twait_s    = 1.0;		% wait time between points
-    DatasetTime_s = Tbegin_s + Tmeasure_s;	% total data set duration
-
     OutAmp_V   = 0.10;		% output amplitude, sine wave voltage peak
-    FreqR_Hz   = 803;		% single frequency
+    FreqR_Hz   = 803;		% single frequency stimulus
     AngleR_deg = 0;		% angle from +X axis
+
+    nBegin_cyc    = 800;	% settling number of cycles to begin analysis
+    nMeasure_cyc  = 1000;	% measurement analysis number of cycles
+    Twait_s       = 1.0;	% wait time between points
+
+    Tbegin_s      = nBegin_cyc   * FreqR_Hz;	% settling time
+    Tmeasure_s    = nMeasure_cyc * FreqR_Hz;	% measurement analysis time
+    DatasetTime_s = Tbegin_s + Tmeasure_s;	% total data set duration
 
     Pi = 3.1415926535;
 
@@ -72,9 +76,9 @@
     kEnd   = nSamps;			% last element of measurement
 
     % output status
+    fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V      );
     fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz      );
     fprintf( 'AngleR_deg    = %10.1f\n', AngleR_deg    );
-    fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V      );
     fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
     fprintf( 'Tmeasure_s    = %10.3f\n', Tmeasure_s    );
     fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
@@ -82,7 +86,7 @@
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s   );
     fprintf( 'kB            = %10d\n',   kB     );
-    fprintf( 'nSamps        = %10d\n',   nSamps );
+    fprintf( 'kEnd          = %10d\n',   kEnd   );
     fprintf( '\n' );
 
     % vector of time values, sample[1] is time t=0
@@ -92,6 +96,14 @@
     wR = 2 * Pi * FreqR_Hz;			% angular frequency
 
     sineVecR = OutAmp_V * sin( wR * tVec_s );	% row vector
+
+    if ( SaveStimulus )		% use to verify cycle alignment
+	ofile    = PreFix + "_sineVecR.txt";
+	sineColR = transpose( sineVecR );
+	    % A saved row vector has space separated values.
+	fprintf( 'outFile:  %s\n', ofile );
+	save( ofile, 'sineColR', '-ascii' );
+    end
 
     % rotate axis of applied sine wave
     AngleR_rad = AngleR_deg * Pi / 180;
