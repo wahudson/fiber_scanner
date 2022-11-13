@@ -1,0 +1,169 @@
+2022-10-18
+		PSD Lockin Frequency Sweep -- ex2022_10_18_psd/
+		--------------------------
+
+Follows from:
+    ex2022_09_13_lockin/
+    ex2022_09_27_dcvolt/
+
+See:  red notebook  10-18-2022
+
+----------------------------------------------------------------------------
+## Fiber Scanner condition
+----------------------------------------------------------------------------
+
+Same as  ex2022_09_27_dcvolt/
+    PSD beam splitter is a thick glass slide.
+
+    PSD is on a magnet post on optical table, about 5.6 cm PSD face to the
+	35 mm lens face.
+
+    Laser beam on PSD looks like two parallel lines covering a spot ~3 mm dia,
+	as seen on white paper with IR viewer.
+	PSD alignment is about centered on beam.
+
+    Laser current is 30.0 mA to avoid PSD saturation (prior was 36 mA).
+
+    Sample target is not in focus, and is not used.
+
+PSD output was recorded at end of session:
+    No piezo tube drive, Mn= mean, Sd= standard deviation (essentially RMS).
+    Note MnX_V and MnY_V are near zero (center), the PSD is not
+    saturated (MnSum_V < 4.0 V), and the SD (RMS) noise is ~5 mV on SdSum_V.
+
+    >> dc_voltmeter
+    Tbegin_s      =      0.200
+    Tmeasure_s    =      1.000
+    DatasetTime_s =      1.200
+    dt_s          =   1.6000e-05
+    kB            =      12500
+    nSamps        =      75000
+
+ Num  MnSig_V  SdSig_V    MnX_V    SdX_V    MnY_V    SdY_V  MnSum_V  SdSum_V
+   1  1.93499  0.00956 -0.41071  0.00064 -0.06838  0.00026  3.24013  0.00491
+   2  1.93402  0.00932 -0.41087  0.00069 -0.06838  0.00026  3.24169  0.00530
+   3  1.93556  0.00986 -0.41024  0.00071 -0.06828  0.00026  3.23688  0.00545
+   4  1.95869  0.00986 -0.40994  0.00075 -0.06824  0.00026  3.23405  0.00578
+   5  1.94972  0.01297 -0.41032  0.00072 -0.06834  0.00026  3.23726  0.00558
+   6  1.93199  0.01038 -0.41001  0.00069 -0.06828  0.00026  3.23534  0.00519
+   7  1.94435  0.01161 -0.41028  0.00069 -0.06836  0.00026  3.23714  0.00531
+
+----------------------------------------------------------------------------
+## Frequency Sweep:  lockin_f1.m
+----------------------------------------------------------------------------
+
+Initial data sets were debugging the  lockin_f1.m  script.
+
+All data sets have:
+    AngleR_deg    = 0
+    FreqCenter_Hz = 805
+    SetNums       = [ 1:21 ]	Frequency sample numbers
+
+Data sets:
+    k3  Missing newlines in output.  Not worth looking at.
+    k4  FreqStep_Hz=0.5   Missing last two fields.  800.50 Hz .. 810.50
+    k5  FreqStep_Hz=0.25  Missing last two fields.  802.75 Hz .. 807.75
+    k6  FreqStep_Hz=0.5   Good dataset (extra new-lines).
+
+    Note the peak response is at FreqR_Hz= ~803 Hz, which is almost missed by
+    set k5.  This has shifted from prior experiments at ~805 Hz.
+
+>> lockin_f1_k6.m
+    OutAmp_V      =      0.200
+    Tbegin_s      =      1.000
+    DatasetTime_s =      2.000
+    dt_s          =   1.6000e-05
+    kB            =      62500
+    kEnd          =     125000
+    nSamps        =     125000
+
+----------------------------------------------------------------------------
+## Compare lockin calculation with 'li_eigen_freq'
+----------------------------------------------------------------------------
+
+Set k6_*
+
+    % vi li_eigen_freq.control
+    InFile                 FreqR_Hz  DrvAng_deg
+    data/k6_set_7_daq.txt   803.500  0
+    data/k6_set_10_daq.txt  805.000  0
+    data/k6_set_13_daq.txt  806.500  0
+
+    % ../../src/li_eigen_freq < li_eigen_freq.control > li_eigen_freq.out
+
+% cat li_eigen_freq.out
+sampRate = 62500
+dt_s     = 1.6e-05
+rnText   = [62501:125001]
+
+1   data/k6_set_7_daq.txt  FreqR_Hz= 803.5  DrvAng_deg= 0
+2   data/k6_set_10_daq.txt  FreqR_Hz= 805  DrvAng_deg= 0
+3   data/k6_set_13_daq.txt  FreqR_Hz= 806.5  DrvAng_deg= 0
+
+                   Lxi_mm  Lxq_mm   Lyi_mm  Lyq_mm  Ex_mm Px_deg   Ey_mm Py_deg Pe_deg Meanx_mm Meany_mm
+data/k6_set_7_daq  0.3547 0.21245 -0.06522 0.14040 0.8269 30.920 0.30961 114.92  84.00  -0.7136  -0.1152
+data/k6_set_10_daq 0.2414 0.05449  0.01316 0.04129 0.4949 12.721 0.08667  72.32  59.60  -0.6671  -0.1085
+data/k6_set_13_daq 0.1852 0.01267  0.01753 0.01605 0.3713  3.913 0.04753  42.47  38.55  -0.6535  -0.1072
+
+
+% less data/k6_LItable.txt
+FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm    Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm
+  803.50  0.33640  0.24040 -0.07634  0.13468   0.8269   35.551   0.3096  119.546   83.995  -0.7136  -0.1152
+  805.00  0.23618  0.07383  0.00978  0.04222   0.4949   17.358   0.0867   76.961   59.603  -0.6671  -0.1085
+  806.50  0.18358  0.02765  0.01617  0.01742   0.3713    8.565   0.0475   47.117   38.553  -0.6535  -0.1072
+
+Comparing these two results:
+    The mean values match exactly.
+    The lockin values seem too far off.  They should match to this precision
+    shown, since both compute with double-precision floating point?
+
+Comparing scripts:
+    Index range differs
+    R script  li_eigen_freq:	     rn = [62501:125001]
+	    embedded in the code
+    Matlab      lockin_f1.m:  [kB:kEnd] = [62500:125000]
+	    from execution output
+
+    Seems unlikely that this is the only cause.  Try correcting it.
+	This "off by one" made little difference.
+
+Time t=0 is effectively different?  This would be significant.
+    But it looks the same to me:
+
+    R script  li_eigen_freq:
+	Read in data, index=1 is start of saved sample data, is start of drive.
+	rn    <- c(62501:125001)	# range to compute
+	Wr    <- FreqR_Hz * 2 * Pi
+	WTvec <- Wr * dt_s * rn
+	RIvec <- sin( WTvec )		# in-phase   reference
+	RQvec <- cos( WTvec )		# quadrature reference
+
+    Matlab lockin_f1.m:
+	Tbegin_s      = 1.0;		% settling time to begin analysis
+	DatasetTime_s = 2.0;		% total data set duration
+
+	nSamps = round( DatasetTime_s / dt_s );
+	tVec_s = [0:nSamps] * dt_s;
+	    This vector puts t=0 at start of drive and saved sample data.
+
+	wR = 2 * Pi * FreqR_Hz;
+	sineVecR = OutAmp_V * sin( wR * tVec_s );
+	AngleR_deg = 0;
+	outVecX = cos( AngleR_rad ) * sineVecR;
+	outVecY = sin( AngleR_rad ) * sineVecR;
+
+	kB     = round( Tbegin_s / dt_s );	% index for begin stable
+	kEnd   = nSamps;			% last element to analyze
+
+	RIvec = sin( wR * tVec_s(kB:kEnd) );	% in-phase   reference
+	RQvec = cos( wR * tVec_s(kB:kEnd) );	% quadrature reference
+
+Conclusion:
+    Not sure why they are different.
+
+    Need to re-develop the lockin calculation.
+    Prove it is correct.  Indexing seems tricky.
+    Perhaps always use full sampled vector indexes, and trim only at lockin.
+    Align to full cycles of reference sine wave.
+    Verify precision.
+

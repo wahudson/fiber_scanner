@@ -1,0 +1,12 @@
+sampRate = 62500
+dt_s     = 1.6e-05
+rnText   = [62501:125001]
+
+1   data/k6_set_7_daq.txt  FreqR_Hz= 803.5  DrvAng_deg= 0
+2   data/k6_set_10_daq.txt  FreqR_Hz= 805  DrvAng_deg= 0
+3   data/k6_set_13_daq.txt  FreqR_Hz= 806.5  DrvAng_deg= 0
+
+                   Lxi_mm  Lxq_mm   Lyi_mm  Lyq_mm  Ex_mm Px_deg   Ey_mm Py_deg Pe_deg Meanx_mm Meany_mm
+data/k6_set_7_daq  0.3547 0.21245 -0.06522 0.14040 0.8269 30.920 0.30961 114.92  84.00  -0.7136  -0.1152
+data/k6_set_10_daq 0.2414 0.05449  0.01316 0.04129 0.4949 12.721 0.08667  72.32  59.60  -0.6671  -0.1085
+data/k6_set_13_daq 0.1852 0.01267  0.01753 0.01605 0.3713  3.913 0.04753  42.47  38.55  -0.6535  -0.1072
