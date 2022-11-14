@@ -4,7 +4,7 @@
 # Compute Lockin Phase and Magnitude from data table of "eigen_freq.m".
 #     Driven by a configuration file.
 #
-# usage:  lockin_phase < control_file
+# usage:  li_eigen_freq < control_file
 #     control_file = table of input files and attributes, with headings:
 #         InFile	# input data file name
 #         FreqR_Hz	# base frequency, the lockin reference

@@ -1,34 +1,97 @@
 #!/usr/bin/Rscript --vanilla
-# 2022-09-03  William A. Hudson
+# 2022-11-14  William A. Hudson
 
-# Compute Lockin Phase and Magnitude from data table.
-#     Hardwired parameters.
+# Compute Lockin Phase and Magnitude from a PSD data table.
 #
-# usage:  lockin_phase  inFile.tab ..
-#     inFile = input table file, or literal 'stdin'
-#
+# usage:  lockin_phase  [options]  inFile ..
+#     inFile = input data file, or literal 'stdin'
+#  options:
+#    --FreqR_Hz=f	measurement frequency
+#    --nBegin_cyc=N	cycle number to begin analysis
+#    --nEnd_cyc=N	cycle number to end   analysis
+
 # inFile:
 #     Table, no heading, with columns:  "Vsig", "Vsum", "Vx", "Vy"
 #     sampRate = 62500 sample/s
-#     length   = 125001 samples
+#     length   = any number of samples
 #
 #---------------------------------------------------------------------------
 
 # Data Parameters:
     sampRate <- 62500		# sample/s
-    FreqR_Hz <- 805		# base frequency, the lockin reference
-
-    rn     <- c(62501:125001)	# range to compute
-    rnText <- "[62501:125001]"
 
     Pi <- 3.1415926535;
 
-# Check arguments.
-    argv = commandArgs( trailingOnly=TRUE )
+show_usage <- function()
+{
+    cat(
+	"Lockin Phase and Magnitude from a PSD data table.",
+	"usage:  lockin_phase  [options]  inFile ..",
+	"    inFile = input data file, or literal 'stdin'",
+	" required:",
+	"   --FreqR_Hz=f803.0   measurement frequency",
+	"   --nBegin_cyc=800    cycle number to begin analysis",
+	"   --nEnd_cyc=1600     cycle number to end   analysis",
+	" options:",
+	"   --table             output in table format",
+	sep="\n"
+    );
+}
 
+# Option processing
     ok <- TRUE
 
-# Check files
+    op_verbose      <- TRUE
+    op_TESTMODE     <- FALSE
+    op_table        <- FALSE
+    FreqR_Hz        <- 803.0	# base frequency, the lockin reference
+    nBegin_cyc      <- 800
+    nEnd_cyc        <- 1600
+
+    argv <- commandArgs( trailingOnly=TRUE )
+
+    for ( ag in argv )
+    {
+	if ( ! grepl( "^-", ag ) ) { break }	# not an option
+
+	if ( "-" %in% ag ) { break }		# single "-" is an arg value
+
+	argv <- argv[-1]		# pop off the option
+
+	av <- sub( "^.+?=", "",  ag )	# value   part
+	ag <- sub( "=.+$",  "=", ag )	# --opt=  part, or the original
+
+	if      ( "-v"              %in% ag ) { op_verbose      <- TRUE }
+	else if ( "--table"         %in% ag ) { op_table        <- TRUE }
+	else if ( "--FreqR_Hz="     %in% ag ) { FreqR_Hz        <- av   }
+	else if ( "--nBegin_cyc="   %in% ag ) { nBegin_cyc      <- av   }
+	else if ( "--nEnd_cyc="     %in% ag ) { nEnd_cyc        <- av   }
+	else if ( "--"              %in% ag ) { break }     # end of options
+	else if ( "--help"          %in% ag ) { show_usage(); quit() }
+	else if ( "--TESTMODE"      %in% ag ) { op_TESTMODE     <- TRUE }
+	else {
+	    stop( "unknown option:  ", ag )
+	}
+    }
+
+    FreqR_Hz   <- as.numeric( FreqR_Hz   )
+    nBegin_cyc <- as.numeric( nBegin_cyc )
+    nEnd_cyc   <- as.numeric( nEnd_cyc   )
+
+    if ( !( nBegin_cyc < nEnd_cyc ) ) {
+	warning( "Error:  require nBegin_cyc < nEnd_cyc" )
+	ok <- FALSE
+    }
+
+    if ( op_TESTMODE ) {
+	cat( sep='', "op_verbose     =", op_verbose,     "=\n" )
+	cat( sep='', "FreqR_Hz       =", FreqR_Hz,       "=\n" )
+	cat( sep='', "nBegin_cyc     =", nBegin_cyc,     "=\n" )
+	cat( sep='', "nEnd_cyc       =", nEnd_cyc,       "=\n" )
+	print( argv )
+    }
+
+# Check input files
     for ( inFile in argv )
     {
 	if ( file.access( inFile, mode=4 ) ) {
@@ -39,36 +102,40 @@
 
     if ( ! ok ) { quit( status=1 ) }
 
-# Reference sine waves
+# Analysis range
+    tBegin_s  <- nBegin_cyc / FreqR_Hz	# begin analysis time
+    tEnd_s    <- nEnd_cyc   / FreqR_Hz	# end   analysis time
 
-    dt_s <- 1 / sampRate
-    Wr <- FreqR_Hz * 2 * Pi
+    dt_s      <- 1 / sampRate	# delta time step (second/sample)
+
+    kBegin    <- round( tBegin_s / dt_s )
+    kEnd      <- round( tEnd_s   / dt_s )
+
+    rn    <- c(kBegin:kEnd)	# range to compute
+
+# Output context
+    cat( sep='', "FreqR_Hz   = ", FreqR_Hz,   "\n" )
+    cat( sep='', "nBegin_cyc = ", nBegin_cyc, "\n" )
+    cat( sep='', "nEnd_cyc   = ", nEnd_cyc,   "\n" )
+    cat( sep='', "kBegin     = ", kBegin,     "\n" )
+    cat( sep='', "kEnd       = ", kEnd,       "\n" )
+    cat( sep='', "sampRate   = ", sampRate,   "\n" )
+    cat( sep='', "dt_s       = ", dt_s,       "\n" )
+    cat( "\n" )
+
+# Reference sine waves
+    Wr    <- FreqR_Hz * 2 * Pi
 
     WTvec <- Wr * dt_s * rn
 
     RIvec <- sin( WTvec )	# in-phase   reference
     RQvec <- cos( WTvec )	# quadrature reference
 
-# Output context
-    cat( sep='', "FreqR_Hz = ", FreqR_Hz, "\n" )
-    cat( sep='', "dt_s     = ", dt_s,     "\n" )
-    cat( sep='', "rnText   = ", rnText,   "\n" )
-    cat( "loop:\n" )
-
 # Compute results for each file
-
-    # open file for multiple plots, one per page
-#    pdf( "xxmulti.pdf" )
 
     for ( inFile in argv )
     {
-	cat( sep='',"inFile  =  ", inFile, "\n" )
-
-	fileB <- sub( "\\.txt$", "", inFile )
-#	cat( "fileB=   ", fileB, "\n" )
-
-#	outFile <- sub( "$", ".pdf", fileB )
-#	cat( "outFile= ", outFile, "\n" )
+	cat( sep='',"inFile     = ", inFile, "\n" )
 
     # Read in data table
 	df <- read.table( inFile, header=FALSE )
@@ -99,14 +166,14 @@
 	Py_rad <- atan2( Lyq_mm, Lyi_mm )
 	Py_deg <- Py_rad * 180 / Pi
 
-    # Compute ellipse phase #!! ??
+    # Compute ellipse phase, as in
+	    # x <- Ex * sin( u )
+	    # y <- Ey * sin( u + Pe )
 	PE_rad <- Py_rad - Px_rad
 	PE_deg <- PE_rad * 180 / Pi
 
     # Output results
-	if ( 0 ) {
-	    cat( sep='', "Meanx_mm = ", Meanx_mm, "\n" )
-	    cat( sep='', "Meany_mm = ", Meany_mm, "\n" )
+	if ( ! op_table ) {
 	    cat( sep='', "Lxi_mm  = ", Lxi_mm,   "\n" )
 	    cat( sep='', "Lxq_mm  = ", Lxq_mm,   "\n" )
 	    cat( sep='', "Lyi_mm  = ", Lyi_mm,   "\n" )
@@ -116,18 +183,10 @@
 	    cat( sep='', "Ey_mm   = ", Ey_mm,    "\n" )
 	    cat( sep='', "Py_deg  = ", Py_deg,   "\n" )
 	    cat( sep='', "PE_deg  = ", PE_deg,   "\n" )
-	    cat( "\n" )
-	}
-
-	if ( ! exists( "file_names" ) ) {
-	    file_names <- fileB
+	    cat( sep='', "Mnx_mm  = ", Meanx_mm, "\n" )
+	    cat( sep='', "Mny_mm  = ", Meany_mm, "\n" )
 	}
 	else {
-	    file_names <- c( file_names, fileB )
-	}
-
-	if ( ! is.data.frame( qf ) ) {
-
 	    qf <- data.frame(
 		Lxi_mm, Lxq_mm,
 		Lyi_mm, Lyq_mm,
@@ -136,44 +195,13 @@
 		PE_deg,
 		Meanx_mm, Meany_mm
 	    )
-	}
-	else {
-	    qf <- rbind( qf, c(
-		Lxi_mm, Lxq_mm,
-		Lyi_mm, Lyq_mm,
-		Ex_mm,  Px_deg,
-		Ey_mm,  Py_deg,
-		PE_deg,
-		Meanx_mm, Meany_mm
-		)
-	    )
+	    options( width=120 )
+		# line wrapping for printing output data frame
+	    print( qf, digits=5 )
+		# neatly formatted table, folded on wrapping width
 	}
 
-    # Plot
-#	pdf( outFile )
+	cat( "\n" )
 
-#	plot( df$Vx[rn], df$Vy[rn], pch='.',
-#	    xlim=c( -2.0,  0.5 ),
-#	    ylim=c(  0.0,  2.5 ),
-#	)
-	# limits set for experiment ex2022_08_09_eigen/
-
-#	title( main=paste( 'Ellipse 2D ', rnText, " - ", inFile ) )
-#	abline( v=Meanx_mm, h=Meanx_mm ) )
-#	abline( v=mean( df$Vx[rn] ), h=mean( df$Vy[rn] ) )
-
-    }
-
-    row.names( qf ) <- file_names
-
-    print( qf, digits=4 )
-    	# neatly formatted table, with multiple sections
-
-
-#    graphics.off()	# close all plots
-
-#    dev.list()
-#    plot.new()  Create or start a new plot.
-#        Completes plotting of the current plot (if there is one) and
-#        advances to a new graphics frame.
+    } # for inFile
 

@@ -28,8 +28,8 @@
     nMeasure_cyc  = 1000;	% measurement analysis number of cycles
     Twait_s       = 1.0;	% wait time between points
 
-    Tbegin_s      = nBegin_cyc   * FreqR_Hz;	% settling time
-    Tmeasure_s    = nMeasure_cyc * FreqR_Hz;	% measurement analysis time
+    Tbegin_s      = nBegin_cyc   / FreqR_Hz;	% settling time
+    Tmeasure_s    = nMeasure_cyc / FreqR_Hz;	% measurement analysis time
     DatasetTime_s = Tbegin_s + Tmeasure_s;	% total data set duration
 
     Pi = 3.1415926535;
