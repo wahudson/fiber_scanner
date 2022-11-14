@@ -1,0 +1,27 @@
+2022-11-09
+		Source Code -- niDAQ/src/
+		-------------------------
+
+Files:
+------
+README			this file
+
+config_li_eigen_freq.pl	Configure "eigen_freq.m" ouput file names for
+				"li_eigen_freq" input.
+
+ac_millimeter.m		AC Voltmeter measuring scanner response
+dc_voltmeter.m		DC Voltmeter for testing DAQ channels
+
+eigen_axis.m		Fiber scanner sweep eigen axis
+eigen_freq.m		Fiber scanner sweep eigen frequency
+
+li_eigen_freq		Lockin Phase and Magnitude from "eigen_freq.m" data
+
+lockin_f1.m		Fiber scanner DAQ with lockin calculation
+lockin_phase		Lockin Phase and Magnitude from data table
+one_lissajous.m		Simple pattern and data collection
+
+plot_ellipse		Plot XY ellipse from fiber scanner
+reformat_daq		Re-format DAQ data table to fixed-point numbers
+sweep.m			An early data set collection script
+
