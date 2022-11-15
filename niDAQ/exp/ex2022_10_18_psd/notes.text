@@ -158,12 +158,165 @@ Time t=0 is effectively different?  This would be significant.
 	RIvec = sin( wR * tVec_s(kB:kEnd) );	% in-phase   reference
 	RQvec = cos( wR * tVec_s(kB:kEnd) );	% quadrature reference
 
-Conclusion:
+Conclusion:  (2022-10-28)
     Not sure why they are different.
+    The analysis in ex2022_09_13_lockin/notes.text concludes they are the same.
 
     Need to re-develop the lockin calculation.
     Prove it is correct.  Indexing seems tricky.
     Perhaps always use full sampled vector indexes, and trim only at lockin.
     Align to full cycles of reference sine wave.
     Verify precision.
+
+----------------------------------------------------------------------------
+## Plot k6 dataset  (2022-11-13)
+----------------------------------------------------------------------------
+
+Purpose:  Plot the k6 data at one frequency and plot the extracted ellipses
+    from the two methods.  See which looks closer to the raw data.
+
+    Use  k6_set_7_daq.txt
+
+    FreqR_Hz= 803.500  -- is much closer to the peak response.
+
+Analyze with R:
+
+    df <- read.table( "k6_set_7_daq.txt", header=FALSE )
+
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    dim(df)
+    [1] 125001      4
+
+Inspect settling time:
+    plot( df$Vx, pch='.' )
+	Is most stable amplitude.
+
+    plot( df$Vy, pch='.' )
+	Amplitude has large overshoot, mostly recovered at 80000.
+
+    plot( df$Vsum, pch='.' )
+	Amplitude still drifting at i=60000, better at 80000.
+
+Inspect PSD voltage waveforms
+    rn <- c(62500:125000)       # one second
+    rn <- c(120000:120200)	# about 2.5 cycles
+
+    plot( df$Vsum[rn] )
+	Is a distorted sine wave, not saturated.
+    plot( df$Vx[rn] )
+	Distorted sine wave, especially flattened bottom peaks.
+    plot( df$Vy[rn] )
+	Looks pretty smooth sine wave
+
+Compute PSD position for X and Y measurements
+    Dx_mm <- 5 * df$Vx / df$Vsum
+    Dy_mm <- 5 * df$Vy / df$Vsum
+
+    plot( Dx_mm[rn] )
+    plot( Dy_mm[rn] )
+	Both look like pretty good sine waves.
+
+    plot( Dx_mm[rn], Dy_mm[rn] )
+	A pretty good ellipse, with successive points in alignment.
+
+    rn <- c(62500:125000)       # one second
+    plot( Dx_mm[rn], Dy_mm[rn], pch='.' )
+	See ellipse evolving as response amplitude drifts.
+
+    rn <- c(100000:125000)	# last 25000 points, 0.400 seconds
+    plot( Dx_mm[rn], Dy_mm[rn], pch='.' )
+	Much less change, ellipse looks somewhat distorted.
+
+Overlay lockin extracted ellipse
+    data/k6_LItable.txt:
+
+	FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm \
+	  803.50  0.33640  0.24040 -0.07634  0.13468 \
+
+	   Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm
+	  0.8269   35.551   0.3096  119.546   83.995  -0.7136  -0.1152
+
+Ellipse equations (see lissajous/doc/ellipse_theory.text)
+	(3)  x <- Ex * sin( u )
+	     y <- Ey * sin( u + Pd )
+
+    Pi    <- 3.1415926535
+    Ex_mm <- 0.8269
+    Ey_mm <- 0.3096
+    Pe_deg <- 83.995
+    Pe_rad <- Pe_deg * Pi / 180
+
+    uvec <- c(0:99) * (2 * Pi / 100)	# one cycle divided into 100 parts
+    ex <- Ex_mm * sin( uvec )
+    ey <- Ey_mm * sin( uvec + Pe_rad )
+
+    plot( ex, ey )
+	Nice ellipse
+
+Plot data set, overlay computed ellipse
+    plot( Dx_mm[rn], Dy_mm[rn], pch='.' )
+    points( ex, ey, col='red' )
+	Works, but they are not aligned.  The computed ellipse (ex, ey) has
+	origin at (0,0), while measured data is not.
+
+Align ellipse with data mean values:
+    MnDx_mm <- mean( Dx_mm[rn] )
+    MnDy_mm <- mean( Dy_mm[rn] )
+
+	MnDx_mm = -0.712828
+	MnDy_mm = -0.1147927
+		Fairly close to the k6_LItable.txt values (larger point set).
+
+    ex <- MnDx_mm + (Ex_mm * sin( uvec ) )
+    ey <- MnDy_mm + (Ey_mm * sin( uvec + Pe_rad ) )
+
+    plot( Dx_mm[rn], Dy_mm[rn], pch='.' )
+    points( ex, ey, col='red' )
+	They do not align, off by about 0.1 mm.  Size and shape is about
+	right, but ellipse axis does not match.
+
+    rn <- c(62500:125000)
+    points( Dx_mm[rn], Dy_mm[rn], pch='.' )
+	Even plotting with full 1 second of data, is still not aligned.
+
+Conclusion:  The ellipse parameters extracted in k6_LItable.txt do not
+    seem to fit the data.  Ellipse axis not aligned, and slightly rotated.
+
+Try the R extracted ellipse:
+
+	File		   Lxi_mm  Lxq_mm   Lyi_mm  Lyq_mm \
+	data/k6_set_7_daq  0.3547 0.21245 -0.06522 0.14040 \
+
+	     Ex_mm Px_deg   Ey_mm Py_deg Pe_deg Meanx_mm Meany_mm
+	    0.8269 30.920 0.30961 114.92  84.00  -0.7136  -0.1152
+
+    Ex_mm  <- 0.8269
+    Ey_mm  <- 0.3096
+    Pe_deg <- 83.995
+    Pe_rad <- Pe_deg * Pi / 180
+
+    Note these ellipse parameters are very similar to those above, but the
+    lockin values are not.  Did not run/plot these.
+
+Next:
+    Plot with equal axis.
+    Offset plots by the mean, so ellipses are centered.
+
+Why is the measured data ellipse not centered on the mean?  (2022-11-14)
+    The ellipse is traced many times, many sinusoids on each axis.
+    When taking the mean of a sinusoid, it matters what the time range is,
+    i.e. we want boundaries on the zero crossings in the same direction.
+    If not, then the sinusoidal peaks are not balanced, appearing as an
+    offset.
+
+    Thus we want the X and Y boundaries to be at their independent zero
+    crossings.
+
+    There are a lot more data points at the peaks/valleys of the sine wave,
+    so we want them to be balanced, i.e. same number of positive peaks as
+    negative peaks.
+
+    Possibly use Px_deg and Py_deg to align zero crossings for computing
+    the means.
 
