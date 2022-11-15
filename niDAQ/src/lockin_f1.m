@@ -20,13 +20,13 @@
 
 %% Parameters
 
-    PreFix = 'k3';		% output file set prefix
+    PreFix = 'k4';		% output file set prefix
 
-    Tbegin_s      = 1.0;	% settling time to begin analysis
-    DatasetTime_s = 2.0;	% total data set duration
+    OutAmp_V      = 0.20;	% output amplitude, sine wave voltage peak
+
+    nBegin_cyc    = 1000;	% settling number of cycles to begin analysis
+    nMeasure_cyc  = 1000;	% measurement analysis number of cycles
     Twait_s       = 5.0;	% wait time between points
-
-    OutAmp_V = 0.10;		% output amplitude, sine wave voltage peak
 
     Pi = 3.1415926535;
 
@@ -38,7 +38,7 @@
 
     pause( 'on' );		% enable process sleep
 
-%% DAQ configuration
+%% DAQ configuration - NI USB 6211
     % addoutput/addinput order is column order in data matrix
 
     % construct DataAcquisition object
@@ -56,12 +56,15 @@
     chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
     chInY   = addinput( dq, 'Dev1', 'ai4', 'Voltage' ); % PSD Y Pin Signal
 
-    chInX.Range = [-5,5];
-    chInY.Range = [-5,5];
-	%#!! what about other channels?
+    chInSig.Range = [-10,10];	%  0 V to 10 V  ThorLabs PDA36A2 at Hi-Z
+    chInSum.Range = [-5,5];	%  0 V to +4 V  ThorLabs PDP90A  PSD
+    chInX.Range   = [-5,5];
+    chInY.Range   = [-5,5];
+	% Range [-10,10] is the default.
+	% Note a single-ended range [0,10] is not accepted.
 
     % DAQ sample rate
-    dq.Rate   = 62500;		% set samples per second
+    dq.Rate  = 62500;		% set samples per second
     sampRate = dq.Rate;
 
 %% Sample time vector
@@ -69,30 +72,18 @@
     % sample interval from DAQ sample rate
     dt_s = 1 / sampRate;
 
-    nSamps = round( DatasetTime_s / dt_s );
-
-    % vector of time values
-    tVec_s = [0:nSamps] * dt_s;		% row vector (nSamps+1)
-
-    % index for stable portion of data trace
-    kB     = round( Tbegin_s / dt_s );	% index for begin stable
-    kEnd   = nSamps;			% last element to analyze
-
     % output status
     fprintf( 'PreFix        = %s\n',     PreFix   );
     fprintf( 'OutAmp_V      = %10.3f\n', OutAmp_V );
-    fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
-    fprintf( 'DatasetTime_s = %10.3f\n', DatasetTime_s );
+    fprintf( 'Twait_s       = %10.3f\n', Twait_s       );
+    fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s   );
-    fprintf( 'kB            = %10d\n',   kB   );
-    fprintf( 'kEnd          = %10d\n',   kEnd );
-    fprintf( 'nSamps        = %10d\n',   nSamps );
     fprintf( '\n' );
 
 %% Output Table heading
-    % oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
-    oTabFormat  = "%8.2f %8.5f %8.5f %8.5f %8.5f %8.4f %8.3f %8.4f %8.3f %8.3f %8.4f %8.4f\n";
-    oTabHeading = "FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm    Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm";
+    % oTabOrder:   j   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
+    oTabFormat  = "%4d %8.2f %8.5f %8.5f %8.5f %8.5f %8.4f %8.3f %8.4f %8.3f %8.3f %8.4f %8.4f\n";
+    oTabHeading = "jSet FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm    Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm";
     %                805.00 -0.24257  0.30519 -0.26231 -0.31579   0.7797  128.478   0.8210 -129.714 -258.192  -0.0971   0.3758
 
     fprintf(          "%s\n", oTabHeading );
@@ -101,7 +92,7 @@
 %% Sweep Frequency
     % resonance center is ~805 Hz
 
-    FreqCenter_Hz = 805;
+    FreqCenter_Hz = 803;
     FreqStep_Hz   = 0.5;
 
     SetNums     = [ 1:21 ];
@@ -114,13 +105,31 @@
     SaveSetNums(7) = 1;
 
     for jSetNum = SetNums	% foreach integer in range i.e. [-10:+10]
+	fprintf( '\n' );
 	fprintf( 'jSetNum       = %10d\n',   jSetNum );
 
 	FreqR_Hz = FreqCenter_Hz + (FreqStep_Hz * (jSetNum - 10));
 
-    % Single axis sine wave
-	fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz );
+	Tbegin_s      = nBegin_cyc   / FreqR_Hz;    % settling time
+	Tmeasure_s    = nMeasure_cyc / FreqR_Hz;    % measurement analysis time
+	DatasetTime_s = Tbegin_s + Tmeasure_s;      % total data set duration
 
+	nSamps = round( DatasetTime_s / dt_s );
+
+	% index for stable portion of data trace
+	kB     = round( Tbegin_s / dt_s );	% index for begin stable
+	kEnd   = nSamps;			% last element to analyze
+
+	fprintf( 'FreqR_Hz      = %10.3f\n', FreqR_Hz      );
+	fprintf( 'Tbegin_s      = %10.3f\n', Tbegin_s      );
+	fprintf( 'Tmeasure_s    = %10.3f\n', Tmeasure_s    );
+	fprintf( 'kB            = %10d\n',   kB   );
+	fprintf( 'kEnd          = %10d\n',   kEnd );
+
+	% vector of time values
+	tVec_s = [0:nSamps] * dt_s;	% row vector, (nSamps+1) elements
+
+    % Single axis sine wave
 	wR = 2 * Pi * FreqR_Hz;		% angular frequency
 
 	sineVecR = OutAmp_V * sin( wR * tVec_s );	% row vector
@@ -198,10 +207,10 @@
 	Pe_deg = Pe_rad * 180 / Pi;
 
     % output results
-	% oTabOrder:   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
+	% oTabOrder:   j   Freq  Lxi   Lxq   Lyi   Lyq   Ex    Px    Ey    Py    Pe    Mex   Mey
 
 	fprintf(          oTabFormat, ...
-	    FreqR_Hz, ...
+	    jSetNum, FreqR_Hz, ...
 	    Lxi_mm, Lxq_mm, ...
 	    Lyi_mm, Lyq_mm, ...
 	    Ex_mm,  Px_deg, ...
@@ -211,7 +220,7 @@
 	);
 
 	fprintf( oFileID, oTabFormat, ...
-	    FreqR_Hz, ...
+	    jSetNum, FreqR_Hz, ...
 	    Lxi_mm, Lxq_mm, ...
 	    Lyi_mm, Lyq_mm, ...
 	    Ex_mm,  Px_deg, ...
@@ -221,7 +230,7 @@
 	);
 
     % wait for fiber resonance to decay
-	fprintf( 'sleep(%3.1f)\n', Twait_s );
+	% fprintf( 'sleep(%3.1f)\n', Twait_s );
 	pause( Twait_s );
 
     end		% for loop
