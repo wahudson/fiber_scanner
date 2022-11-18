@@ -1,0 +1,49 @@
+2019-10-30
+		Scanner Concept - Plan
+		---------------
+
+----------------------------------------------------------------------------
+## Subsystem Breakdown
+----------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------
+## Concept Plan 2019-10-30
+----------------------------------------------------------------------------
+
+Objective:
+    Build a 1-dimension voice coil fiber scanner proof of concept.
+
+Products:
+    v1 - Paper design concepts.
+
+    v2 - Photo diode on optical fiber.  Explore illumination requirement.
+
+    v3 - Move fiber by hand.
+
+    v4 - add lens on slotted rail
+
+    v5 - add voice coil movement.
+
+    v6 - add power op-amp to drive voice coil.
+
+    v7 - add digitizer to photodiode.
+
+System Concept:
+
+    Fiber end is mounted on voice coil.
+    Fiber pigtail has ST connector.
+    Photodiode has ST connector.
+    TIA signal conditioner for photodiode.
+    T-slot rail for holding optical components.
+    Use a 10X loup lens to focus image on fiber tip (on voice coil).
+    Pendulum to hold object target.  Provides Y-displacement.
+    Digitizer to read photodiode.
+    DAC and power amplifier drive voice coil.
+    Raspberry Pi provides control for DAC and digitizer.
+
+----------------------------------------------------------------------------
+## What to do Next
+----------------------------------------------------------------------------
+

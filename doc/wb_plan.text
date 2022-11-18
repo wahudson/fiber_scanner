@@ -1,0 +1,110 @@
+2021-11-27  William A. Hudson
+
+		Work Breakdown Planning - Fiber Scanner
+		---------------------------------------
+
+For components of the system.
+Intended to be an evolving plan.  May be incomplete.
+
+----------------------------------------------------------------------------
+## Products
+----------------------------------------------------------------------------
+    key:
+	i  = initial ability created
+
+High Level Elements
+
+ i  RPi HQ Camera Characterization system ( camera/ )
+
+    Raster Scan pivoting beam prototype
+
+ i  LED Light Source  ( led_light/ )
+
+ i  Exciter driver circuits, constant current
+
+    Code for driving exciters with sync marks
+
+    ADC 1 MSPS Pulsar thru Pico to RPi
+
+    Photodetector and transimpedance amplifier
+
+    Lissajous pattern analysis theory
+
+    Simulated data stream for image reconstruction
+
+    Image reconstruction from time series
+
+ i  Measure Point Spread Function on HQ Camera
+
+    Photodetector scan of an illuminated test pattern
+
+    One-dimensional scan system - characterize resolution
+
+    Low-speed scan electronics - demonstration vehicle
+
+----------------------------------------------------------------------------
+## Raster Scan System
+----------------------------------------------------------------------------
+
+Bending Beam on Aluminum Angle
+
+	Mount a beam on Al Angle
+	    Cut initial experiment beams
+	    Cut Al angle, drill holes.
+	    Cut wood block standoffs, drill holes.
+	    Measure displacement with force.
+
+	Mount exciter on end of beam
+	    Modify beam.
+	    Glue exciter.
+	    Buy rubber cement.
+
+	Mount exciter on Al Angle
+	    Shims to adjust relative positions
+	    Modify Al Angle
+	    Explore Exciter connection to Beam
+
+	Measure displacement qualaties
+	    Setup on RPi HQ camera and 4x macroscope.
+	    DC current drivers for both exciters.
+	    AC frequency sweep, look for resonances.
+
+----------------------------------------------------------------------------
+## camera/  Camera Imaging System  (2022-02-04)
+----------------------------------------------------------------------------
+
+RPi HQ Camera to image fiber scan pattern.
+
+ v  Camera Hardware setup.
+ v  LED Fiber Light Source.
+    Process to capture images.
+ v  Software to extract scan pattern parameters.
+    DAC and software to drive exciter.
+ v  Current source circuit to drive exciter.
+
+Experiments:
+
+    Stationary spot profile.
+	Spot size measurement.
+	Spot intensity profile.
+	Airy disk, diffraction effects.
+
+    Exciter displacement range measurement.
+
+    Frequency sweep experiments.
+
+Next To Do:  (2022-02-04)
+    Measure spot intensity profile.
+
+    Refine pgm_box with threshold option.
+
+
+----------------------------------------------------------------------------
+## Next Steps
+----------------------------------------------------------------------------
+
+2022-02-11
+    pgm_box Add more edge methods for measuring FWHM point spread function.
+
+    Drive control code, dac_adc NC oscillator, smooth transitions.
+

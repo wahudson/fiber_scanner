@@ -1,0 +1,78 @@
+2021-11-22  William A. Hudson
+
+		Resolution of Lens, Measurement
+		-------------------------------
+
+    Essentially measure the Point Spread Function (PSF) at various lateral
+    and Z positions.
+
+----------------------------------------------------------------------------
+## Ideas on Lens Focus PSF
+----------------------------------------------------------------------------
+    
+    See also:  2021-11-18 Cameron's notes in
+    MRAGrant2018 > Aim1 Handheld Scanner > PSF/Fixing Laser Feedback Dropouts
+
+Setup:
+    Use optical fiber core (5 um) as a point light source.
+    Use the 2x magnification 4f-configuration lens of our scanner.
+    Measure PSF at the image formed by the lens.
+
+    For a 2x magnification lens, expect a 2.5 um spot size only if the lens
+    is truly diffraction limited.  Otherwise expect to see a much larger
+    minimum spot size.
+
+    Want position resolution of 1 um or less to assess PSF.
+    Cameron's stage has ~10 um resolution, which is not enough.
+    
+    Spherical aberration is the most likly large contributer, especially
+    for a 0.5 inch (12.5 mm) diameter lens with 15 mm focal length.
+
+    For Z PSF:
+    Use a mirror to reflect spot back (confocal microscope).
+    At best Z-position focus, the signal will be strongest.  As the mirror
+    moves out of the focal plane, signal drops because fewer rays return
+    to the pinhole that is the fiber tip.
+
+    For lateral PSF:
+    Scan a knife edge mirror across the beam at the image focal plane.  The
+    return signal (confocal microscope) transitions from none to full.
+    The derivative is the amount of light in each dx element, which is
+    the lateral PSF (sort of?  Integrated in the Y direction?).
+
+Brainstorm Ideas:
+
+    A) Get a higher resolution stage.
+
+    B) Put a differential micrometer on the stage.
+
+    C) High resolution stepper motor on the micrometer can achieve sub-miron
+	resolution.
+	See:  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3935852/
+	PLoS One 2014 Feb 26. doi: 10.1371/journal.pone.0088977
+
+    D) Add a 10:1 lever to scale motion.
+
+    E) CMOS image sensor with micron pixel pitch.
+	Raspberry Pi HQ camera has 1.5 um pixel pitch.
+
+    F) Voice coil actuator.
+	Use an exciter to move the target.
+
+    G) Interferometer to count fringes for target position.
+	Is a nice absolute measuremnt in increments of light wavelength.
+	An optics lab certainly has a laser, coverslip beam splitter and
+	two mirrors to make a Michelson interferometer.
+
+    H) Move the fiber tip to move the image - DC.
+	Use the abilities of our handheld scanner.
+	Good for lateral PSF, need something else for Z.
+	Use exciter as the fiber tip positioner.
+	Use high-voltage DC on piezo tube as the positioner.
+
+    I) Dynamic fiber tip motion.
+	Scan the image spot across a slot (two knife edges).
+	Measure velocity as time to cross the slot of known width.
+	Measure PSF from rise time.
+	This might be a good cross-check.
+

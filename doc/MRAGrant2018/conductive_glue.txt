@@ -1,0 +1,73 @@
+2019-08-07
+		Misc Materials
+
+----------------------------------------------------------------------------
+## Conductive Adhesive (Glue)
+----------------------------------------------------------------------------
+
+    Silver Conductive Pen, Acrylic lacquer, Silver filled
+	-- MG Chemicals
+	Resistivity:  0.0001 ohm-cm
+	Typical trace width:  0.9 mm
+	Surface resistance:  < 0.01 ohm/square, 1 coat at 0.9 mil
+	Full cure:  24 hr; touch dry 1 minute
+	Shelf life:  3 year
+	Adhesion good on most plastics, poor on glass and copper.
+	The traces are flexible, but works best on smooth, flat, hard surface.
+	The thermoplastic resin is dissolved by common paint solvents like
+	    toluene, xylene, acetone and MEK.
+	http://www.mgchemicals.com/downloads/tds/tds-842ar-p.pdf
+	$33.70  DigiKey   MG Chemicals 842AR-P, 5 ml pen
+
+    Nickel Conductive Pen, Acrylic lacquer, Nickel filled
+	-- MG Chemicals
+	Resistivity:  0.0068 ohm-cm
+	Surface resistance:  6.0 ohm/square, 1 coat at 0.29 mil
+			     4.2 ohm/square, 2 coat at 0.38 mil
+			     1.7 ohm/square, 3 coat at 0.52 mil
+		from graph, no table.  Note thickness much thinner than other
+		materials, possibly units are mm.
+	http://www.mgchemicals.com/downloads/tds/tds-841ar-p.pdf
+ >	$15.48  DigiKey   MG Chemicals 841AR-P, 5 ml pen
+
+    Carbon Conductive Pen, Acrylic lacquer, Carbon filled
+	-- MG Chemicals
+	Resistivity:  0.46 ohm-cm
+	Typical trace width:  1.0 mm
+	Surface resistance:  170 ohm/square, 1 coat at 0.9 mil
+			      60 ohm/square, 2 coat at 1.7 mil
+			      50 ohm/square, 3 coat at 2.3 mil
+	https://www.mgchemicals.com/downloads/tds/tds-838ar-p.pdf
+	$13.30  DigiKey   MG Chemicals 838AR-P, 5 ml pen
+
+----------------------------------------------------------------------------
+## Conductive Paint
+----------------------------------------------------------------------------
+
+    Conductive Paint 5g/5cc Syringe - Low Resistance
+	-- Chip Quick
+	Resistance:  1 ohm/square at 0.004 inch stencil thickness
+	Drying Time:  120 minutes, Mohms after 3 minutes
+	Shelf life:  > 12 months
+	Clean:  using water or isopropyl alcohol (IPA).
+	Silver/tin/copper based conductive paint.
+	$15.95  DigiKey             Chip Quick CP1-5S  5g syringe
+	$15.95  AdaFruit pid 3469,  Chip Quick CP1-5S  5g syringe
+
+    Bare Conductive Paint - water based
+	Resistivity:  55 ohm/square at 50 um thickness
+	Non-toxic, probably graphite.
+	Is hydroscopic.  Remove dried paint with water.
+	$12.50  AdaFruit pid 1306, 10 ml pen
+
+----------------------------------------------------------------------------
+## Conductive Elastomer
+----------------------------------------------------------------------------
+
+    Conductive Rubber Cord
+	2 mm dia
+	Resistance:  350 ohm/inch
+	Carbon black impregnated rubber.
+	Use to make a streatch sensor.
+	$9.95  AdaFruit  pid 519, 1 m long
+

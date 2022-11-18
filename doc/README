@@ -1,0 +1,26 @@
+2022-11-17
+		Fiber Scanner - General Documentation
+		-------------------------------------
+
+Initial Checkpoint (2022-11-17)
+total 224
+drwxrwxr-x 2 wah  4096 Aug  7  2019 MRAGrant2018
+-rw-rw-r-- 1 wah     0 Nov 17 21:04 README
+-r--r--r-- 1 wah 81343 Apr 15  2020 ava_bom_2020_04_08.pdf
+-rw-rw-r-- 1 wah 20264 Nov 17 09:29 components.text
+-rw-rw-r-- 1 wah  5558 Dec 10  2021 enclosure.text
+-rw-rw-r-- 1 wah  2293 Dec 21  2021 ideas.text
+-rw-rw-r-- 1 wah  6543 Nov 19  2021 lens.text
+-rw-rw-r-- 1 wah   792 Dec  7  2021 mount.text
+-rw-rw-r-- 1 wah  3128 Jan 25  2022 notes.text
+-rw-rw-r-- 1 wah  3395 Aug 14  2019 order_2019_08.text
+-rw-rw-r-- 1 wah  6169 Aug  5  2020 order_2020_08.text
+-rw-rw-r-- 1 wah  6460 Jun 25 11:23 photodetector.text
+-rw-rw-r-- 1 wah  4270 Aug  6  2019 piezo_mount.txt
+-rw-rw-r-- 1 wah  1461 Jan 25  2022 plan.text
+-rw-rw-r-- 1 wah  2276 Aug 29 22:17 position_sensor_psd.text
+-rw-rw-r-- 1 wah  1307 Mar  3  2022 raster_scan.text
+-rw-rw-r-- 1 wah 32185 Nov 17 19:24 reference.text
+-rw-rw-r-- 1 wah  2925 Nov 22  2021 resolution.text
+-rw-rw-r-- 1 wah  2973 Apr 18  2022 wb_plan.text
+

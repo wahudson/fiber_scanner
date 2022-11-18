@@ -1,0 +1,118 @@
+2019-08-05
+		Piezo Tube Mount - Design
+		-------------------------
+
+----------------------------------------------------------------------------
+## Concept
+----------------------------------------------------------------------------
+
+Disc Mount on Lens Tube:
+
+    Piezo Tube is glued end-wise onto the flat surface of a disc, which is
+    threaded into a 1 inch diameter lens tube.
+    The disc has an axial hole for the optical fiber to go thru, and thru
+    the piezo tube.
+    Electrical contact to the piezo tube electrodes is made with conductive
+    paint (glue) between the electrodes and lead wires.
+
+
+----------------------------------------------------------------------------
+## Electrical Lead Wire attach to Piezo Tube
+----------------------------------------------------------------------------
+
+    Use conductive glue to bridge gap between piezo tube electrode and the
+    electrical lead/terminal.
+    The conductive glue is placed at the very base of the piezo tube where
+    it is attached to the mounting disc.
+
+    Two methods.
+
+A)  Lead wire, stranded 26 AWG.
+
+    Wire is routed thru a hole in the disc parallel to the tube axis.
+    The bare strands are bent 90 degrees and laid flat along the surface
+    of the disc and along the arc of an electrode.
+    Conductive Paint then bridges the small gap between piezo tube electrode
+    and wire.
+
+B)  Header pin, 0.025 inch (0.64 mm) square.
+
+    A common header pin is mounted thru a hole in the disc parallel to the
+    tube axis.
+    Conductive Paint then bridges the gap between piezo tube electrode and
+    header pin.
+
+    The header pin could be bent 90 degrees onto the surface of the disc
+    and curved along the piezo tube electrode.
+
+    A solid 26 AWG wire could be soldered on the header pin, and curved
+    along the electrode.
+
+    A copper foil could extend the header pin toward the electrode.  But
+    this is exactly what the conductive glue is for - typically used to
+    repair PC board traces.
+
+    The bent header pin can be clamped in place with #4 sheet metal screw
+    overlapping the bent portion.
+
+    Glue header pin in place.  Will it hold well enough?  Probably.
+
+
+Comparison of features:
+    A) Lead wire
+	 + Leads come directly off the mount.
+	 + Pigtail leads are often handy.
+	 + Wire is easier to curve along the electrode.
+	 - Want pin connector on end of lead wire.
+	-- Need lead wire strain relief.  Seems harder.
+	 + Only need pull strain relief, no stress from pushing wire.
+	++ A 4-pin connector can mate all 4 leads at once.
+	 + Easier to get wire close to electrode.
+
+    B) Header pin
+	++ Leads are removeable, not permanently attached.
+	 + Connection is made directly on the mounting disc.
+	 - Pin could come loose from stress of mating connector to it.
+	 - Need Pin strain relief - glued or screwed.
+	 - Need push/pull strain relief.
+	-- Single-pin connectors (cannot get 4 header pins together). 
+	 - Harder to get pin close to electrode.
+
+    I like removable leads, makes device much easier to handle.
+    I like multi-pin connector, saves time making connection.
+    A short conductive glue path is mute with Silver glue (0.01 ohm/square).
+    Both methods seem pretty good.
+    I favor (A) Lead wire now 2019-08-05.
+
+
+Wire strain relief:
+    A) Glue wire insulation in hole.
+	- Glue may not hold very well on silicon insulation.
+	+ Long enough hole may give sufficient friction.
+
+ >  B) Tie knot in wire.  A nice stop-knot.
+	+ Simple.  Low frequency, inductance is not a concern.
+
+    C) Screw clamp on wire.  Clamp agaist disc.  Screw need not be insulated.
+
+ >  D) Wrap wire around screw.  Bare or insulated wire.
+	+ Simple.  Gives good clamping action.
+
+    E) Solder wire to post.  OR foil.
+	- Soldering defeats benefits of stranded wire in conductive glue.
+
+    F) Tapered wedge on wire in hole.
+
+
+----------------------------------------------------------------------------
+## Electrical Connectors
+----------------------------------------------------------------------------
+
+Lead wire connectors.
+    The circular connector and cable of the Piezo_AC_Driver unit is too
+    heavy and stiff.  Need something to interface with it.
+
+    Want a small, light connector for the lead wires or header pins comming
+    off the Piezo Tube mount.
+
+

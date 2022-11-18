@@ -1,0 +1,556 @@
+2020-04-15
+		Component Sources
+		-----------------
+
+----------------------------------------------------------------------------
+## Thorlabs
+----------------------------------------------------------------------------
+https://www.thorlabs.com/
+
+Lens tube adapters
+
+    External SM05 threads to internal SM1 threads
+	Very thin, 0.25 inch.
+	https://www.thorlabs.com/navigation.cfm?guide_id=2327
+	$21.86  Thorlabs  SM1A1
+
+    Flange to SM05 internal thread adapter
+	Square flange 1.00 inch
+	SM05 internal thread dia 0.535-40
+	Mounting holes for 4-40 cap screws, 0.70 inch centers, 4 corners.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=SM05F1
+	$19.91  Thorlabs  SM05F1  Flange to internal SM05
+	$20.35  Thorlabs  SM1F2   Flange to external SM1
+
+    Adjustable SM05 Lens Tubes
+	$30.13  SM05V05	 1/2 inch Adjustable Lens Tube, 0.3" Travel
+	$34.76  SM05V10	 1/2 inch Adjustable Lens Tube, 0.8" Travel
+
+    Lens ring spanner wrench
+
+SM1 Lens Tubes - 1 inch (1.035"-40)
+
+    SM1 Stackable
+	$12.52  Thorlabs  SM1L03  0.3 inch stackable
+	$14.68  Thorlabs  SM1L10  1   inch stackable
+	...
+	$27.84  Thorlabs  SM1L30  3   inch stackable
+	...
+	$47.28  Thorlabs  SM1L40  4   inch stackable
+
+    SM1 Internal thread only, 1.20 inch outside dia
+	$13.32  Thorlabs  SM1M05  0.5 inch internal only
+	...
+	$18.50  Thorlabs  SM1M30  3   inch internal only
+	$29.76  Thorlabs  SM1M35  3.5 inch internal only
+
+    SM1 Optic Retention Lip, Internal thread
+	$13.32  Thorlabs  SM1L05E 0.5 inch internal, Optic Retention Lip
+	$15.25  Thorlabs  SM1L10E 1   inch internal, Optic Retention Lip
+
+    SM1 External thread only
+	$13.32  Thorlabs  SM1S10  1   inch external only
+	...
+	$25.53  Thorlabs  SM1S35  3.5 inch external only
+
+    SM1 Adjustable, 0.5 inch long internal thread
+	Rated by length of external thread
+	$31.16  Thorlabs  SM1V05  0.5 inch adjustable (2.8 mm - 10.7 mm)
+	$34.51  Thorlabs  SM1V10  1.0 inch adjustable (2.8 mm - 23.4 mm)
+	$36.82  Thorlabs  SM1V15  1.5 inch adjustable (2.8 mm - 36.1 mm)
+
+    SM1 Coupler, external thread
+	$10.09  Thorlabs  SM1T3   0.25 inch coupler, no locking rings
+	$21.54  Thorlabs  SM1T2   0.5  inch coupler, 2 locking rings
+	$22.07  Thorlabs  SM1T10  1    inch coupler, 2 locking rings
+	...
+	$37.61  Thorlabs  SM1T40  4    inch coupler, 2 locking rings
+
+    SM1 Lens Tube Slip Rings
+	Clamp around lens tube, mounting post hole on bottom.
+	$25.10  Thorlabs  SM1RC  SM1 Slip Ring
+
+    SM1 Construction Cube
+	Internal threaded holes on 6 sides.
+	Only in SM1 or SM2 size.
+	$31.92  Thorlabs  SM1C6  SM1 threaded Cube
+	$47.88  Thorlabs  SM2C6  SM2 threaded Cube
+
+    SM1 Extension Tube
+	Stackable, only 1 inch of internal thread.
+	$48.70  Thorlabs  SM1E60  SM1 extension, 6 inch
+
+    SM1 Quick-Release Adapter
+	Release with 1/12 turn.  Locking set screw.
+	$56.27  Thorlabs  SM1QA   SM1 Quick-Release Adapter Set
+	$28.15  Thorlabs  SM1QAF  Quick-Release Adapter, Female half
+	$28.15  Thorlabs  SM1QAM  Quick-Release Adapter, Male half
+
+    SM1 Non-Rotating Lens Tube Couplers
+	A split clamp and centering ring hold flanged lens tube.
+	$84.85  Thorlabs  SM1CFF  Coupler Bundle, Internal/Internal
+
+SM2 Lens Tubes - 2 inch
+
+	$38.09  Thorlabs  SM2L30  3 inch stackable
+	$36.79  Thorlabs  SM2M35  3.5 inch internal only thread depth
+
+	$26.51  Thorlabs  SM2A6  Adapter SM2 external to SM1 internal, 5 mm
+
+
+Fiber Connectors
+
+    FC/APC to FC/APC Mating Sleeve (Bulkhead), Narrow Key (2.0 mm)
+	Narrow key for APC connectors (all Thorlabs are narrow key).
+	Wide key   for PC  connectors.
+	D-Hole:  M8 x 0.75 thread, body dia 11.0 mm, hex nut points 12.8 mm
+		Use 8.7 mm hole cutout, (Dflat 8.0 mm)
+		ADAFC1 looks like die cast zinc.  ADAFC4 looks machined.
+	Square Flange is two flanges screwed together, with a ceramic split
+		bushing.
+	https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=314
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=ADAFC4
+	$11.91  Thorlabs  ADAFC1, Wide key, D-Hole, 12.8 mm dia hex points
+	$10.61  Thorlabs  ADAFC2, Wide key, Square flange
+	$15.85  Thorlabs  ADAFC4, Narrow key, D-Hole, 12.8 mm dia hex nut
+	$23.05  Thorlabs  ADAFC3, Narrow key, Square flange  15.0 mm
+
+    FC/PC to ST/PC Mating Sleeve (Bulkhead), Wide Key
+	Flange panel mount.
+	$13.32  Thorlabs  ADAFCST1, Wide key, Square flange
+
+    FC/PC Fiber Connectors - Multimode, Ceramic Ferrule
+	Ceramic Ferrule bore diameters from 127 um to 500 um.
+	Stainless Ferrule bore diameters from 125 um to 1580 um.
+	Strain relief boot for 3 mm dia tubing.
+	Large bore to pass SM bare fiber with coating into our scanner.
+	Larger bore can pass 900 um diameter buffer.
+ >	$17.75  Thorlabs  30500C1,  500 um bore, ceramic
+ >	$10.83  Thorlabs  30500G3,  500 um bore, stainless
+	$13.58  Thorlabs  301050G3,     1050 um bore, stainless
+	$20.35  Thorlabs  30126G2-1580, 1580 um bore, stainless
+
+    Thorlabs Terminated Fiber Adapters - on lens tube adapters.
+
+    FC/PC Bulkhead Adapters
+	Thru hole 1.3 mm dia (0.05 inch)
+	Ferrule hole is 2.5 mm dia.  Connector bore is 6.1 mm ID.
+	Panel mount 3/8-24 external thread, with flush exit face.
+	FC connector M8 x 0.75 mm external thread.
+    	Also available mounted in lens tube plate.
+	HAFC is die cast zinc.
+	$18.83  Thorlabs  HAFC, wide key (2.2 mm), panel 3/8-24 thread
+	$31.38  Thorlabs  SM1FC, wide key (2.2 mm), SM1 external threads
+
+Fiber Ferrules
+
+    Ceramic Ferrules, 2.5 mm dia, 10.5 mm long, for FC/PC, SC, ST connectors
+ >	$21.10  Thorlabs  CF126-10  126 um bore, 10-pack
+	$22.84  Thorlabs  CF128-10  128 um bore, 10-pack
+
+    Ceramic Ferrules, 1.25 mm dia, 6.4 mm long, for LC/PC connectors
+	Also in 10.5 mm long.
+	$21.10  Thorlabs  CFLC126-10  126 um bore, 10-pack
+	$22.84  Thorlabs  CFLC128-10  128 um bore, 10-pack
+
+    Ferrule Mating Sleeves - split bushing for holding Ferrule
+	Phosphor bronze takes less force than ceramic on Stainless Ferrules.
+	Not much difference for ceramic Ferrules.
+	Can 3D print a holder that works pretty good.
+	$4.96  Thorlabs  ADAL1  1.25 mm  ceramic
+	$5.52  Thorlabs  ADAF1  2.5 mm   ceramic
+	$13.00 Thorlabs  ADAL4-5  1.25 mm  bronze, 5-pack
+	$11.00 Thorlabs  ADAF4-5  2.5 mm   bronze, 5-pack
+
+Fiber Patch Cable
+
+    Single Mode Patch Cable, 780 - 970 nm, FC/PC, 3 mm dia Jacket, 1 m Long 
+	Fiber specs:  780HP
+	Wavelength:  780 - 970 nm
+	Mode field dia:  5.0 +-0.5 um @ 850 nm
+	Cladding dia:  125 +-1  um
+	Coating dia:   245 +-15 um
+	Cutoff Wavelength:  730 +- 30 nm
+	NA:  0.13
+	This is the one we have on v1.0 scanner on bench.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=P1-780A-FC-1
+	$87.93  Thorlabs  P1-780A-FC-1
+
+Optical Fiber
+
+    Custom connector FC/PC ~$50, call ThorLabs.
+
+    Polarization-Maintaining Single Mode Optical Fiber
+	Cladding 125 um, Coating 245 um
+	Price per meter, bare fiber.
+	$21.64  Thorlabs  PM630-HP  620 - 850 nm Panda, 4.5 um MFD, 0.12 NA
+
+Fiber Optic Accessories
+
+    Fiber Optic Component Tray
+	Two circular reels for holding Fused Couplers.
+	Help prevent unwanted movement (e.g. effect cladding mode propagation).
+	Reel radius 1.19 inch (2.4 inch diameter).  Overall 5.8 x 3.5 inch.
+ >	$22.62  Thorlabs BFCT  Passive Component Fiber Tray
+
+    Fiber Optic Storage Reels - for operating patch cables.
+	$11.31  Thorlabs FSR1  for 900 um jacket cables, 1.25 inch bend radius
+	$16.97  Thorlabs FSR3  for 3 mm   jacket cables, 2.35 inch bend radius
+
+Apertures
+
+    Circular Precision Pinholes, Stainless Steel Foils
+	Pinhole sizes 1 um to 2 mm dia.
+	Foil thickness:  50 um
+	Mount diameters:  0.5 inch and 1 inch
+	Stainless Steel is least expensive.
+	$71.62  ThorLabs P1000K  1 mm
+
+    Lever-Actuated, SM-Threaded Iris Diaphragms
+	Attach to lens tubes.
+	$61.68  ThorLabs SM1D12,  SM1 0.8 to 12 mm dia
+
+Photodiode
+    See:  photodetector.text
+
+    Pigtailed Photodiodes
+	No Connector, 1 m pigtail.  Fiber has 900 um loose outer jacket.
+	All 3 seem to have the same photodiode ~550 to 950 nm half responsivity
+	Bandwidth and rise time equations.
+	Photodetector:  Silicon PIN
+	    Peak Responsivity:  0.58 A/W at 800 nm
+	    Active area:  0.8 mm diameter, 0.5 mm2
+	    Dark Current:  0.01 nA typ, 0.5 nA max
+	    Capacitance:  3 pF at 10 V reverse bias; ~5.5 pf at 0.1 V
+	    Rise Time:  0.7 ns typ at Vr= 12 V, Rl= 50 ohm
+	    Reverse bias:  20 V max
+	    Optical Input Power:  50 mW max
+	$145.00  ThorLabs FDSP625, 62.5 um MM fiber, 320 - 1000 nm
+	$155.83  ThorLabs FDSP660,    4 um SM fiber, 610 - 770 nm
+	$155.83  ThorLabs FDSP780,    5 um SM fiber, 780 - 970 nm
+
+    Si Photodiode TO-46 mounted in FC/PC Bulkhead
+	Peak Responsivity:  0.48 A/W
+	Active area:  0.25 mm diameter, 0.05 mm2
+	Dark Current:  35 pA typ, 500 pA max at Vr= 5 V
+	Capacitance:  0.94 pF at Vr= 5 V reverse bias
+	Rise Time:  47 ps typ at Rl= 50 ohm, Vr= 5 V, 850 nm
+	Reverse bias:  20 V max
+	Optical Input Power:  18 mW max
+	$83.59  ThorLabs FDS02, 0.24 mm dia, 400 - 1100 nm, TO-46
+
+    Si Photodiode TO-18
+	Active area:  1.21 mm2
+	Dark Current:  2 pA max at Vr = 10 mV
+	Capacitance:  140 pF at Vr= 0 V
+	Rise Time:  400 ns typ at Rl= 1 kohm, Vr= 0 V, 650 nm
+	$14.58  ThorLabs FD11A, 1.1 mm square, 320 - 1100 nm, TO-18
+
+    Si Photodiode TO-5
+	Looks like this might be in the PDA36A2 Si Switchable Gain Detector.
+	Active area:  13 mm2, 3.6 mm square
+	Dark Current:  1.0 nA typ, 20 nA max at Vr= 20 V
+	Capacitance:  24 pF at Vr= 20 V
+	Rise Time:  10 ns typ at Rl= 50 ohm, Vr= 20 V, 632 nm
+	$14.94  ThorLabs FDS100,  3.6 mm square, 350 - 1100 nm, TO-5
+
+----------------------------------------------------------------------------
+## Piezo Tubes
+----------------------------------------------------------------------------
+
+    PiezoDrive  TB2005 15um Range Piezo Tube Scanner
+	https://www.piezodrive.com/actuators/piezoelectric-tube-scanners/
+	$90.00  PiezoDrive  TB2005
+
+    TB2005
+	Length:  20.00 mm
+	Dia:  5.0 mm  (0.197 inch)
+	Thickness:  0.66 mm  ==> ID:  3.68 mm (0.151 inch)
+	Elect clearance:  1 mm
+	Max voltage:  264 V
+	Scan range:  15 um
+	Extension range:  4.2 um
+	Resonant Frequency:  6300 Hz
+	Quadrant capacitance:  6 nF
+
+----------------------------------------------------------------------------
+## Fiber Optic Cables
+----------------------------------------------------------------------------
+
+    FiberTronics PC-SS9S3YV02M Fiber Patch Cable
+	ST/UPC - ST/UPC G652D, SM, Simplex 3.0 mm, PVC, 2 m long
+
+    FiberTronics PC-HH9S3YV02M Fiber Patch Cable
+	FC/UPC - FC/UPC Simplex, SMF-9/125, Yellow 3 mm PVC, 2 m long
+
+----------------------------------------------------------------------------
+## Lateral Effect Position Sensitive Detectors
+----------------------------------------------------------------------------
+
+    Position Sensing Detector
+	ThorLabs PDP90A
+	https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4400&pn=PDP90A#4401
+	Manual
+	https://www.thorlabs.com/_sd.cfm?fileName=17149-D02.pdf&partNumber=PDP90A
+
+    Hamamatsu s2044
+	http://www-cdr.stanford.edu/madefast/catalogs/hamamatsu/psd-specs.html
+	$154  Hamamatsu s2044  4.7 mm2, pin-cushion type
+
+----------------------------------------------------------------------------
+## NI USB 6211 DAQ
+----------------------------------------------------------------------------
+    Small unit to go with hand-held scanner.
+
+NI USB 6211, Bus powered, M-series DAQ
+
+    16 Analog  In, 250 kS/s, 16-bit
+    2  Analog Out, 250 kS/s
+
+
+    USB-6211 Specifications
+	https://www.ni.com/pdf/manuals/375195d.pdf
+	14 pages
+
+    NI USB-621x User Manual
+	https://www.ni.com/pdf/manuals/371931f.pdf
+	204 pages
+	p. 37 Ch4  Analog Input
+	p. 60 Analog Input Config, signal grounds
+
+    USB-6211 Multifunction I/O Device - Overview of docs
+	https://www.ni.com/documentation/en/multifunction-io-device/latest/usb-6211/overview/
+	See:  Browse Documentation PDFs
+	Pinout
+	Block Diagram - Is almost useless!
+	Specifications
+
+Analog Input:
+    Use differential input for remote ground sense.
+    Recommend twisted shielded pair.
+
+    Sampled input.
+    Seems like input mux samples the inputs directly (they talk about
+	sample capacitor bleed-thru to following channel when source
+	impedance is high).
+    Seems like no anti-alias filter on inputs.
+
+    Sample rate 250 kS/s is shared across all active channels.
+
+NI has the crappiest website.
+
+----------------------------------------
+Linux:
+
+Is there a Linux driver for the NI DAQ USB-6211?
+    https://forums.ni.com/t5/Multifunction-DAQ/Is-there-a-Linux-driver-for-the-NI-DAQ-USB-6211/td-p/643528?profile.language=en
+
+USB-6210 with C/C++ in Linux
+    https://forums.ni.com/t5/Multifunction-DAQ/USB-6210-with-C-C-in-Linux/td-p/3547334?profile.language=en
+
+    There is also a DAQmx Linux driver called DAQmx Base:
+	NI-DAQmx Base 15.0 - National Instruments
+	http://www.ni.com/download/ni-daqmx-base-15.0/5644/en/
+    There are some limitation (see readme for that), but in general you can
+    follow most (Windows) tutorial for the C API.
+
+Downloading NI-DAQmx Base 15.0
+    Release date:  2015-09-25  363.73 MB
+    md5sum:  61b9f4688bf68520914fd639b7129358
+    Supported OS:  SUSE, Scientific Linux, RedHat, CentOS
+
+    -- Next Steps
+	Install the repository add-on using the rpm command with the -I flag.
+
+	Download the desired NI driver software through your Linux
+	distribution's package manager.  After the repository add-on has been
+	successfully configured, your Linux distribution's package manager can
+	download and install NI driver software.
+
+	Restart your system after the installation is complete.
+
+	Note:  This restart will cause the system to install the latest
+	revision of newly installed modules.  This process is automatic and
+	can take several minutes, depending on how much software was installed.
+	To ensure the process is complete before using your hardware,
+	NI recommends that you perform this step manually with the command
+	dkms autoinstall.  
+
+    % ll
+    -rw-rw-r-- 1 wah  wah  381401088 Jul 18 18:50  nidaqmxbase-15.0.0.iso
+    380 MByte
+
+    % file nidaqmxbase-15.0.0.iso
+    nidaqmxbase-15.0.0.iso: ISO 9660 CD-ROM filesystem data 'NIDAQmxBase1500'
+
+    Mount the ISO file
+    % mount -o ro  -o loop  /var/tmp/nidaqmxbase-15.0.0.iso  /var/tmp/nidaq
+
+    % ls -1F  /var/tmp/nidaq
+    INSTALL*
+    LICENSE.txt
+    PATENTS.txt
+    README.txt
+    UNINSTALL*
+    labview-2015-rte-15.0.0-2.i386.rpm*
+    labview-2015-rte-15.0.0-2.x86_64.rpm*
+    nidaqmxbase-board-support-15.0.0-f1.i386.rpm
+    nidaqmxbase-board-support-15.0.0-f1.x86_64.rpm
+    nidaqmxbase-cinterface-15.0.0-f1.i386.rpm
+    nidaqmxbase-cinterface-15.0.0-f1.x86_64.rpm
+    nidaqmxbase-common-15.0.0-f1.i386.rpm
+    nidaqmxbase-common-15.0.0-f1.x86_64.rpm
+    nidaqmxbase-labview2012-VIs-15.0.0-f1.i386.rpm
+    nidaqmxbase-labview2013-VIs-15.0.0-f1.i386.rpm
+    nidaqmxbase-labview2014-VIs-15.0.0-f1.i386.rpm
+    nidaqmxbase-labview2015-64bit-VIs-15.0.0-f1.x86_64.rpm
+    nidaqmxbase-labview2015-VIs-15.0.0-f1.i386.rpm
+    nidaqmxbase-usb-support-15.0.0-f1.i386.rpm
+    nidaqmxbase-usb-support-15.0.0-f1.x86_64.rpm
+    nivisa/
+	INSTALL*
+	LICENSE.txt
+	PATENTS.txt
+	README.txt
+	UNINSTALL*
+	nivisa-15.0.0f2.tar.gz
+	nivisa-runtime-15.0.0f2.tar.gz
+
+	These tar files have more rpm files.
+
+    README:
+	OPERATING SYSTEM SUPPORT
+	    openSUSE 13.1 and 13.2 (x86)
+	    Red Hat Enterprise Linux WS 6 and 7 (x86/x86_64)
+	    Scientific Linux 6.x (x86/x86_64)
+	    CentOS 7 (x86_64)
+	    Mac OS X v10.9.x (x86/x86_64) and v10.10.x (x86/x86_64)
+	Can run on others, but harder.
+
+    INSTALL:
+	# This is the installation script for NI-DAQmx Base for Linux.  It is
+	# strictly optional; advanced users may wish to simply install the RPM
+	# files themselves.
+
+    Is a bunch of rpm files.  (Use 'alien' on debian systems.)
+    Note two architectures.
+    Not all packages are needed for C programming.
+    The rpm files may include documentation.
+
+    Conclusion:  (2021-07-31)
+	Seems like a big can of worms, but it probably works.
+	I do not own a National Instruments device, so not very interested.
+	The NI docs always tend toward LabView.
+	Hardware-software interface is always complex, not well explained.
+	A thousand things must go right for a useful result.  Unlikely.
+	Huge complexity.
+	Even just running the DAQ with perfect software will be hard.
+	Not worth persuing.
+
+Google NI-VISA:
+    NI-VISA - Documentation & Help
+    https://documentation.help # NI-VISA # documentat...  PDF
+
+    Python wrapper for NI-VISA:
+	https://pyvisa.readthedocs.io/en/1.11.3/index.html
+	Virtual Instrument Software Architecture (VISA) specification was
+	defined in the middle of the 90ies.  For instrumentation systems
+	comprising GPIB, VXI, PXI, Serial, Ethernet, and/or USB interfaces.
+	Seems very well done and documented.
+
+    VISA may use standard libraries for USB.
+    I think VISA provides the drivers for instrument interface.
+
+----------------------------------------------------------------------------
+## NI DAQ  PCIe-6351  above Optical Bench
+----------------------------------------------------------------------------
+Card in back of HP Z230 workstation.
+
+    NI  PCIe-6351  is the DAQ card in workstation.
+    NI  BNC290A    is the BNC interface with a fat cable to the PCIe card.
+
+PCI Express Multifunction I/O Device
+    https://www.ni.com/en-us/support/model.pcie-6351.html
+    https://www.ni.com/pdf/manuals/374591d.pdf
+
+    Analog Input:  8 differential or 16 single-ended.
+	ADC resolution:  16 bits
+	Sample rate:
+	    Single channel maximum           1.25 MS/s
+	    Multichannel maximum (aggregate) 1.00 MS/s
+	    Scanned, divide across active channels?
+	Timing resolution:  10 ns
+	Input range:  +- {0.1, 0.2, 0.5, 1, 2, 5, 10} V
+	Settling time:  1 us to 2 us most conditions, 8 us max.
+		Slower for high input impedance.
+
+    Analog Output:  2 channels
+	DAC resolution:  16 bits
+	Maximum update rate:
+	    1 channel  2.86 MS/s
+	    2 channels 2.00 MS/s
+	Output range:  +-10 V, +-5 V
+	Output impedance:  0.2 ohm
+	Output current drive:  +-5 mA
+	Output FIFO size:  8,191 samples shared among channels used
+
+    Digital IO:  24 channels
+
+----------------------------------------------------------------------------
+## Laser
+----------------------------------------------------------------------------
+
+    ThorLabs LPS-785-FC  Laser Diode, SM Fiber-pigtailed, FC/PC
+	Wavelength:  775 nm min, 785 nm typ, 795 nm max
+	Optical output power (CW):  10 mW typ, 12 mW max
+	Threshold current:  25 mA typ, 50 mA max
+	Operating current:  50 mA typ, 90 mA max
+	Slope Efficiency:  0.2 mW/mA min, 0.4 mW/mA max
+	Absolute max power:  12 mW  damage level
+	Fiber:  780HP, 5.0 um Mode Field diamter @ 850 nm, 0.13 NA
+	Connector:  FC/PC, 2.0 mm Narrow Key
+	https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=1489
+	$498.97  ThorLabs  LPS-785-FC, 10 mW, SM Fiber pigtail
+
+    An unconnected FC/PC connector reflects about 4% of light in the fiber
+    due to the silica/air interface.
+
+----------------------------------------------------------------------------
+## Fiber Optic Coupler
+----------------------------------------------------------------------------
+
+    ThorLabs TN785R5F2 - 2x2 Narrowband Fiber Optic Coupler, 785 +-15 nm,
+	50:50 Split, FC/PC Connectors 
+	This is the first one used on piezo tube scanner.
+	Two ports on each side.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=TN785R5F2
+	$209.63  Thorlabs  TN785R5F2  Fiber Optic Coupler
+
+----------------------------------------------------------------------------
+## Polarized Light System - Nick BOM  2022-02-22
+----------------------------------------------------------------------------
+
+    PM Patch Cable, PANDA, 780 nm, 3 mm Jacket, FC/APC, 2 m
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=P3-780PM-FC-2
+	$210.74  ThorLabs  P3-780PM-FC-2
+
+    Quarter-Wave Plate, Multi-Order, SM1-Threaded Mount, 780 nm
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=WPMQ10M-780
+	$351.61  ThorLabs  WPMQ10M-780
+
+    Fused Fiber Polarization Combiner/Splitter, 780 +-15 nm, FC/APC
+	One port to two ports.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=PFC780A
+	$594.51  ThorLabs  PFC780A
+
+    PM Fiber-Pigtailed Laser Diode, 785 nm, 6.25 mW, FC/PC, A Pin Code
+	(request FC/APC)
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=LPS-PM785-FC
+	$931.7  ThorLabs  LPS-PM785-FC
+
+    L-Bracket Mating Sleeve, Narrow Precision Key (2.0 mm)
+	FC/PC to FC/PC or FC/APC to FC/APC
+	Nice connector bracket with cap.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=ADAFCPMB2
+    3	$74.60  ThorLabs  ADAFCPMB2
+

@@ -1,0 +1,160 @@
+2021-12-06  William A. Hudson
+
+		Electronic Enclosure Ideas
+		--------------------------
+
+Thinking about small circuit on a proto PCB breadboard.
+
+DIN Rail mounting:
+
+I like the DIN rail breadboards from Bud Industries
+
+ >  Breadboard, DIN rail, 3.42"L x 1.29"W
+        Bud Industries  DMB-4770-CB
+        Pad per hole, square.  Plated Thru Hole.  0.051" hole dia.
+        Main grid 11x19.  Two end grids of 4x7.
+        Has 4 mounting holes.
+        These look great.
+        See DigiKey picture, poor spec sheet.
+        http://www.budind.com/pdf/hb4770cb.pdf
+ >3     $1.30  DigiKey  Bud DMB-4769-CB,  5 wide, 3.42" L x 0.56" W
+ >3     $3.60  DigiKey  Bud DMB-4770-CB, 11 wide, 3.42" L x 1.29" W
+        $5.75  DigiKey  Bud DMB-4771-CB, 17 wide, 3.42" L x 1.97" W
+
+The PCB has mounting holes for four #4 screws.
+I like sheet metal screws into a 1/4 inch MDO board base plate, with
+1/4 inch standoffs.
+
+DIN rail is just the Top Hat or C-section mounting rail.  Use adapter
+plates to attach things.
+
+Perhaps Bud Industries has a DIN rail plate for their PCBs.
+
+Google:  din rail mounting bracket
+
+Hammond Manufacturing:   https://www.hammfg.com/
+    Has a huge selection of all kinds of enclosures.
+
+Optical Bench mounting:
+    Make one or two holes for #1/4-20 cap screw.
+    This is best for Fiber Scanner project.
+
+Open vs Enclosed:
+    The Open style is best for prototype development, much more flexible,
+    and quick access to circuit components.
+
+    The Enclosed style is good for more of a finished lab product.
+    Provide protection from accidents and dust.
+    Less flexible.  Must remove cover for circuit access.
+    Good when functionality is nailed down.
+
+    I favor Open for most of my work.  The open components can be re-mounted
+    in an enclosure later.  Or add a cover.
+
+----------------------------------------------------------------------------
+## Open Package Idea:
+----------------------------------------------------------------------------
+
+    PCB mounted on 1/4 inch MDO board with standtoffs sheet metal screws.
+    Aluminum Angle, 1 inch, to hold connectors.
+
+    Connectors on only one side, makes cabling easier.
+
+    Mounting hole for 1/4 inch cap screw to Optical Bench:
+    Holes for 1 inch grid of Optical Bench.
+    Only one hole may be enough.  MDO is strong enough.
+    Two holes prevents rotation.
+    Bolt on Aluminum Angle is best to restrain force from connectors.
+
+    PCB exposed:
+	+ Nice to see what is being operated.
+	- Some risk of damage to exposed PCB.
+
+Cover unit:
+    Simple box with open side to cover PCB and connectors.
+    Acrilic sheet, laser cut and fustion glued.
+    Clear sheet to see inside.
+    Screw thru cover box into base plate MDO.
+    May want easy removal cover somehow.
+    Screw in MDO lasts pretty well, but may strip out.
+    Threaded insert for repair, is longer lasting.
+    Counter sunk and glued nut on bottom side.
+
+    Possibly make a snap latch with springyness of cover box edges.
+    Maybe slots in cover box edges engage screw head in base plate.
+    Squeeze box edges to disengage.
+    Slide box so edge slot crawls over screw head.
+
+    Rotating half screw head engages slots in cover box edge.
+    Pan head screw - flat surface holds slot.
+    Flat head screw - sharp edge and taper engages slot.
+
+    Slots could be laser cut.
+    Slot could be a drilled hole, filed out a little.
+
+Cover screw location:
+    Sides have little extra space, since we typically want narrow units
+    to have more of them side-by-side.
+    Connector end is fairly busy, and has Aluminum angle.
+    Back end can have extra space.
+
+    Sides could have screw on inside of cover.  Not so good for squeeze to
+    release.  OK for slide release.
+
+    Front of cover could have a hook engagement.  Then only need one retaining
+    screw on the back to keep it engaged.  Release back screw by rotation,
+    then lift cover off.
+    Clear acrylic helps people see restraint catches.
+
+----------------------------------------------------------------------------
+## Enclosed Box Ideas
+----------------------------------------------------------------------------
+
+This is the classic enclosure strategy.
+
+    Plastic boxes of ABS are very rugged and easy to carve holes.
+
+    Aluminum boxes provide electrical shielding, but harder to carve.
+
+    PCB could mount on standoffs directly to the box.
+    Flathead screws to secure standoff to box.
+    Glue standoff to the box.
+	ABS might not glue that well?
+	Maybe some good fusion glue for ABS.
+
+    PDB could mount on 1/4 inch MDO, which is glued into the box.
+    Gives much more surface for glue.
+    MDO could be screwed with flat head wood screws.
+    Flat head screws on bottom of box to be flush outside.
+
+    Box body would hold connectors and PCB.
+    Lid could be on top or on bottom.
+
+    Box makes rugged enclosure.  Like a finished instrument.
+
+    Box not easy to rig/hack alternate connections.
+
+Box types:
+
+    Box with one side lid, screw on.
+	Aluminum or Plastic.
+	Looks pretty clean, rugged.
+
+    Aluminum extrusion with end plates.
+	Often has extruded slots for PCB.
+	ThorLabs has some nice ones.
+	Connectors on end plates.
+	PCB slides out with the connector end plate.
+	Harder to have connectors on both end plates.
+	Some have a removeable side plate, slides out.
+	Looks very sharp and rugged.  More expensive.
+
+    Aluminum U-sections.
+	One U-section is the base with connectors on ends.
+	Other U-sectin is the lid.
+	Folded sheet metal, usually.
+	Gives good access to PCB and internals.
+	Cover joints not so clean looking.
+
+
+

@@ -1,0 +1,85 @@
+2022-08-12  William A. Hudson
+
+		Position Sensing Detector (PSD)
+		-------------------------------
+
+----------------------------------------------------------------------------
+## ThorLabs PDP90A - 2D Lateral Effect Position Sensor, 320 to 1100 nm
+----------------------------------------------------------------------------
+
+ThorLabs PDP90A
+https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4400&pn=PDP90A#4401
+
+Manual
+    https://www.thorlabs.com/_sd.cfm?fileName=17149-D02.pdf&partNumber=PDP90A
+
+
+    Is a tetra lateral sensor, with one resistive layer on top of a large area
+    photodiode.
+    When a spot of light lands on the sensor, photocurrent is generated in
+    that area of the photodiode which then flows thru the resistive layer
+    to the electrodes attached at the edges.
+    Linearity decreases as the spot moves away from the center.
+
+
+	.         ^ +Y
+	.         |
+	.         |
+        .         A
+	.      -------
+	.    |         |
+	.    |         |
+	.  D |    +    | B   ----> +X
+	.    |         |
+	.    |         |
+	.      -------
+	.         C
+
+
+    The PSD output voltages are:
+
+	Vx   = (A + D) - (B + C)
+	Vy   = (A + B) - (C + D)
+	Vsum = (A + B + C + D)
+
+	where A,B,C,D are the transimpedance voltages of the currents collected
+	at each electrode.  The electrodes do not touch in the corners.
+	(Note the ThorLabs diagram only hints at the mechanism.)
+
+    The beam position from center of sensor is then calculated as
+
+	X = (Lx * Vx) / (2 * Vsum)
+	Y = (Ly * Vy) / (2 * Vsum)
+
+	where Lx = Ly = 10 mm  (for the PDP90A) are the effective electrode
+	edge lengths.
+
+Specs:
+    Output voltage range:
+	Vx, Vy:  -4 V to +4 V
+	Vsum:     0 V to +4 V
+
+    Bandwidth:  15 kHz
+
+    Transimpedance Gain:  100 kV/A
+	(e.g. 1 V is 10 uA)
+
+    Photocurrent:  40 uA max  (==> 4.0 V output)
+
+    Spot size:  0.2 mm to 7 mm diameter - recommended
+
+    Voltage noise:  2 mVpp max, 300 uVrms,  over 15 kHz
+
+    Best resolution:  0.75 um  at Vsum= 4.0 V
+		(==> Vx= 0.6 mV)
+
+Notes:  (my thoughts)
+    Assumptions are the spot is fully enclosed in the active area.
+
+    The measurement gives the centroid of the beam, which is the beam center
+    if it is symmetric.
+
+    If the beam is clipped on one edge as it moves, then the beam position
+    will be be distorted.
+
+

@@ -1,0 +1,25 @@
+2021-12-07
+		Fiber Exciter Mount
+		-------------------
+
+Design ideas for mounting the excitation device and attaching to a Lens Tube.
+Excitation device can be Piezo Tube, or Voice Coil Exciter.
+
+----------------------------------------------------------------------------
+## Lens Tube connection
+----------------------------------------------------------------------------
+
+Make a "standard" for our interface to a lens tube.
+    Allow interchangeble lenses and excitation modules.
+
+    Fiber tip position.
+
+Lens retaining rings:
+    Use to locate excitation unit within a lens tube.
+    Allows easy Z adjustment.
+    Can easily hold a piezo tube.
+    A small voice coil exciter can fit in a SM1 lens tube.
+
+Flange Adapter:
+    I was stuck thinking of using the Flange adapter to lens tube.
+

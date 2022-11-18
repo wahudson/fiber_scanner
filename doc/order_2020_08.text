@@ -1,0 +1,171 @@
+2020-08-03  William A. Hudson
+
+			Fiber Termination Tools
+			-----------------------
+
+Our patch cable:  ThorLabs  P1-780A-FC-5
+    Cladding dia:  125 +-1  um
+    Coating dia:   245 +-15 um
+    Coating thickness:  60 +-8  um  (derived)  0.0024 inch
+    Jacket dia:  3 mm, Yellow PVC
+
+Terminology for fiber cable layers:
+    Jacket:  the outer protective tube, typ PVC 3 mm dia
+    Kevlar:  very fine fibers for tensile strength.
+    Buffer:  Thick plastic layer, typ 900 um dia
+    Coating:  A thin, clear, rubbery protective coating, typ 250 um dia
+    Cladding:  Outer glass layer, refracts light back into the Core, typ
+		    125 um dia.
+    Core:  The innermost glass layer carrying the light, single-mode
+		    typ 5 um or 9 um.
+
+Experiment Stripping Fiber  2020-08-04
+--------------------------
+
+    I experimented stripping fiber: 
+	FiberTronics PC-HH9S3YV02M - SMF 9/125, Yellow 3 mm PVC, 2 m long.
+	Connectors:  FC/UPC to FC/UPC, Simplex
+	Single mode fiber, 9 um Core, 125 um Cladding.
+	Jacket:  3 mm dia
+	Buffer:  900 um dia, or somewhat less
+
+    I used a Wire Stripper the same as:
+	ThorLabs AFS900 Adjustable V-jaw stripper.
+	https://www.thorlabs.com/thorproduct.cfm?partnumber=AFS900
+
+Conclusions:
+
+    The V-jaw stripper was capable of stripping all 3 layers - Jacket,
+    Buffer, and Coating.
+
+    Jacket:  Stripping is not too critical, Kevlar fibers give protection,
+	and there is plenty of space to the Buffer layer.
+
+    Buffer:  The V-jaw stripper tends to sharply bend the fiber as it cuts
+	thru the Buffer, which is most annoying.  Apparently no harm to glass
+	fiber.  The Micro Strip tool would be most helpful here.
+
+    Coating:  Is easily removed with V-jaw stripper, but is right against
+	the glass Cladding.  May want a better tool to avoid nicks or
+	scratches.  Although glass is harder than steel, and is not likely
+	to be scratched by steel.
+
+    Both Buffer and Coating can be removed in one step.
+    I don't think we have a need to leave just the Coating on the fiber.
+
+
+Fiber Buffer Stripping Tool
+---------------------------
+
+Good stripping techniques for your fiber optic cable assembly process
+    https://focenter.com/good-stripping-techniques-for-your-fiber-optic-cable-assembly-process/
+
+http://micro-strip.com/		Micro Electronics, Inc.
+    http://micro-strip.com/stripping-procedures.html
+    http://micro-strip.com/pdf-documents.html
+    These look like the best fiber strippers.
+
+  Complete Tool:
+
+    Cladding dia (preserved)		Proper blade dia	Complete Tool
+    ----------------------------	--------------------	-------------
+    125-135 um  .0049-.0053 inch	0.0063 inch (160 um)	MS1-06S-xx-FS
+    125-175 um  .0049-.0068 inch	0.008  inch (203 um)	MS1-08S-xx-FS
+    235-280 um  .0092-.0110 inch	0.012  inch (305 um)	MS1-12S-xx-FS
+
+    Add Fiber guide to accomodate fiber coating or buffer:              ^^
+
+    Coating dia (removed)	Cat No		xx in Complete Tool
+    -----------			---------	------
+    250-343 um			MS1-RT-13	xx= 13
+    343-407 um			MS1-RT-16	xx= 16
+    889-1016 um			MS1-RT-40	xx= 40
+
+    The stripper tool combines the cutter blade and fiber guide as
+    independent components.
+
+  My understanding is:
+
+    There are two Cladding diameter ranges.  The difference is the actual
+    blade diameter.  Probably want it to cut close to the Cladding diameter,
+    but not touch it.  A thinner coating needs to be cut closer to the
+    Cladding diameter, so the uncut coating is thin compared to the total
+    coating thickness.  Thus we want the smaller blade diameter 0.0063 inch
+    (160 um).
+
+    The fiber guide must be larger than the Coating diameter in order for
+    the un-stripped fiber to fit through.
+
+    We can strip the Buffer and Coating together in one step, or strip
+    each separately.
+
+    ThorLabs T06S13  appears to be  Micro Strip MS1-06S-13-FS
+	Cladding 125-135 um, remove Coating 250-343 um dia
+
+    ThorLabs T08S40  appears to be  Micro Strip MS1-08S-40-FS
+	Cladding 125-175 um, remove Buffer 889-1016 um dia
+
+  Thus order:
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=1388#318
+	Click on "Stripping Tool Selection Guide  More[+]"
+	These include BFG1 the rubber Bare Fiber Gripper.
+    $76.57  ThorLabs T06S13  Cladding 125-135 um, Coating 250-343 um
+ >  $76.57  ThorLabs T08S40  Cladding 125-175 um, Buffer  889-1016 um
+
+    https://www.specialized.net/fiber-optic/fiber-tools/fiber-optic-strippers/buffer-cladding.html
+    $37.95  Specialized Products - Micro-Strip MS1-06S-13FS
+    $50.95  Specialized Products - Micro-Strip MS1-08S-40-FS
+
+    $5.52  ThorLabs BFG1 - rubber Bare Fiber Gripper
+		(Is included in ThorLabs T08S40 strippers)
+
+
+Jonard Fiber Optic Stripper, Three Hole, JIC-375
+    https://jonard.com/fiber-optic-tools-fiber-optic-stripping?v=233
+	Has good photos of stripping fiber.
+
+    Three holes to strip:
+	1)  1.6 - 3.0 mm Jacket, leaving the Buffer
+	2)  600 - 900 um Buffer, leaving the Coating
+	3)  250 um Coating, leaving the 125 um Glass fiber (Cladding)
+
+    This would be good for stripping Jacket and Buffer.
+    It can strip the Coating, but Micro Strip might be better for that.
+
+    The Micro Strip MS1 stripper above can strip the Buffer, and leave the
+    Coating, but with different blades and fiber guide.  It is not large
+    enough to strip a 3 mm Jacket, but the Micro Strip MS2 tool is.
+
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=1388#318
+ >  $32.47 ThorLabs FTS4 Three-Hole Stripping Tool for Fiber Buffers and Jackets
+		5-8 days
+    $28.49 DigiKey K618-ND, Jonard JIC-375 
+		In stock
+
+
+Fiber Scribe
+------------
+
+https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_ID=2284&pn=S90R
+    Has a Cleaving Guide
+
+ >  $56.00 ThorLabs S90R  Ruby DualScribe  Fiber Optic Scribe
+
+
+HV Connector
+------------
+
+Conxall/Switchcraft  Micro-CON-X  Connector, Circular, 6-position solder cup
+	http://www.switchcraft.com/Documents/NPB_C708_Micro_con_x_2_7.pdf
+
+ >4	$9.68  DigiKey  SC1413-ND,  17982-6PG-300  Receptacal, pins
+
+ >2	$15.67 DigiKey  SC1430-ND,  16982-6SG-522  Plug, sockets, 0.23 in cable
+
+
+Note:  '>' marks my recommendations.
+
+DigiKey:
+    Cart:  Scanner HV Connectors
+    https://www.digikey.com/short/z5rvmv
+

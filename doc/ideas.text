@@ -1,0 +1,65 @@
+2019-09-21
+		Ideas for a Confocal Fiber Scanning Microscope
+		----------------------------------------------
+
+----------------------------------------------------------------------------
+## Principle Ideas  2021-12-21
+----------------------------------------------------------------------------
+
+----------------------------------------------------------------------------
+## Early Ideas  2019-09-21
+----------------------------------------------------------------------------
+
+Rotating square prism
+    Provides parallel displacement of the beam.
+    How does the prism affect the focal plane?
+
+Rotating polygon mirror and f-theta lens.
+    The mirror sweeps the beam thru an angle, focal plane is cynindrical.
+    The f-theta lens corrects for a flat focal plane.
+
+Searching Google:
+
+Making a DIY text laser projector
+    Uses a rotating mirror scanner from a laser printer.
+    https://habr.com/en/post/438618/
+
+TinyProjector Lab Notebook
+    Multiple lasers on a rotating mirror.
+    Lots of prototype versions.
+    http://alumni.media.mit.edu/~stefanm/TinyProjector/TinyProjector_labnotebook_prototypes.html
+
+SensLite MEMs mirror
+    Mirrorcle Technologies, Inc.
+    Taiwan and Richmond, CA
+    Electrostatic drive, 0 to 200V.
+    About $500 on Ebay.
+    https://senslite.com.tw/Home/mems-mirrors/1d-mirror/
+
+----------------------------------------------------------------------------
+## Idea Log
+----------------------------------------------------------------------------
+
+2021-12-21
+
+Bending Rod driving Fiber Cantilever:
+    Small displacements of a bending rod drive a fiber cantilever.
+    Mount two exciters (as exciters) at 90 degrees on a fiberglass rod.
+
+Resonant Rod moving fiber tip:
+    Large displacements of a bending rod positions fiber tip.
+    Mount two exciters (as exciters) at 90 degrees on a fiberglass rod.
+    Resonance of the rod amplifies exciter displacement.
+
+Rod with off-axis exiter:
+    Exciter induces torsion in the rod, creating XY cross-coupling in rod
+    motion.  Application to either direct or resonant.
+
+Fiberglass rods/tubes:
+    Used to mark edge of sidewalk for snow plow - Ace Hardware.
+    Kite spars - small diameter rods and tubes.
+    Into The Wind - Boulder
+	Fiberglass rods:  1/16 inch to 1/4 inch
+	Carbon tubing:  0.125 to 0.254 inch
+
+

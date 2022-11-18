@@ -1,0 +1,37 @@
+2021-12-07  William A. Hudson
+
+		Raster Scan Methods
+		-------------------
+
+Primary principle:
+    Exciter mounted on end of a hinged beam moves in Y-axis.
+    Another exciter pivots the beam in the X-axis.
+    Voice coil exciters provide displacement drive.
+
+    Beam length is long (100 mm) compared to X-displacement (2 mm), making
+    a fairly flat object plane.
+
+Variations on Y-axis:  (exciter on end of hinged beam)
+
+    A) Resonant displacement of a fiber cantilever.
+	Good for high frequency resonant scan.
+	DC displacement possible, but no resonant amplification.
+	Curved (cantilever radius) cylinder object plane in Y.
+	Flat (large cylinder) object plane in X.
+
+    B) Direct displacement of fiber tip, no cantilever.
+	Good for DC positioning fiber tip anywhere in field of view.
+	Cannot do high frequency scan.
+	Might achieve 30 Hz, limited by force of acceleration.
+	Flat object plane in Y.
+	Flat (large cylinder) object plane in X.
+
+Low-speed Scan system:  (2022-03-03)
+
+    Use as an initial demonstration system.
+    Simplify electronics and RPi interface.
+    Direct drive scanner, perhaps at 10 Hz or less.
+    Think like an AFM scan (minutes per frame).
+    Image scan, needs less photodiode bandwidth (i.e. 5 kHz).
+    Planar fiber tip motion, constant NA getting light into the fiber.
+

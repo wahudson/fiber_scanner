@@ -1,0 +1,655 @@
+2020-10-30
+		References - Fiber Scanner System
+		---------------------------------
+
+See also:  components.text
+
+----------------------------------------------------------------------------
+## Instruments:
+----------------------------------------------------------------------------
+
+1951 USAF resolution test chart
+    https://en.wikipedia.org/wiki/1951_USAF_resolution_test_chart
+
+NI USB 6211, Bus powered, M-series DAQ
+    Specifications (14 p.)
+	https://www.ni.com/pdf/manuals/375195d.pdf
+    NI USB-621x User Manual, Bus-Powered M Series USB Devices (204 p.)
+	https://www.ni.com/pdf/manuals/371931f.pdf
+    USB-6211 Pinout
+	https://www.ni.com/documentation/en/multifunction-io-device/latest/usb-6211/pinout/
+
+Position Sensing Detector
+    ThorLabs PDP90A
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4400&pn=PDP90A#4401
+    Manual
+    https://www.thorlabs.com/_sd.cfm?fileName=17149-D02.pdf&partNumber=PDP90A
+
+Photodetector
+    ThorLabs PDA36A2
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=3257&pn=PDA36A2#10781
+    Manual
+    https://www.thorlabs.com/_sd.cfm?fileName=TTN135069-D02.pdf&partNumber=PDA36A2
+
+----------------------------------------------------------------------------
+## Magnetic Actuators:
+----------------------------------------------------------------------------
+
+Magnetic Innovations
+    Linear voice coil actutors, moving magnet
+    https://www.magneticinnovations.com/direct-drive-electric-motors/moving-magnet-actuator/
+
+Cedrat Technologies (France)
+    https://www.cedrat-technologies.com/en/technologies/actuators/magnetic-actuators-motors.html
+    Interesting technologies
+
+----------------------------------------------------------------------------
+## Ava BOM:  2020-04-15
+----------------------------------------------------------------------------
+Part Name        Part Number    Link
+
+Laser Driver     CLP1010LP      https://www.thorlabs.com/thorproduct.cfm?partnumber=CLD1010LP
+
+Laser Diode (737nm) LPS-785-FC  https://www.thorlabs.com/thorproduct.cfm?partnumber=LPS-785-FC
+
+Rack-Mount BNC			http://www.ni.com/pdf/manuals/372101a.pdf 
+    Connector Accessory for E/M Series DAQ Devices
+
+NI DAQmx         ni PCIe-6351   https://www.ni.com/en-us/support/model.pcie-6351.html
+                          http://www.ni.com/pdf/manuals/370784k.pdf
+
+Fiber Splitter   TN785R5F2      https://www.thorlabs.com/thorproduct.cfm?partnumber=TN785R5F2
+
+Piezo Driver     NA             https://github.com/wahudson/piezo_ac_drive
+
+DC Power supply  Connector data
+
+Photodetectors   PDA36A2        https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=3257&pn=PDA36A2#10781
+
+Piezotube        TB2005         https://www.piezodrive.com/product/tb2005-15um-range-piezo-tube-scanner/
+             Length: 20mm and Diameter; 5mm
+
+Position Sensing Detector  PDP90A  https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4400&pn=PDP90A#4401
+
+Fiber Coupler    ADAFCB3        https://www.thorlabs.com/thorproduct.cfm?partnumber=ADAFCB3
+
+V-clamp Mount    KM100V         https://www.thorlabs.com/thorproduct.cfm?partnumber=KM100V
+Lens mounts      LMR05          https://www.thorlabs.com/thorproduct.cfm?partnumber=LMR05
+Lense (15mm)     LA1540 - N-BK7 https://www.thorlabs.com/thorproduct.cfm?partnumber=LA1540
+Lense (100mm)    LA1207 - N-BK7 https://www.thorlabs.com/thorproduct.cfm?partnumber=LA1207
+
+Fiberoptic cables     P1-780A-FC-1   https://www.thorlabs.com/thorproduct.cfm?partnumber=P1-780A-FC-1
+
+----------------------------------------------------------------------------
+## System Connections
+----------------------------------------------------------------------------
+
+NI USB 6211, Bus powered, M-series DAQ
+    Specifications (14 p.)
+	https://www.ni.com/pdf/manuals/375195d.pdf
+    NI USB-621x User Manual, Bus-Powered M Series USB Devices (204 p.)
+	https://www.ni.com/pdf/manuals/371931f.pdf
+
+Chassis, Earth and Signal Grounding: Terminology and Symbols
+    https://www.ni.com/en-us/support/documentation/supplemental/18/chassis--earth-and-signal-grounding--terminology-and-symbols.html
+
+What is difference between AI GND, AO GND, D GND, COM and AI SENSE?
+    https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000wxQJCAY&l=en-US
+    Good diagram of chassis ground connections.
+
+    AiGnd, AoGnd, DGnd are all connected internally at a single point.
+    DGnd = Digital ground, is noisy.
+
+    AiSense = Analog input sense, is a common reference, but NOT connected to
+    any ground.
+
+    USB-6211 seems to have analog ground connected to earth ground thru the
+    USB cable to the PC.  Equivalent USB-6215 is isolated, 60 V channel to
+    Earth ground isolation.
+    Thus want all other signal grounds isolated from Earth Ground.
+
+----------------------------------------------------------------------------
+## Tutorials
+----------------------------------------------------------------------------
+
+ThorLabs Photonics Lab Instructional Videos
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=14062
+    Cleave a Large-Diameter Silica Fiber Using a Hand-Held Scribe
+
+ThorLabs Technical Resources / Insights / Device Behavior Insights
+    https://www.thorlabs.com/navigation.cfm?guide_id=2570
+    Collimated Light's Non-Zero Beam Divergence
+    Beam Spots (Waists) in White Light Output by a Collimating Lens
+    Modified Thin-Lens Equation for Laser Light
+
+ThorLabs Technical Resources / Insights / Device Function Insights
+    https://www.thorlabs.com/navigation.cfm?guide_id=2569
+    Condenser NA and Image Resolution
+    C- and CS-Mount Lens Characteristics and Compatability
+    Fiber NA (Numerical Aperture) and Multimode Fiber Acceptance Angle
+    Mode Field Diameter (MFD), Coupling into Single Mode Fibers
+    Numerical Aperture is not a Good Parameter for Single Mode Fibers
+
+Mode Field Diameter (MFD) Matters When Coupling into Single Mode Fibers
+    Technical Resources / Insights / Device Function Insights /
+	Mode Field Diameter (MFD) 
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=14203
+    For maximum coupling efficiency into single mode fibers, the light should
+    be an on-axis Gaussian beam with its waist located at the fiber's end face,
+    and the waist diameter should equal the MFD.  Same as the beam output
+    of a fiber.
+
+Numerical Aperture (NA)
+    https://www.rp-photonics.com/numerical_aperture.html
+    NA of a lens is the n*sin(Th), where angle Th is determined by the
+    extreme rays to the object plane, which is determined by the designer.
+    And n= index of refraction of medium between lens and object.
+    For our fiber scanner, the extreme ray is the fiber light cone, so the
+    objective NA is the same (?).
+    Focusing collimated laser beams to small spots:  Typically beam radius
+    is around half the lens aperture radius.
+    Microscope resolution smallest object diameter is ~(Lambda / (2 * NA)),
+    assuming no aberrations.  High NA gives small depth of field.
+    Fiber NA.  Laser beam NA.
+    ****
+
+Fiber Optics: Understanding the Basics
+    https://www.photonics.com/Articles/Fiber_Optics_Understanding_the_Basics/a25151
+    Cladding usually is same material as core, but with 1% lower index of
+    refraction.  No mention of cladding mode.
+    Modes, Attenuation, Dispersion, Fiber types.
+    ***
+
+Kinematic Design
+    https://www.precisionballs.com/tech_papers.php
+    Lots of papers on kinematic design with balls (spheres).
+
+Google:  flexure hinge;  compliant joint
+
+Introduction to Polarized Light
+    https://www.microscopyu.com/techniques/polarized-light/introduction-to-polarized-light
+    Nikon Microscopy
+    Birefringence (the property of double refraction), e.g Calcite crystal.
+    Light reflected from the flat surface of a dielectric material is often
+    partially polarized, with the electric vectors of the reflected light
+    vibrating in a plane that is parallel to the surface of the material.
+    Brewster angle - angle at which the reflected light waves are all
+    polarized into a single plane.
+    Elliptically and Circularly Polarized Light.
+    Pockels cell - polarizes light when an electric field is applied, and
+    can be switched in the nano second range.
+    ****
+
+Polarization - Feynman Lectures
+    https://www.feynmanlectures.caltech.edu/I_33.html
+    **** Well written.
+
+----------------------------------------------------------------------------
+## Fitting Ellipses
+----------------------------------------------------------------------------
+
+Least-Squares Fitting of Circles and Ellipses - EMIS
+    https://www.emis.de -> Bulletin -> sup962 -> gander  PDF
+    Walter Gander, et.al.
+    This paper appeared in similar form in BIT 34(1994), 558-578.
+    Theory, possible solutions, lots of equations.
+    Seems focused on using a few tens of points.
+
+Elliptical Regression -- Fit an Ellipse to Data Points
+    http://www.nlreg.com/ellipse.htm
+    Nice example.
+    NLREG is commercial non-linear regression software.
+
+Fitting an Ellipse to a Set of Data Points
+    Nicky van Foreest, 2020-09-22
+    https://github.com/ndvanforeest/fit_ellipse
+    https://github.com/ndvanforeest/fit_ellipse/blob/master/fitEllipse.pdf
+    Mathmatical approach to Python code.  Nice discussion.
+
+Center of Mass
+    https://en.wikipedia.org/wiki/Center_of_mass
+    A system of particles.  Simple sum equations of weighted coordinates.
+    A Centroid is a simple unweighted mean of all coordinate points. 
+
+----------------------------------------------------------------------------
+## Wikipedia
+----------------------------------------------------------------------------
+
+Point spread function (PSF)
+    https://en.wikipedia.org/wiki/Point_spread_function
+
+Airy disk
+    https://en.wikipedia.org/wiki/Airy_disk
+
+Angular resolution, Rayleigh criterion
+    https://en.wikipedia.org/wiki/Angular_resolution
+
+Image resolution
+    https://en.wikipedia.org/wiki/Image_resolution
+
+----------------------------------------------------------------------------
+## Papers
+----------------------------------------------------------------------------
+
+High-speed Lissajous-scan atomic force microscopy: Scan pattern planning
+    and control design issues
+    Rev. Sci. Instrum. 83, 063701 (2012); https://doi.org/10.1063/1.4725525
+    Published Online: 04 June 2012
+    https://aip.scitation.org/doi/pdf/10.1063/1.4725525
+    Good explanation of dense Lissajous figure ellipses and repeate time.
+    One of the more useful analysis.  IMC (Internal Model Control) loop.
+    ***** Good Lissajous ellipse visualization.
+
+Surface modifications with Lissajous trajectories using atomic force microscopy
+    Wei Cai and Nan Yao
+    http://dx.doi.org/10.1063/1.4931087
+    Applied Physics Letters 107, 113102 (2015)
+    Also use half a Lissajous pattern.
+    *** 4 pages
+
+Unwarped Lissajous Scanning With Polarization Maintaining Fibers
+    IEEE Photonics Technology Letters, vol. 29, no. 19, pp. 1623-1626,
+    Oct 1, 2017, doi: 10.1109/LPT.2017.2738615
+    Ramin Khayatzadeh, Onur Ferhano#lu, and Fehmi Civitci
+    https://ieeexplore-ieee-org.ezproxy2.library.colostate.edu/abstract/document/8007214
+    PM fibers have two stress rods on opposite sides of core channel.
+    Frequency modes separated by ~28 Hz, about 6* FWHM of resonance.
+    Helps avoid XY mode coupling.
+    They use a disc piezo actuator.
+    Single Mode Fiber (SMF) showed a 2 Hz difference in X and Y resonance.
+    Conjecture SMF resonance difference due to uneven epoxy on fiber.
+    Time to complete one pass of Lissajous is confused.
+    [Wide frequency seperation requires multi-pass Lissajous for high res.]
+    No images were aquired.  Only low res Lissajous was shown.
+    ***** Resonant frequency plots of PM fiber
+
+Increased illumination uniformity and reduced photodamage offered by the
+    Lissajous scanning in fiber-optic two-photon endomicroscopy
+    Wenxuan Liang, et.al.
+    Journal of Biomedical Optics 17(2), 021108 (February 2012)
+    Comparison of Spiral and Lissajous scan.
+    Intensity averaged over small area comparison:
+    Spiral center is about 4.3 orders of magnitude above the edge.
+    Lissajous corners are about 2.4 orders of magnitude above center.
+    Thus Lissajous is about an 80-fold improvement.
+    Experimental comparison showing intensity induced cell death.
+    No real explanation of Lissajous patterns.
+    **
+
+Development of tunable miniature piezoelectric-based scanners validated by
+    the combination of two scanners in a direct image relay technique
+    Adam Harbi Shadfan, et.al.  (2016)
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5450973/
+    Focus on fabrication of piezo fiber scanner using poly methyl methacrylate
+    (PMMA) plastic machined by diamond optical lathe.
+    Interference friction fit of fiber in PMMA and PMMA in piezo tube, allows
+    tuning adjustment and disassembly to replace fiber.
+    Two identical synchronous PZT scanners on each end of the fiber optic
+    relay the scanned image onto a CCD camera.  Thus no need to interpret
+    the scanning pattern.
+    Fiber holder uses the fiber Coating to provide friction.  [Possibly
+    use the Fiber Buffer as the adjustable holder?]
+    Thorlabs 780HP fiber with a 5.0 +-0.5 um mode field diameter, a
+    125 +-1.5 um cladding diameter, a 245 +-0.5 um coating diameter, and a
+    numerical aperture of 0.13 at 780 to 970 nm.
+    Piezo tube ID is about 1.5 mm from photograph scale.
+    Able to drill holes spanning 100 um to 400 um diameter!!  10 um increments.
+    EBL #2 PZT tubes OD 1.98 mm, ID 0.2921 mm (Piezoelectric Precision,
+    East Hartford, Connecticut)
+  > Resonant frequency equation F proportional to (1 / Length^2), references.
+    Results of resonant frequency vs fiber length for each axis:
+	20 mm .. 7 mm gave 175 Hz .. 1310 Hz.  Ellipses from crosss coupling?
+	20 mm 175 Hz, 15 mm 327 Hz, 10 mm 620 Hz, 9 mm 920 Hz.
+	Adding epoxy to secure fiber resulted in a line instead of ellipse.
+	[Ellipse axis at 45 deg and 135 deg suggest something else is going on.
+	Possibly driving both X and Y at same frequency?  Perhaps piezo driver
+	or camera is rotated w.r.t. each other.]
+    Resonance FWHM was +-30 Hz.
+    Fuzzy discussion of Q-factor and difference in X and Y resonant frequency.
+    *****
+
+Relationship Between Rise Time and Bandwidth for a Low-Pass System
+    ThorLabs Lab Facts
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=9817
+    Good explanations.
+    Frequency response, Bandwidth, Rise Time
+    *****
+
+Two-dimensional scanning realized by an asymmetry fiber cantilever driven by
+    single piezo bender actuator for optical coherence tomography
+    Tong Wu, Zhihua Ding, Kai Wang, Minghui Chen, and Chuan Wang 
+    Optics Express Vol. 17, Issue 16, pp. 13819-13829 (2009)
+    https://doi.org/10.1364/OE.17.013819 
+    Single-axis piezo driving an asymmetric fiber structure to achieve two-
+    dimensional field of view.  Two different resonant frequencies are applied
+    on the single axis, which then cross-couple to the X and Y axis.
+    Asymmetry is by two parallel fibers of different lengths, on opposite sides
+    of the piezo bender, and coupled by a cross-bar fiber.
+    Position Sensitive Detector sensing fiber position from reflection off the
+    dichroic coating on the GRIN lens (Fig. 7).
+    A 3-port fiber circulator provided the laser source and photodetector.
+    A separate aiming light source is applied thru a separate fiber coupler.
+    Resonant frequencies were 236 Hz and 383 Hz.  Lissajous patterns are
+    poorly explained (not data from their device).
+    Obtained ~20 um resolution.
+
+    This supports my idea of using a single-axis driver and utilize the
+    cross-coupling to make a two-dimensional scan.  My idea was to choose
+    a frequency that makes an open ellipse, and then scan the amplitude of
+    the ellipse.  Single-axis drive is easy for magnetic drivers.
+
+    The driving force is applied at an angle (i.e. 45 degrees) to both axis,
+    and can be decomposed into orthogonal forces in each axis.  This is the
+    basis of a single driver appling both resonant frequencies simultaneously
+    and each axis responds only to its own resonant frequency.
+    *****
+
+Design rules for dense and rapid Lissajous scanning
+    Junya Wang, Gaofei Zhang and Zheng You
+    Microsystems & Nanoengineering (2020)
+    https://www.nature.com/articles/s41378-020-00211-4.pdf 
+    Found by Cameron in OneNote "New Lissajous Scanning" 2021-06-14.
+    Using micro-MEMS, applied to LIDAR.
+    They seem to get lost in the initial phase relationship with Eq 3
+	cos( NxPy - NyPx ) = ...
+    And conclude 8 turning points.  Define
+	k = (4 / Pi) * ( NxPy - NyPx )
+	Something is wrong here, because initial phases Px, Py can be zero
+	and have a perfectly fine pattern.  They assume k must be integral.
+    Basicly looking at small Nx, Ny to decide parameters.
+    Trying to make exact Lissajous repetition, which is not necessary.
+    Attempt to compute spacing between scan lines in center of pattern.
+    They are using a very coarse scan for a high frame rate.  Nx=11, Ny=10.
+    My fundamental analysis is better.
+
+Moving Magnet Voice Coil Actuators Offer Controllable Movement for
+    High-Duty-Cycle Applications
+    Tech Briefs (Feb 2014)
+    https://www.techbriefs.com/component/content/article/tb/supplements/mcat/features/articles/19070
+    Very good brief overview.  Nice cross-section view.
+
+The Design of Moving Magnet Actuators for Large-range Flexure-based
+	Nanopositioning
+    David B. Hiemstra, Thesis, 2014, University of Michigan, 317 pages
+    https://psdl.engin.umich.edu # pdf
+    Moving Magnet Actuator (MMA) architecture and design.
+    Coreless has no ferromagnetic core, and no off-axis attraction.
+    Detailed survey of actuator methods and principles.  Fabrication.
+    *****  Very well done.  Wow!
+
+Dynamics and Control of Flexure-based Large Range Nanopositioning Systems
+    Gaurav K. Parmar, PhD dissertation, 2014, University of Michigan, 165 pages
+    Related to David B. Hiemstra above.
+    **** Control system.
+
+Optimal PSF Estimation for Simple Optical System Using a Wide-Band Sensor
+	Based on PSF (Point Spread Function) Measurement
+    Sensors 2018, 18, 3552; doi:10.3390/s18103552
+    https://www.mdpi.com # pdf
+    p.4  PSF Measurement and Optical System Calibration
+    Simple setup to measure PSF with a pinhole light source, lens, and
+    camera sensor.  Measured and simulated PSF images.  Result images.
+    **** Simple measurement setup.  Complex analysis using CODE V.
+
+Measuring a Point Spread Function
+    iBiology video/transcript, 16 minutes, Nico Stuurman.
+    https://www.ibiology.org/talks/measuring-a-point-spread-function/
+    Using 100 nm green florescent beads, in a 100,000:1 dilution on a
+    coverslip.  Shows slide preparation and PSF observation on a microscope.
+    Step thru Z and see the Airy disk pattern form on either side of best focus.
+    Collect a Z stack, and view cross-section (side view) of images, showing
+    the typical X-shaped pattern.
+    Microscope has 63x 1.4 NA oil objective, looks very expensive.  A good
+    Airy disk has the diffraction rings.
+    ***** Very well done.
+
+Measurement of point-spread function (PSF) for confocal fluorescence microscopy
+    InCheon Song, et.al
+    Article in Proceedings of SPIE - The International Society for Optical
+    Engineering, August 2005
+    DOI: 10.1117/12.616701
+    https://www.researchgate.net/publication/252337494
+    Using a stage-scanned confocal fluorescent microscopy with fluorescent
+    microspheres 0.17 um, 0.5 um, and 1 um diameter.
+    ** Theory and measurement, with nice images.
+
+How to Measure MTF and other Properties of Lenses
+    Optikos Corporation, 1999, 64 pages
+    https://www.optikos.com # uploads # 2013/11
+    Modulation Transfer Function (MTF) is a direct measure of image quality.
+    Glossery of terms.  Some insights and pictures, phase reversal.
+    Method:  Scan focal point of lens with a knife edge, slit, or pinhole.
+    Camera image method.  Concepts and image results.  Not really "how to".
+    *** Old, but gives another perspective.
+
+Optical transfer function
+    http://sciencewise.info/resource/line_spread_function/Line_spread_function_by_Wikipedia
+    Line- and Edge-spread function, simple computation.
+    OTF (Optical Transfer Function) is Fourier transform of PSF.
+    MTF (Modulation Transfer Function) is magnitude of complex OTF.
+    Visualization of PSF and MTF of wide-field and confocal microscope.
+    **** Good
+
+Measuring and interpreting point spread functions to determine confocal
+    microscope resolution and ensure quality control (2011)
+    http://www.microscopist.co.uk > uploads > 2017/04
+    Nature Protocols, November 2011; doi:10.1038/nprot.2011.407
+    https://www.nature.com/articles/nprot.2011.407
+    Detail proceedure for confocal microscope measuring PSF on microshperes.
+    Similar to the iBiology video above, but much more detailed.
+    Diffraction, the Airy pattern and the PSF.  Simple resolution formula
+    (Lateral resolution) = (0.51 * Lexc) / NA, Lexc= excitation wavelength
+    of laser, NA= numerical aperture of objective lens.
+    Fig. 4 Shows effects of data clipping, zero pixels, and saturation.  Adjust
+    to see both top and bottom tails of PSF.
+    ***** Practical, Images
+
+Spherical Aberrations
+    https://www.rp-photonics.com/spherical_aberrations.html
+    Example of ball lens.
+    Spherical Aberrations from Plane Plates in convergent light, sin() vs tan().
+    Quantification - plot focal point deviation vs transverse offset.
+    Reducing Spherical Aberrations - For collimating, use a plano-convex lens,
+    which is close to an optimal asymmetric lens.
+    For symmetric refocusing, use two plano-convex.
+    ****
+
+Aberrations - Edmund Optics
+    https://www.edmundoptics.com/knowledge-center/application-notes/imaging/how-aberrations-affect-machine-vision-lenses/
+
+Visualization of spherical aberration using an optically levitated droplet as
+    a light source 
+    Optics Express (2020)  https://doi.org/10.1364/OE.402759 
+    https://www.osapublishing.org/abstract.cfm?uri=oe-28-21-30410
+    Uses a laser levitated droplet, which scatters light mostly from top and
+    bottom, thus acting as twin light sources 30 um appart creating a
+    diffraction pattern in the orthogonal axis (90 degrees) far field.
+    Distortions in the pattern relate to aberrations in lens under test.
+    Qualative results.
+
+On Bokeh - Jakub Trávník's resources
+    https://jtra.cz/stuff/essays/bokeh/index.html
+    Spherical aberration, evaluate effects on bokeh,
+
+Spherical Lens Selection Guide
+    https://www.newport.com/g/spherical-lens-selection-guide
+    Good overview of lens shapes and reducing spherical aberration; coatings.
+    To focus a collimated beam:  At > f/10 the lens shape is not that
+    critical to spot size.  At f/2, an achromatic doublet provides the
+    smallest focused spot while the other lens shapes will not be diffraction
+    limited.
+    ****
+
+Openstage:  A Low-Cost Motorized Microscope Stage with Sub-Micron Positioning
+    Accuracy
+    Robert A. A. Campbell, Robert W. Eifert, and Glenn C. Turner
+    PLoS One 2014 Feb 26. doi: 10.1371/journal.pone.0088977
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3935852/
+    Essentially add stepper motor control to a ThorLabs PT1 micrometer stage.
+    High resolution obtained by very small angle rotation of micrometer.
+    Standard micrometer (40 threads/inch) gives 635 um per full turn, and
+    high resolution micrometers can provide 250 um per revolution.
+    Micro-stepping 400 step/rev steppers gives the fine resolution.
+    Have measured resolution and repeatability.
+    **** Lots of detail on 3-axis stage design.
+
+Single-step-fabricated disordered metasurfaces for enhanced light extraction
+    from LEDs
+    https://www.nature.com/articles/s41377-021-00621-7
+    Mao, P., Liu, C., Li, X. et al.  Light Sci Appl 10, 180 (2021).
+    https://doi.org/10.1038/s41377-021-00621-7
+    Inspired by firefly light emission biological surface.  See Fig. 1 SEM
+    micrographs of firefly and corresponding inspired meta-surface.
+    Extract light lost to total internal reflection.  External Quantum
+    Efficiency increased from 31.6% to 51.5%.
+    *** Cool concept, great picture.
+
+Laser Systems for Confocal Microscopy - Olympus
+    https://www.olympus-lifescience.com/zh/microscope-resource/primer/techniques/confocal/confocallaserintro/
+    Single-mode fiber has output irradiance profile that is Gaussian.
+    Multi-mode has a top-hat profile (flat top).
+    ** Broad general discussion.
+
+Multimode Fiber Tutorial - ThorLabs
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=10417
+    Fiber NA definition, measurement.
+    Number of Modes - equations, SM and MM fiber example.
+    Cladding Modes - are more susceptable to bending loss and connector loss.
+	Mandrel wrap to remove cladding modes.
+	Typically are lower intensity, but can get much higer than in core.  
+    Launch Conditions - Underfilled and Overfilled.
+ >  A 200 um core fiber shows a spot size that is much larger 1200 to 2000 um.
+    ***** Good explanations.  Other effects.
+
+Multimode Fiber Beam Profiles - ThorLabs Lab Facts
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=11993
+    Modifying Beam Profiles with Multimode Fibers.
+    Profile is affected by launch angle of incident laser:  200 um MM fiber.
+    Near Gaussian at 0 deg, Top Hat at 11 deg, and Donut at 15 deg.
+    Photo of setup.  A 1500 grit diffuser was manually rotated during 9 second
+    exposure to reduce the spatial coherence and create a clean output beam
+    profile (i.e smooth speckle).
+    Example of a 4x objective RMS4x (9mm pupil), and 150 mm tube lens on a
+    camera.
+    Example using fiber wrapped around a mandrel to remove cladding modes.
+    **** Good explanations.  No size of spot.
+
+Fiber Connectors - ThorLabs
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=10759
+    **** Good overview of types, dimensions (but missing thread spec)
+
+Classic Physical Optics - CBS Europe
+    https://cbseu.com/blog/classic-physical-optics/
+    FRED software uses "Gaussian Beam Decomposition" for propagating coherent
+    fields through optomechanical systems.
+    "Fresnel diffraction patterns are defocused Fraunhofer diffraction
+	patterns."
+	[Their short statements seem inaccurate.  I think they mean the annular
+	rings in the defocused images are defocused Airy patterns.]
+    Example showing effects of -6 to +1 mm deviation from 100 mm focuse plane.
+    Note "Log Irradiance Plots", the center is orders of magnitude brighter.
+    Looks like what I see in my fiber beam profile image.
+    ***** Good simulation visualization of defocussed aperature.
+
+Near real time confocal microscopy of cultured amelanotic cells: sources of
+    signal, contrast agents and limits of contrast
+    Colin Smithpeter, et.al.
+    Journal of biomedical optics 3(4), 429-436 (october 1998)
+    from Cameron, 2021-12-30
+    Confocal microscope construction and parameters.  Laser wavelength 808 nm.
+    50% beam splitter.  Galvo scanner 8 kHz and 15 Hz.  Scan lens f=80 mm.
+    Objective lens 25x, 0.8 NA, 160 mm from conjugate focal plane toward the
+    scan lens.  Reflected light from beam splitter to Lens2 (f= 50.4 mm)
+    forming another conjugate focal plane on a 15 um pinhole.  (Reference 11
+    notes this combination is ideal performance.)  Avalanche photodiode
+    Hamamatsu C5460.  Get 15 frames/s at 512x512 pixels, 256 level grayscale.
+    Z-stage 1 um resolution.  Lateral resolution defined as distance for
+    90% to 10% intensity on an edge transition.  Resolution images of a 3.3 um
+    line grating, and 1 um polystyrene microspheres.  Images quite clear,
+    much better than ours.  Measured lateral resolution of 0.8 um, and FWHM
+    axial resolution of 2 um.
+    Fringes on cells.
+    **** Confocal microscope resolution.
+
+Self-Contained Image Recalibration in a Scanning Fiber Endoscope Using
+    Piezoelectric Sensing
+    I.L. Yeoh. et.al.
+    Journal of Medical Devices, March 2015, Vol. 9 / 011004-1
+    from Cameron, 2022-02-08
+    Return light around outside to another fiber optic bundle.  Spiral scan.
+    FOV ~ 3 mm on the $20 dollar bill.  Eigen axes modeling, equations.  Idea
+    is to extract model parameters on the fly with piezo sensing.  Measure
+    damped resonant frequency by driving up, then turn off drive and observe
+    natural damped resonance (piezo voltag +-10 V drive, +-8 V sensing (from
+    graph).  FFT to find frequency.  Eigen axis found by sweeping drive axis
+    angle, looking for collapsed ellipse (straight line) response.  Braking
+    portion of spiral sweep explained.  Tricky to get phase of braking signal
+    correct to damp to zero amplitude.  Waiting for ring-down by natural
+    damping is too slow.  Temperature effects on eigenaxes, natural resonance
+    frequency, an phase of response - all quite small, but have an effect on
+    braking ability.  Looks like open-loop imaging phase.  Braking phase
+    seems driven by a square wave for maximum breaking?
+    Does the eigenaxes really matter?
+    Slightly muddled explanations.
+    **** Some good insights.  Images, frequency response, eigen-axis.
+
+Photodiode Noise Floor and Saturation - ThorLabs
+    https://www.thorlabs.com/images/TabImages/Photodetector_Lab.pdf
+    Noise floor measurement and theory - Good.
+    Saturation is just limitation of current conversion to voltage using
+	a simple resistor.
+    Detectors -> Photodiode Detectors -> Pigtailed Photodiodes
+    Photodiode Tutorial - Common Circuits
+    https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=3157&pn=FDSP780
+    More under -> "Mounted Photodiodes"
+
+Review of optical fibers-introduction and applications in fiber lasers
+    Satish Addanki, I.S. Amiri, P. Yupapin
+    Results in Physics, Volume 10, 2018, Pages 743-750, ISSN 2211-3797
+    https://www.sciencedirect.com/science/article/pii/S2211379718314268
+    https://doi.org/10.1016/j.rinp.2018.07.028
+    *** Seems like a good overview.
+
+Fiber Output Beam Shape Study Using Imaging Technique
+    A. Asadpour and H. Golnabi, 2010.
+    Journal of Applied Sciences, 10: 312-318
+    DOI: 10.3923/jas.2010.312.318
+    https://scialert.net/fulltext/?doi=jas.2010.312.318
+    Fiber output onto CCD camera sensor without any intermediate lens.
+    Find NA by measuring beam width at various Z distances from fiber tip.
+    Compare single-mode and multi-mode fibers with white light, LED, and
+    laser illumination.  Mostly qualitative, camera pixel pitch is not given.
+    *** Qualitative
+
+Optical Sources & Detectors - slides, 86 pp.
+    Randhir Bhatnagar Chief Scientist, CSIR-CSIO, Chandigarh
+    http://nitttrchd.ac.in/sitenew1/app_sc/ppts/fiber/OpticalSources&Detectors_RB.pdf
+    LED operation, types, Heterojunction, Surface, Edge, Superluminescent,
+    characteristics.  Laser Diode.  Photodetectors, PIN, Avalanchea.
+    Examples, comparison. 
+    *** Good overview
+
+Varifocal MOEMS fiber scanner for confocal endomicroscopy
+    Tobias Meinert, Niklas Weber, Hans Zappe, and Andreas Seifert
+    Optics Express Vol. 22, Issue 25, pp. 31529-31544 (2014)
+    https://doi.org/10.1364/OE.22.031529 
+    https://opg.optica.org/oe/fulltext.cfm?uri=oe-22-25-31529&id=306285
+    Piezo tube, tunable membrane lens, and GRIN objective.
+    Endoscope 2.5 mm diameter.
+    Interference fringes.
+    ****
+
+Phase sensitive detection:  the lock-in amplifier
+    by Dr. G. Bradley Armen  2008
+    Department of Physics and Astronomy, The University of Tennessee
+    http://www.phys.utk.edu > labs > modphys > Loc...  PDF
+    Some theory on combined system and detector, where the output is
+    proportional to both modulation amplitude and the derivative of the
+    system's response with respect to the stimulus dV/ds.  The derivative is
+    useful in finding the peak of the system response.
+    Use of analog lockin and filter adjustment to trade off DC accuracy with
+    settling time.  Chopping and the light-bulb experiment.  Measuring the
+    Faraday effect.  Chopping and harmonics.  Low-pass filters in the time
+    domain - see the connection between frequency filtering and time averaging.
+    **** Practical insights
+

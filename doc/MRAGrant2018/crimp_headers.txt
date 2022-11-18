@@ -1,0 +1,50 @@
+2019-09-01
+
+----------------------------------------------------------------------------
+## Connectors for Piezo Tube Lead Wires
+----------------------------------------------------------------------------
+Header pin Terminals and Housing, single row.
+For standard 0.1 inch pitch header,  0.64 mm (0.025 inch) square pin.
+Look pretty darn good for no-latch mating single row.
+These might match the Adafruit jumpers.
+
+    Amphenol ICC  Wire to Board connector system.
+    https://www.amphenol-icc.com/product-series/pv-crimp.html
+    Datasheet explains the whole series.
+	Also single/double row.  Keyed and non-keyed.
+	Withstanding Voltage:  1000 Vrms
+	Current rating:  3.0 A  single circuit
+	https://cdn.amphenol-icc.com/media/wysiwyg/files/documentation/datasheet/boardwiretoboard/bwb_pv_wtb.pdf
+
+    Amphenol ICC  Mini-PV  Female socket housing, 0.1 inch pitch
+	Length overall:  13.85 mm
+	Latch holds contact.  Non-keyed.  Open window for probing.
+	Minimal rectangle outside, end stackable.
+	Max wire diameter:  1.52 mm insulation dia for use in these housings
+	Same housing for sockets or pins?  Looks like.
+	The 1-pos cost is out of line (bummer).
+	https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/65039.pdf
+ >	$1.33  DigiKey  Amphenol  65039-036LF   1-pos
+ >	$0.24  DigiKey  Amphenol  65039-035ELF  2-pos
+	$0.24  DigiKey  Amphenol  65039-033ELF  4-pos
+ >	$1.04  DigiKey  Amphenol  65039-029LF   8-pos
+
+    Amphenol ICC  Mini-PV  crimp socket contact
+	Wire accomadated:  22-26 AWG
+	To mate with 0.64 +-0.05 mm square pin.
+	Length overall:  11.68 mm
+	Wire insulation range:
+		(75231-):  0.51-1.14 mm dia, D x E:  1.70 x 1.93 mm
+		(48049-):  0.91-2.62 mm dia, D x E:  3.53 x 3.05 mm  
+	https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/75231.pdf
+	https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/47212.pdf
+	$0.39  DigiKey  Amphenol  75231-013LF  30 uin gold
+ >	$0.35  DigiKey  Amphenol  48049-000LF  wider insulation crimp
+
+    Amphenol ICC  Mini-PV  crimp pin contact
+	Wire accomadated:  22-26 AWG
+	Pin:  0.025 x 0.025 inch (0.64 mm)
+	Insulation crimp D x E:  3.53 x 3.05 mm (larger wire insulation)
+	https://cdn.amphenol-icc.com/media/wysiwyg/files/drawing/75967.pdf
+ >	$0.49  DigiKey  Amphenol  75967-312LF  30 uin gold
+

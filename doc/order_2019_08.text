@@ -1,0 +1,93 @@
+2019-08-08
+		Parts Order  2019_08
+		--------------------
+
+DigiKey Cart name:  Fiber_2019_08    https://www.digikey.com/short/p592pc
+
+Components intended for Fiber Scanner.
+
+Crimp header connectors
+
+    Amphenol ICC  Mini-PV  socket housing, 0.1 inch pitch
+ 4      $1.33  DigiKey  Amphenol  65039-036LF   1-pos
+ 10     $0.24  DigiKey  Amphenol  65039-035ELF  2-pos
+ 4      $1.04  DigiKey  Amphenol  65039-029LF   8-pos
+		Housing works for either sockets or pins.
+		Want 1-pos for single wires (except expensive).
+		Use 2-pos for single wires, much more reasonable price.
+		Use 8-pos for 4-wire gang connection, leaving open spaces
+		for higher voltage seperation.
+
+    Amphenol ICC  Mini-PV  crimp socket contact
+ 10	$0.35  DigiKey  Amphenol  48049-000LF  wider insulation crimp
+ 		For use on HV source, 4 contacts per source.
+
+    Amphenol ICC  Mini-PV  crimp pin contact
+ 16	$0.49  DigiKey  Amphenol  75967-312LF  30 uin gold
+ 		For use on piezo tube leads, 4 contacts per tube.
+
+
+For connection to Piezo Tubes
+
+    Silver Conductive Pen, Acrylic lacquer, Silver filled, 0.01 ohm/square
+ 1	$33.70  DigiKey   MG Chemicals 842AR-P, 5 ml pen
+
+    Nickel Conductive Pen, Acrylic lacquer, Nickel filled, 6.0 ohm/square
+ 0	$15.48  DigiKey   MG Chemicals 841AR-P, 5 ml pen
+
+    Carbon Conductive Pen, Acrylic lacquer, Carbon filled, 170 ohm/square
+ 0	$13.30  DigiKey   MG Chemicals 838AR-P, 5 ml pen
+
+    Wire, 26 AWG strandec Silicon Rubber, 600 V, 0.060 dia
+ 1	$4.95  DigiKey  1528-1645-ND, Adafruit 2513, 26 AWG, 25 ft, Red
+ 1	$4.95  DigiKey  1528-1646-ND, Adafruit 2514, 26 AWG, 25 ft, Blue
+
+    3M Header male 20 pin, 1-row, breakaway, gold
+ 1	$4.75  DigiKey  929647-05-20-EU  20-pin, 0.945 overall, 0.610 post
+
+Alternative for connecting piezo tube leads.
+
+    AVX Poke-Home - Thru-Wire: WTW  White,  18-26 AWG
+	Wire-to-Wire connector, opposing pairs connect.
+	Push-button release, split for each side.
+	Contact rating:  300 Vac, 8 A/contact
+	Durability:  5 Cycles
+	http://datasheets.avx.com/ThruWire_00-9286.pdf
+ 4      $1.02  DigiKey  AVX 009286001021906  1-pos
+ 4      $1.42  DigiKey  AVX 009286002021906  2-pos
+	$1.73  DigiKey  AVX 009286003021906  3-pos
+	$2.16  DigiKey  AVX 009286003021906  4-pos  (no stock 8 wks)
+
+    Small Alligator Clip to Male Jumper pin, 6 inch
+ 1      $7.95  DigiKey  AdaFruit 3255  12 piece
+ 		Connect to Piezo_AC_Driver header sockets.
+		May be generally useful.
+
+
+Test leads
+
+    Banana to Banana test leads, 3 ft
+ 1	$6.09  DigiKey  501-1047-ND, Pomona B-36-0  36 inch, Black
+ 1	$6.09  DigiKey  501-1048-ND, Pomona B-36-2  36 inch, Red
+ 1	$6.09  DigiKey  501-1377-ND, Pomona B-36-5  36 inch, Green
+	$6.09  DigiKey  501-1751-ND, Pomona B-36-7  36 inch, Violet
+		Existing leads are about worn out.
+
+
+Other Stuff
+
+     Speaker, 40 mm, Very low 1.0 ohm, Full Range
+        -- BDNC Holding Ltd.
+        Stapez Brand Spekaker drivers and systems.
+        Input power:  3.5 W continuous, 8 W transient
+        DC resistance:  1 ohm typ, 1.2 ohm max
+        Freq range:  10 Hz to 20 kHz
+        Resonance:  250 Hz
+        Excursion:  5 mm peak-to-peak
+        Size:  40 mm dia, 21.7 mm high
+        Low resistance for low-voltage drive (e.g. 3.6 to 4.2 V battery)
+        Very good datasheet.  Has driver circuit.
+        http://www.newbdnc.com/wp-content/uploads/datasheets/BFC-D40-22-1-002.pdf
+ 1      $5.44  DigiKey  2055-BFC-D40-22-1-002-ND, BDNC BFC-D40-22-1-002
+
+

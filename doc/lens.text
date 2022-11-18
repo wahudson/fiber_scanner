@@ -1,0 +1,170 @@
+2021-11-18  William A. Hudson
+
+		Lens System - Design
+		--------------------
+
+----------------------------------------------------------------------------
+## Design
+----------------------------------------------------------------------------
+
+Lens Tubes:
+    ThorLabs SM1 lens tubes have 1.035 inch dia 40 threads per inch.
+
+C- and CS-mount:
+    C- and CS-mount threads are 1.00 inch dia 32 threads per inch.
+    Lenses typically have external thread, cameras internal thread.
+
+    Let our fiber scanner have internal threads like a camera.
+
+----------------------------------------------------------------------------
+## Optical Design
+----------------------------------------------------------------------------
+
+    Want to use a 4f lens system, where the two lenses share a common focal
+    point, which is a Fourier Plane.  This reduces some distortions.
+    The fiber tip is then at the first lens focal point, and the sample
+    object is at the second lens focal point, with parallel light between
+    the two lenses.
+
+    In this 4f arrangement, the magnification is just the ratio of the
+    two lens focal lengths:
+	magnification = f1 / f2
+
+    A laser beam from a Single Mode (SM) fiber is better described by a
+    Gaussian intensity distribution than by NA.
+    A focal point is really the beam waist focused by a lens.
+    The position of the beam waist is slightly different than the lens focal
+    point.
+    These sublties do not affect the physical design, but might affect
+    the actual tuning of the system.
+
+    Laser light is monochromatic, so there is no worry about chromatic
+    aberration.
+
+    Spherical aberration may still be a problem, especially with short
+    focal length lenses.
+
+Lens Type:
+    Choose Plano-Convex lenses.  These have a wide selection.
+
+Anti-reflection (AR) coatings:
+    Adding an AR coating is only a small cost add.
+    Possibly AR is less robust, more easily damaged in cleaning and handling.
+
+Lens focal length selection:
+
+    Graphically show available lens focal lengths and diameters:
+    Draw out a diagram showing the cone of light emitted by the fiber,
+    which is at the focal point of the first lens.  Than show available
+    lenses by focal length and diameter (radius) on the diagram.
+
+    Show marginal rays when the fiber is on-axis, and when the fiber tip is
+    at maximum displacement.
+    Note fiber displacement is on order of +-1 mm, while the corresponding
+    fiber angle is (1 mm / 10 mm) for a 10 mm cantilever fiber (approximating
+    the fiber tip angle as the angle from root to tip, which is an under-
+    estimate).
+
+    Now it is easiy to see graphically the degree of vingeting of marginal
+    rays for various lens diameters and fiber angles.
+
+    Choosing between SM1 (1 inch) and SM05 (0.5 inch) lenses:
+
+    The shortest focal length is limited by the lens diameter because
+    the radius of curvature of the lens surface cannot be smaller then
+    half the diameter.
+
+    For the same magnification (f1 / f2) the lens focal lengths can be
+    scaled up or down, and the marginal rays form similar triangles.
+    Thus using 1 inch lenses with longer focal length is the same as
+    0.5 inch lenses with shorter focal length.
+    Similarly, vignetting (the clipping of marginal rays) by the lens
+    diameter is also unchanged.
+
+    Spherical aberration is worse as the lens surface radius approaches
+    the lens radius, i.e. thicker lenses.  It can be improved by using
+    only the central region of the lens.
+
+    Vignetting represents lost light at the margins.  For a given lens,
+    it can only be improved by reducing the cone of light comming out of
+    the fiber, i.e. using a lower NA fiber.
+    Vignetting looses light intensity toward the margins of the field of view.
+    While undesireable, it could be compensated by post-processing the image
+    data at the expense of lost intensity resolution.
+
+    Longer focal lengths give more room for adjustment or inserting other
+    elements, but is less compact.
+
+Available lenses:  (ThorLab)
+    Focal length rounded to integer mm for ease of identification.
+    Considering only 0.5 inch (SM05) and 1 inch (SM1) for lens tubes.
+
+		available	curva	thickness
+	f (mm)	dia (inch)	r (mm)	t (mm)
+	------	---------	------
+	15	0.5  --		 7.7	 5.1 (SM05)
+	20	0.5  --		10.3	 4.0 (SM05)
+	25	0.5  1		13.1	11.7 (SM1)
+	30	0.5  1		15.5	 8.6 (SM1)
+	35	--   1		18.0	 7.2 (SM1)
+	40	0.5  1		20.6	 6.4 (SM1)
+	50	0.5  1
+	60	0.5  1
+	100	0.5  1
+
+	Note thickness approaches dia/2 for shortest focal length.
+
+    Total length:  Lt = 2 * (f1 + f2)	- Fiber tip to sample
+
+    Some choices are:
+
+	f1 (mm)	f2 (mm)	Lt (mm)
+	-------	-------	-------
+ >	60	30	180	2x, SM1,  full
+	50	25	150	2x, SM1,  full
+	30	15	 90	2x, SM05, full
+
+    I like f1= 60 mm to avoid excessive lens thickness.
+    Vignetting can be explored by adding an aperture stop.
+
+
+----------------------------------------------------------------------------
+## Components
+----------------------------------------------------------------------------
+
+    HAYEAR Monocular Max 180x Zoom C-Mount Microscope Camera Objective
+	$72.28  Amazon B016NUGHK2  Hayear 0.7-4.5X - 0.5X adapter (180x)
+ >1	$74.52  Amazon B01CBCZPP4  Hayear 0.7-4.5X - 1.0X adapter (300x)
+	Working distance:  100-115mm
+	1.0X C-mount adapter
+	C-mount external threads.
+	Objective Magnification Power:  0.7 - 4.5X zoom
+	Size:  235 mm(L) * 50 mm(DIA), 630 g  (w 1.0X adapter)
+	Mass:  630 g quite heavy, steel
+	I have this one.
+
+    Adapter Internal C-Mount to External SM1
+	To fit on Monocular Microscope Objective.
+	https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=8210
+ >	$20.78  ThorLabs SM1A10    4.1 mm spacing
+	$23.61  ThorLabs SM1A10TS  6.5 mm spacing
+	$33.00  ThorLabs SM1A10A   6.9 mm to 8.9 spacing adjustable
+	$29.49  ThorLabs DC-CS1    7.42 mm spacing
+	$24.00  ThorLabs SM1A10Z   9.1 mm to 8.9 spacing adjustable ??
+
+    Coupler Internal C-Mount to Internal C-Mount
+	A simple internally threaded tube, 1.00-32 thread
+ >	$10.60  ThorLabs CMT1  8.9 mm spacing
+
+    Flange to SM1 Thread Adapters
+ >	$20.35  ThorLabs SM1F1  Internal SM1, 10 mm thread depth
+	$22.07  ThorLabs SM1F2  External SM1,  3 mm thread depth
+
+----------------------------------------------------------------------------
+## References:
+----------------------------------------------------------------------------
+
+[1] C- and CS-Mount Lens Characteristics and Compatability
+    ThorLabs Technical Resources / Insights / Device Function Insights
+    https://www.thorlabs.com/navigation.cfm?guide_id=2569
+

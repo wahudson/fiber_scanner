@@ -1,0 +1,169 @@
+2021-12-07
+
+		Fiber Photodetector
+		-------------------
+
+Primary detector sensing return light from fiber splitter.
+Include other photodetector applications.
+
+----------------------------------------------------------------------------
+## ThorLabs PDA36A2 Si Switchable Gain Detector
+----------------------------------------------------------------------------
+Is a free-space detector.
+Initially used on piezo fiber scanner.
+
+Specs from the User Guide:
+
+    Setting	Gain (V/A)	BW (Hz)		Noise (uV RMS)	NEP (W/rHz)
+    -------	----------	--------	--------------	-----------
+     0 dB	0.75e3		12   MHz	258		7.75e-11
+    10 dB	2.38e3		 1.6 MHz	192		5.80e-12
+    20 dB	0.75e4		 1   MHz	207		3.40e-12
+    30 dB	2.38e4		 260 kHz	211		3.40e-12
+    40 dB	0.75e5		  90 kHz	214		3.25e-12
+    50 dB	2.38e5		  28 kHz	234		3.69e-12
+    60 dB	0.75e6		   9 kHz	277		4.00e-12
+    70 dB	2.38e6		   3 kHz	388		4.29e-12
+
+    Output Offset:  +-8 mV typ, +-12 mV max, all gains
+
+Photodetector:  Silicon
+    Active area:  13 mm2, 3.6 mm square
+    Wavelength Range:  350 to 1100 nm
+    Peak Wavelength:  970 nm typ
+    Peak Responsivity:  0.65 A/W
+    Output Impedance:  50 ohm
+    Max Output Current:  100 mA
+    Output Voltage:  0 to 5 V at 50 ohm;  0 to 10 V at Hi-Z
+    Gain Range:  0 dB to 70 dB in 8 steps
+    Output:  BNC, DC coupled
+
+    The specs and responsivity curve look very similar to the ThorLabs
+    FDS100 photodiode.
+
+Note:  2022-06-23
+    Seems like large area diode and high capacitance is killing their bandwidth.
+    Using an FDS02 photodiode and OPA381 transimpedance amplifier, we could
+    do better than this.  Could get 250 kHz bandwidth at gains up to 1e6,
+    and 40 kHz at 1e7, but noise may be the real limiter.
+
+----------------------------------------------------------------------------
+## Photodiodes
+----------------------------------------------------------------------------
+See also:  components.text
+
+    FDS100  Si Photodiode TO-5
+	Looks like this might be in the PDA36A2 Si Switchable Gain Detector.
+	Active area:  13 mm2, 3.6 mm square
+	Wavelength Range:  350 to 1100 nm
+	Peak Responsivity:  0.65 A/W at 980 nm
+		At 780 nm:  0.48 A/W
+	Dark Current:  1.0 nA typ, 20 nA max at Vr= 20 V
+	    Typ curves  80 pA at 0.01 V, 200 pA at 1 V, 850 pA at 20 V
+	Capacitance:  24 pF at Vr= 20 V
+	    Typ curves  250 pF at 0 V, 65 pF at 5 V, 25 pF at 20 V
+	Rise Time:  10 ns typ at Rl= 50 ohm, Vr= 20 V, 632 nm
+	Reverse Current:  5 mA max (optical damage?  7.7 mW at peak resp.)
+	NEP:  1.2e-14 W/rHz at 900 nm, 20 V
+	$14.94  ThorLabs FDS100,  3.6 mm square, 350 - 1100 nm, TO-5
+
+    FDS02  Si Photodiode TO-46 mounted in FC/PC Bulkhead
+ >	Peak Responsivity:  0.48 A/W  at 750 nm
+	Active area:  0.25 mm diameter, 0.05 mm2
+	Dark Current:  35 pA typ, 500 pA max at Vr= 5 V
+	    Typ curves  0 pA at 0.01 V, 10 pA at 1 V, 130 pA at 5 V
+	Capacitance:  0.94 pF at Vr= 5 V reverse bias
+	    Typ curves  2.05 pF at 0 V, 1.73 pF at 5 V, 1.68 pF at 20 V
+	Rise Time:  47 ps typ at Rl= 50 ohm, Vr= 5 V, 850 nm
+	NEP:  9.29-15 W/rHz at 650 nm, 5 V
+	Reverse bias:  20 V max
+	Optical Input Power:  18 mW max  (8.6 mA at peak responsivity)
+	No data on fiber NA or photodiode fill.
+	See capacitance and dark current curves in the part "info window".
+	The FDS025 TO-46 package has a 0.06 inch dia ball lens.
+	This peak fits our wavelength 780 nm.
+ >	$83.59  ThorLabs FDS02,  0.24 mm dia, 400 - 1100 nm, TO-46 FC/PC
+	$34.36  ThorLabs FDS025, 0.24 mm dia, 400 - 1100 nm, TO-46
+
+    Fiber Optic Detector, ST package
+	-- TT Electronics/Optek Technology
+	Multimode fibers 50 to 300 um
+	Connector:  ST style receptacle
+	Wavelength:  800-1000 nm
+	Spectral Range:  680 - 1040 nm at 50%;  peak 900 nm
+	Area=  ??
+	Reverse breakdown voltage Vbr= 100 V max absolute
+	Dark current Ir= 0.1 nA typ, 5.0 nA max at Vr= 5.0 V
+	Responsivity:  0.45 A/W min at Vr= 5.0 V, 850 nm, 50/125 um fiber
+		At 780 nm:  0.78 * 0.45 A/W = 0.35 A/W
+	Capacitance Co= 3 pF typ at Vr= 20 V;  6 pF at 0 V (OPF472)
+			2 pF max at Vr=  5 V;  3 pF at 0 V (OPF482)
+	Rise Time:  6.0 ns typ, at Vr= 15 V (OPF472)
+		    2.0 ns typ, at Vr=  5 V (OPF482)
+	Mechanical dimensions in OPF472.
+	https://www.ttelectronics.com/TTElectronics/media/ProductFiles/Optoelect
+ronics/Datasheets/OPF472.pdf
+	https://www.ttelectronics.com/TTElectronics/media/ProductFiles/Optoelect
+ronics/Datasheets/OPF482.pdf
+ >1	$14.12  DigiKey  TT Electronics OPF472,  35 MHz
+	$15.32  DigiKey  TT Electronics OPF482, 100 MHz
+
+----------------------------------------------------------------------------
+## Transimpedance Amplifiers
+----------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------
+## Thoughts
+----------------------------------------------------------------------------
+
+PDA36A2:
+    Looks like a great detector, nicely packaged.
+    Adjustability helps when input signal is mostly unknown.
+
+    Piezo scanner (2021-12-07) is using 30 dB gain setting, with a maximu
+    output signal of 500 mV.  (Cameron)
+    Max output is with a fully reflective mirror sample.
+
+    Are we getting the best out of it?
+
+We have a SM fiber output.
+    Using a free space photodetector may not be the most sensitive.
+    Typically a large area photodiode has higher capacitance, lower
+    bandwidth and higher dark current compared to a smaller area.
+
+    A small area photodiode may be more sensitive.
+
+How can we tell if photodetector is limiting performance?
+
+    Perhaps measure:
+	Dark current
+	Dark noise
+	Light current (i.e. expected light signal intensity)
+	Light noise
+	Risetime to a step response
+
+	Compute effective bandwidth.
+
+Amplified fiber photodetectors tend to be expensive - $1,000 or more.
+
+Maybe we can build our own.
+    Photodiode in a fiber connector cost $15 to $160.
+    Transimpedance amplifier IC cost $3 (OPA381).
+
+    Aligning SM fiber with small area photodiode seems tricky.
+    Is die position closely controlled?
+    Could simple machined tollerance be good enough?
+    Is alignment adjustment needed?
+
+    Want to avoid over-filling the photodiode, wasted light and signal.
+    Underfilling mostly results in higher capacitance etc.
+
+    Not many photodiodes to choose from.
+    Perhaps just try a simple one, and see how it goes.
+    Comparison to our current PDA36A2 detector.
+
+    My initial investigations look promising.
+    I have a TT Electronics OPF472 (rated 35 MHz) photodiode.
+    Maybe just try the OPA381 on it.
+
