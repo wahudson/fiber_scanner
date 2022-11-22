@@ -1,0 +1,261 @@
+2022-11-15  William A. Hudson
+
+		PSD Lockin Frequency Sweep -- ex2022_11_15_psd/
+		--------------------------
+
+Follows from:
+    ex2022_10_18_psd/
+    ex2022_09_13_lockin/
+    ex2022_09_27_dcvolt/
+
+See:  red notebook  11-15-2022
+
+Files:
+    notes.text			this file
+    raw -> /var/tmp/csu2022_11_15	raw data not in Git
+    console_2022_11_15.txt	console output of MatLab
+
+		Laser current
+    laser_current.tab		table of MnSig_V and MnSum_V vs laser I_mA
+    laser_vSig.pdf		plot laser vSig
+    psd_vSum.pdf		plot PSD vSum
+
+		Lockin frequency sweep
+    k4_LItable.txt		frequency sweep from  lockin_f1.m
+
+----------------------------------------------------------------------------
+## Fiber Scanner condition
+----------------------------------------------------------------------------
+
+Similar to  ex2022_10_18_psd/
+    PSD beam splitter is a thick glass slide.
+
+    PSD is on a magnet post on optical table, about 5.6 cm PSD face to the
+	35 mm lens face.
+
+    Laser beam on PSD looks like two parallel lines covering a spot ~3 mm dia,
+	as seen on white paper with IR viewer.
+	PSD alignment is about centered on beam.
+
+    Laser current is reduced to 26.0 mA to avoid PSD saturation.
+
+    Sample target is not in focus, and is not used.
+
+Validated scripts:  (versions in Git 2022-11-15)
+    ac_millimeter.m
+    dc_voltmeter.m
+    lockin_f1.m
+
+    All ran well, no syntax errors.
+
+----------------------------------------------------------------------------
+## Laser Current Adjustment
+----------------------------------------------------------------------------
+Adjust laser current so that PSD (vSum < 4.0 V) to avoid saturation.
+Use dc_voltmeter.m to measure both PSD MnSum_V and photodetector MnSig_V.
+
+    Use PSD vSum as a way to measure laser power.
+
+    The sample target is not in focus, so any light on photodetector is from
+    back reflections on fiber faces, or other sources.
+    Examine this as another possible indication of laser power.
+
+Common configuration for all measurements:
+    >> dc_voltmeter.m
+    Tbegin_s      =      0.200		discard first 0.2 seconds
+    Tmeasure_s    =      1.000		average over 1.0 seconds, 62500 samples
+    DatasetTime_s =      1.200
+    Twait_s       =      0.000		no wait between samples
+    sampRate      =   6.2500e+04
+    dt_s          =   1.6000e-05
+    kB            =      12500		index of first measurement
+    kEnd          =      75000		index of last  measurement
+
+Data extracted from console output:  console_2022_11_15.txt
+    The first measurement set at each current is used here.
+    Note there are 7 measurements at each current.  The mean values "Mn"
+    seem to be within the SD (standard deviation) of each other.  Thus
+    safe to always use just one measurement.
+
+    File  laser_current.tab:  (sorted by I_mA)
+
+ I_mA  MnSig_V  SdSig_V    MnX_V    SdX_V    MnY_V    SdY_V  MnSum_V  SdSum_V
+
+    0  0.01725  0.00024 -0.41786  0.01039  0.07794  0.00950  0.12464  0.00132
+   20  0.02700  0.00027 -0.00963  0.00023 -0.00079  0.00023  0.17983  0.00161
+   25  0.32603  0.01005 -0.02708  0.00040 -0.05232  0.00035  2.45052  0.01094
+   26  0.51815  0.00772 -0.03699  0.00047 -0.06967  0.00033  3.26321  0.01097
+   26  0.52333  0.00782 -0.03667  0.00053 -0.07197  0.00034  3.29884  0.01142
+   27  0.69868  0.00865 -0.03957  0.00039 -0.09080  0.00030  4.15234  0.00915
+   28  0.87643  0.00894 -0.04595  0.00063 -0.11117  0.00030  4.29178  0.00014
+   30  1.24275  0.00956 -0.12367  0.60884 -0.16605  0.31711  4.29201  0.00023
+
+    % R
+
+    % df <- read.table( "laser_current.tab", header=TRUE )
+
+    % plot( df$I_mA, df$MnSig_V )
+    % plot( df$I_mA, df$MnSum_V )
+
+	Note plotting ordered points in a dataframe preserves the order when
+	connected by a line.  In this case we want to sort by I_mA to see
+	the functional relationship and not the measurement sequence.
+
+    % plot( df$I_mA, df$MnSig_V, xlim=c(0,36), ylim=c(0,2.0), type='o' )
+
+	MnSig_V looks very linear from I_mA = 25 to 35.
+
+    Line between two points:
+	y1 = (b * x1) + a
+	y2 = (b * x2) + a
+
+	b = (y2 - y1) / (x2 - x1)	slope
+	a = y1 - (b * x1)		intercept
+
+	    x1 = 25 mA,  y1 = 0.326 V
+	    x2 = 30 mA,  y2 = 1.243 V
+
+	    b =  0.183 V/mA
+	    a = -4.259 V
+
+	    Y = (0.183 V/mA) * X - 4.259 V
+
+    % abline( -4.259, 0.183, col='red' )
+
+
+    Extrapolate to 36 mA:
+	Y = (0.183 V/mA) * 36 mA - 4.259 V
+	  = 2.329 V
+
+    Estimate PSD attenuation needed at 36 mA:
+	MnSig_V is photodetector output voltage, which is proportional to
+	photodiode current, proportional to incident light power.
+
+	If PSD power at 25 mA was acceptable, then attenuation needed at
+	36 mA is:  (relative power from 25 mA)
+
+	    36 mA / 25 mA  :  2.329 V / 0.326 V = 7.14
+
+	Thus need about 7x attenuation.
+
+Full Plot laser vSig:
+    plot( df$I_mA, df$MnSig_V, xlim=c(0,36), ylim=c(0,3.0), type='p' )
+    abline( -4.259, 0.183, col='red' )
+    title( main='Photodetector vSig vs Laser Current I_mA' )
+    text( 0, 2.8, "mean over 1.0 second, 62500 points\nSD <= 0.010 V", pos=4 )
+    text( 20, 1.8, "slope = 0.183 V/mA", pos=4, col='red' )
+    text( 20, 1.7, "offset = -4.259 V", pos=4, col='red' )
+    points( 36, 2.329, col='red' )
+    abline( h=0, col='blue' )
+    abline( v=36, col='blue' )
+    text( 20, 2.3, "extrapolate (36 mA, 2.329 V)", pos=4, col='red' )
+    dev.copy2pdf( file="laser_vSig.pdf" )
+
+Full Plot PSD vSum:
+    plot( df$I_mA, df$MnSum_V, xlim=c(0,36), ylim=c(0,4.5), type='o' )
+    title( main='PSD vSum vs Laser Current I_mA' )
+    text( 0, 3.5, "mean over 1.0 second, 62500 points\nSD <= 0.011 V", pos=4 )
+    abline( v=36, col='blue' )
+    abline( h=0, col='blue' )
+    abline( h=4.29, col='red' )
+    text( 10, 4.4, "saturated at 4.29 V", pos=4, col='red' )
+    dev.copy2pdf( file="psd_vSum.pdf" )
+
+Conclusion:
+
+    Photodetector output is linear for I_mA >= 25 mA.
+    Laser is below threshold (no output) at I_mA = 20 mA.
+
+    PSD is saturated for laser current I_mA >= 26 mA.
+
+    Note the PSD lens had a SM05 lens tube adapter (0.5 inch) acting as an
+    aperture stop on the SM1 lens (35 mm focal length).
+    In this configuration I am guessing the 0.13 NA beam may be nearly filling
+    the 1.0 inch diameter lens.
+    Thus the PSD may already have some attenuation, so even more than 7x
+    attenuation may be needed to operate laser at 36 mA without PSD saturation.
+
+Next:
+    Measure up to the 36 mA maximum usable laser current.
+
+----------------------------------------------------------------------------
+## Position Sensitivity due to PSD Saturation (2022-11-20)
+----------------------------------------------------------------------------
+
+Prior experiments observed PSD position sensitivity when the laser diode
+fiber optic pigtail was flexed.  Flexing (bending) the fiber optic cable
+near the laser diode caused PSD position to change dramatically.
+
+If the PSD is saturated, then the output position is sensitive to spot
+light intensity.
+
+Saturated PSD:
+    When vSum >= 4.0 V, the PSD is saturated (from datasheet).
+
+    When the light spot is centered on the PSD sensor, which is also the
+    PSD coordinate origin, the position outputs are zero vX=0, vY=0.
+    In this condition, the voltage outputs do not change with light intensity.
+
+    When the spot is off center, the voltage outputs (vX, vY) will change with
+    light intensity.  It is only by normalizing with the Sum output voltage
+    vSum, that the computed position does not change.
+    It then follows that if the PSD is saturated, where vSum does not change
+    with light intensity, then the computed output position becomes
+    sensitive to spot intensity.
+
+Effect of flexing laser fiber pigtail:
+    Here we assume the total light intensity in the fiber is unchanged with
+    flexing.
+
+    When the fiber optic cable is flexed, the radius of bend is decreased,
+    which increases the number of internal reflections of light in the core.
+    This increases the percentage of polarized light in the plane of the bend.
+
+    A glass cover slip (or microscope slide) placed at 45 degrees is used
+    as a beam sampler to direct a fraction of light to the PSD.
+    Only the portion of incident light that is polarized in the plane formed
+    by the incident axis and the surface normal is reflected.
+    At the Brewster angle (of incidence) 100% of that light is reflected,
+    and at 45 degrees only a portion of that light is reflected.
+    Any change in the relative fraction of polarized light thus results in
+    a change in intensity of the reflected light.
+    Thus flexing the laser fiber changes the fraction of polarization
+    which then results in a change of intensity of the spot on the PSD.
+    If the PSD is saturated, it results in a change of apparent position.
+
+Experiment proposed to test this:
+
+    Glass slide beam sampler at 45 degrees to the fiber cantilever.
+    Fiber cantilever is stationary.
+    PSD positioned so that spot is off center and not at edge of sensor.
+
+    a) Sweep laser current in unsaturated/saturated range of PSD:
+	25 mA to 26 mA -- unsaturated
+	28 mA to 36 mA -- saturated
+	Observe any change in computed position.
+
+    b) Measure PSD position while flexing laser fiber pigtail.  Compare
+	result when PSD is unsaturated (laser at 25 mA) and when
+	saturated (laser at 36 mA).
+
+    We expect to see a constant PSD position output when the PSD is
+    unsaturated.  However note possible effect of polarization on double
+    reflection from front and back surface of glass beam sampler.
+
+Double reflection on glass beam sampler:
+
+    Assume PSD is NOT saturated.
+
+    Light is reflected off the front surface of the glass slide.
+    The remaining light is refracted into the glass, where part of it
+    is reflected off the back surface, making a second reflected beam.
+    These two beams make two adjacent spots on the PSD.
+    If a change in polarization from flexing the fiber optic cable changes
+    the relative intensity in these two reflections (spots), then the
+    intensity centroid of the combined spots will shift and the PSD will
+    indicate a change in position.
+
+    I do not understand how a change in polarization would change the
+    relative intensity of the two reflections.
+    My understanding of polarization and reflections is incomplete.
+
