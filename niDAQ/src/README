@@ -9,8 +9,11 @@ README			this file
 config_li_eigen_freq.pl	Configure "eigen_freq.m" ouput file names for
 				"li_eigen_freq" input.
 
+		    PSD measurement (related set)
 ac_millimeter.m		AC Voltmeter measuring scanner response
+dc_psdmeter.m		DC PSD meter output position in mm and V
 dc_voltmeter.m		DC Voltmeter for testing DAQ channels
+
 
 eigen_axis.m		Fiber scanner sweep eigen axis
 eigen_freq.m		Fiber scanner sweep eigen frequency
