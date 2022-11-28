@@ -22,6 +22,12 @@ Files:
 
 		Lockin frequency sweep
     k4_LItable.txt		frequency sweep from  lockin_f1.m
+    freq_extent.pdf		plot resonant ellipse extent
+    freq_phase.pdf		plot resonant ellipse phase
+
+		Plot 801.5 Hz ellipse dataset
+    ellipse_k4_set_7_mean.pdf	801.5 Hz mean centered
+    ellipse_k4_set_7_peak.pdf	801.5 Hz peak-to-peak centered
 
 ----------------------------------------------------------------------------
 ## Fiber Scanner condition
@@ -258,4 +264,209 @@ Double reflection on glass beam sampler:
     I do not understand how a change in polarization would change the
     relative intensity of the two reflections.
     My understanding of polarization and reflections is incomplete.
+
+----------------------------------------------------------------------------
+## Plot 801.5 Hz ellipse dataset  (2022-11-24)
+----------------------------------------------------------------------------
+
+Data set:  k4_set_7_daq.txt  is near peak response.
+    FreqR_Hz = 801.500
+
+    >> lockin_f1.m
+    outFile:  k4_set_7_daq.txt
+	jSetNum       =          7
+	FreqR_Hz      =    801.500
+	Tbegin_s      =      1.248
+	Tmeasure_s    =      1.248
+	kB            =      77979
+	kEnd          =     155958
+
+Analyze with R:
+    df <- read.table( "raw/k4_set_7_daq.txt", header=FALSE )
+    names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
+
+    dim(df)
+    [1] 155959      4
+
+Inspect settling time:
+    plot( df$Vx, pch='.' )
+	Stable after 50000, and flat after 100000.
+
+    plot( df$Vy, pch='.' )
+	Stable after 70000, and flat after 100000.
+
+    plot( df$Vsum, pch='.' )
+	Stable after 70000, and even better after 100000.
+
+    It takes quite awhile to really settle.
+
+	(100000 samples) / (62500 samples/s) = 1.600 s
+	    * (801.5 cycles/s)  = 1282.4 cycles
+
+Inspect PSD voltage waveforms
+    rn <- c(150000:150200)	# about 2.5 cycles
+
+    plot( df$Vsum[rn] )
+	Very distorted, two sine waves combined, not saturated.
+    plot( df$Vx[rn] )
+	Looks pretty smooth sine wave
+    plot( df$Vy[rn] )
+	Distorted sine wave, slightly skewed, a little bit triangle shaped.
+
+Compute PSD position for X and Y measurements
+    Dx_mm <- 5 * df$Vx / df$Vsum
+    Dy_mm <- 5 * df$Vy / df$Vsum
+
+    plot( Dx_mm[rn] )
+    plot( Dy_mm[rn] )
+	Both look like pretty clean, but still slightly distorted.
+
+    plot( Dx_mm[rn], Dy_mm[rn] )
+	A pretty good ellipse, with successive points in alignment.
+
+    rn <- c(100000:155000)       # 0.88 seconds
+    plot( Dx_mm[rn], Dy_mm[rn], pch='.' )
+	Pretty clean ellipse, fairly thin everywhere.
+
+Find mean of each axis:
+
+    rn <- c(100000:155000)       # 0.88 seconds, most stable region
+    Mnx_mm <- mean( Dx_mm[rn] )
+    Mny_mm <- mean( Dy_mm[rn] )
+
+	Mnx_mm
+	[1] -0.1400577
+	Mny_mm
+	[1] -0.1019657
+	Both close to zero, since we centered the PSD near zero.
+
+    Cx_mm <- Dx_mm - Mnx_mm
+    Cy_mm <- Dy_mm - Mny_mm
+	Centered (normalized) ellipse response data.
+
+    plot( Cx_mm[rn], Cy_mm[rn], pch='.' )
+
+Overlay lockin extracted ellipse:  k4_LItable.txt
+
+    jSet FreqR_Hz   Lxi_mm   Lxq_mm   Lyi_mm   Lyq_mm \
+       7   801.50 -0.04594  0.45211 -0.20096 -0.18106 \
+
+	    Ex_mm   Px_deg    Ey_mm   Py_deg   Pe_deg Meanx_mm Meany_mm
+	   0.9089   95.802   0.5410 -137.982 -233.784  -0.1400  -0.1021
+
+    Pi     <- 3.1415926535
+    Ex_mm  <- 0.9089
+    Ey_mm  <- 0.5410
+    Pe_deg <- -233.784
+    Pe_rad <- Pe_deg * Pi / 180
+
+    uvec <- c(0:99) * (2 * Pi / 100)	# one cycle divided into 100 parts
+    ex <- Ex_mm * sin( uvec )
+    ey <- Ey_mm * sin( uvec + Pe_rad )
+
+    plot( ex, ey )
+
+    rn <- c(100000:155000)	# 0.88 seconds, most stable region
+    rn <- c(150000:155000)	# 0.080 s, 64.12 cycles (smaller pdf)
+    plot( Cx_mm[rn], Cy_mm[rn], pch='.', xlim=c(-1,1), ylim=c(-1,1) )
+    points( ex, ey, col='red' )
+    abline( h=0 )
+    abline( v=0 )
+    title( main='FreqR= 801.50 Hz -- mean offset',
+	sub='rn=[150000:155000]   k4_set_7_daq.txt' )
+    dev.copy2pdf( file="ellipse_k4_set_7_mean.pdf" )
+
+	Note the data ellipse is NOT centered on its mean.
+	Why is this?
+
+Examine source data:
+    rn <- c(150000:150200)	# about 2.5 cycles
+    plot( Cx_mm[rn] )
+    plot( Cy_mm[rn] )
+    plot( Cx_mm[rn], ylim=c(-1,1) )
+    points( Cy_mm[rn] )
+    abline( h=0 )
+
+    max( Cx_mm[rn] )
+	[1] 0.8549863
+    min( Cx_mm[rn] )
+	[1] -0.9731929
+
+    ( max( Cx_mm[rn] ) + min( Cx_mm[rn] ) ) / 2
+	[1] -0.0591033
+    ( max( Cy_mm[rn] ) + min( Cy_mm[rn] ) ) / 2
+	[1] 0.01796333
+
+	The raw mean is off due to sine wave distortion.
+	The max/min is a better estimate for the center of the ellipse.
+
+    rn <- c(150000:155000)	# 0.080 s, 64.12 cycles (smaller pdf)
+    plot( Cx_mm[rn]+0.0591033, Cy_mm[rn]-0.01796333, pch='.',
+	xlim=c(-1,1), ylim=c(-1,1) )
+    abline( h=0 )
+    abline( v=0 )
+    points( ex, ey, col='red' )
+    title( main='FreqR= 801.50 Hz -- peak centered',
+	sub='rn=[150000:155000]   k4_set_7_daq.txt' )
+    dev.copy2pdf( file="ellipse_k4_set_7_peak.pdf" )
+
+	This is a lot better fit.  See slight distortion in data ellipse.
+
+Conclusions:
+    The measured displacement data has some harmonic distortion in the sine
+    waves, which causes the mean values to not be the ellipse center.
+    A better estimate is to use the min/max (peak-to-peak) values.
+
+    The lockin extracted ellipse parameters seem to be a reasonable fit
+    to the measured data.
+
+    At (FreqR = 801.500 Hz) it takes at least 1000 cycles (1.248 s) for the
+    resonance to stabilize, and more like 1300 cycles (1.600 s).
+
+----------------------------------------------------------------------------
+## Plot lockin frequency sweep, ellipse table  (2022-11-24)
+----------------------------------------------------------------------------
+
+    df <- read.table( "k4_LItable.txt", header=TRUE )
+
+Plot ellipse extent:
+    plot( df$FreqR_Hz, df$Ex_mm, ylim=c(0,1) )
+    points( df$FreqR_Hz, df$Ey_mm, col='red' )
+    abline( v=802.0 )
+    title( main='Resonant Ellipse Extent', sub='rn=k4_LItable.txt' )
+    text( 806, 0.5, "Ex_mm", pos=4, col='black' )
+    text( 806, 0.1, "Ey_mm", pos=4, col='red' )
+    dev.copy2pdf( file="freq_extent.pdf" )
+
+Plot ellipse phase:
+    plot( df$FreqR_Hz, df$Px_deg, ylim=c(-360,180) )
+    points( df$FreqR_Hz, df$Py_deg, col='red' )
+    points( df$FreqR_Hz, df$Pe_deg, col='green' )
+    abline( h=0 )
+    abline( h=180 )
+    abline( h=-180 )
+    abline( h=-360 )
+    abline( v=802.0 )
+    title( main='Resonant Ellipse Phase', sub='0.5 Hz steps, k4_LItable.txt' )
+    text( 798.5, 100, "Px_deg", pos=4, col='black' )
+    text( 798.5, -100, "Py_deg", pos=4, col='red' )
+    text( 798.5, -260, "Pe_deg", pos=4, col='green' )
+    dev.copy2pdf( file="freq_phase.pdf" )
+
+Conclusions:
+    The ellipse extent in X and Y shows a clear peak around 802 Hz.
+    The ellipse phase plots show rapid phase change around that same frequency.
+
+    The discontinuity in phase is artificial - 360 degrees can be added to any
+    point and leave the meaning unchanged.
+    It might be nice to add 360 degrees to the Py_deg and Pe_deg points to the
+    left of 802 Hz to make the curves continuous.
+
+    Here we looked at X and Y extent of the ellipse response, which showed a
+    strong resonant peak.
+    It might be nice to calculate the energy in the moving fiber cantilever
+    at each frequency - i.e. potential energy in the bent fiber, and kinetic
+    energy in the moving fiber.  The energy could be a better indication of
+    resonant response.  For now the simple displacement is a good enough
+    indicator.
 
