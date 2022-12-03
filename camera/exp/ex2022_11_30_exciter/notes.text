@@ -1,0 +1,654 @@
+2022-11-27  William A. Hudson
+
+		Exciter Displacement PUI Audio -- ex2022_11_30_exciter/
+		------------------------------
+
+Related:
+    ex2022_02_05_spot/		early system configuration
+    ex2022_04_23_sine_mcp4822/	driving exciter with sync marks
+
+Purpose:
+    Measure exciter displacement as a function of current.
+    PUI Audio ASX04008-R, 8 ohm, 3 W, 40 mm overall diameter.
+
+Files:
+    notes.text			this file
+    ncyc1_gain1000.crop.jpg	250 mA, grayscale, 2 cycles 10 Hz
+    ncyc1_gain2000.crop.jpg	500 mA, grayscale, 2 cycles 10 Hz
+
+    data/  ->		symlink to data, not in Git
+	flush_ferrule_1.jpg	daylight image of ferrule face
+	i_50Hz_0.176Vrms.jpg	250 mA, 50 Hz, auto exposed snapshot, color
+	x_ncyc1_gain1000.jpg	250 mA, color, full size
+	x_ncyc1_gain2000.jpg	500 mA, color, full size
+
+	spot1.jpg		initial trials
+	spot2.jpg
+	spot3.jpg
+	spot4.jpg
+	x_ncyc2_gain2000.crop.jpg
+	x_ncyc2_gain2000.jpg
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+    Very similar to:  ex2022_02_05_spot/notes.text
+
+System:
+    LED illuminates connector end of fiber optic cable, cleaved end is
+    held in a fiber ferrule (no cantilever) and imaged by a monocular
+    microscope lens on a Raspberry HQ camera.
+    Ferrule is driven by an exciter mounted on a micrometer stage.
+    Horizontal optical axis with camera axis:  +X horizontal right,
+    +Y vertical up, and +Z out of the page (toward camera); but note
+    image pixel number has +Y down.
+
+Components:
+
+    RPi:  rpiTouch  (Raspberry Pi 3B) with official LCD 7 inch screen.
+	Running the camera, which requires a local screen for preview.
+	Access via ssh.
+
+    RPi:  rpiFour  (Raspberry Pi 4)
+	Running the DAC.
+	Access via ssh.
+
+    Camera:  Raspberry Pi HQ Camera, C-mount
+	Sony IMX477R stacked, back-illuminated sensor, 12.3 megapixels,
+	7.9 mm sensor diagonal, 1.55 um x 1.55 um pixel size.
+	See:  ~/pro/raspberryPi/hq_camera/notes.text
+
+    Microscope lens:  Hayear Monocular 0.7-4.5x zoom, 1.0x adapter.
+	Spacing:  8.5 mm from HQ camera metal face to Microscope face.
+	Nominal 1x magnification setting, with one 5mm macro ring.
+	Distance objective to object:  ~100 mm
+	Cardboard box light cover.
+
+    Micrometer Stage:
+	SFT Technology SEMX80-AC Single Axis Crossed Roller Bearing Stage
+	Body 80 mm square, +-12.5 mm range, detent in center.
+
+    Exciter:  PUI Audio ASX04008-R
+	Rated:  8 ohm, 3 W, 40 mm overall diameter.
+
+    Exciter platform:  1/8 inch hardboard mounted on Micrometer Stage by
+	four M4-5.5 screws 40 mm long with nuts for adjustable height.
+	Retaining clamp for fiber jacket, aligns with ferrule on exciter.
+	Exciter rubber cemented on 1.25 inch steel washer 1/8 inch thick.
+	Fiber Ferrule 2.5 mm dia, 10.5 mm long epoxied on a balsawood block
+	22 mm x 12.5 mm x 6 mm high.
+
+    DAC:  exciter/kicad/avolt_dac_v1/
+	Voltage DAC v1.1 2022-07-28
+	12-bit DAC, 1 digital out, 1.3 kHz LP filter, +-256 mV full scale out.
+	MCP4822 datasheet:
+	http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en547855
+	Built on solderless breadboard.
+
+    Current Buffer:  ~/pro/fluxgate/kicad/v1/v1.sch  (not in Git)
+	Fluxgate - Current Driver  v1.2  2020-06-26
+	Built on soldered breadboard.
+	[Note prior experiments had a 91 kohm resistor in series with the input
+	making a 10:1 attenuator and transfer gain of 0.1 mA/mV.]
+
+    HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+
+    LED Fiber Light circuit:  led_light/kicad/led_fiber_v1/
+	Breadboard v1.0 2021-12-31
+	sw6 - 1.25 mA  LED current
+
+    LED:  Vishay VLCS5830
+	Wavelength spec:  620 nm min, 624 nm typ, 630 nm max at If= 50 mA.
+	From graph spectral width at 0.2% peak is about 620 nm to 640 nm.
+	Thus spectral width is about 20 nm.
+	This is broad compared to lasers which seem to be around 1 nm or 0.1 nm
+	spectral width.  [Searching laser line width on the web.]
+
+    Fiber:  Single mode, 9 um core, 125 um cladding.
+	FiberTronics PC-HH9S3YV02M Fiber Patch Cable, Single-mode OS2,
+	FC/UPC - FC/UPC Simplex, SMF-9/125, Yellow 3 mm PVC, 2 m long.
+	(Single mode for 1550 nm light, I think.)
+	Cut in half, FC/UPC connector on LED end, other end cleaved.
+	Jacket printing:  "3.0 SM G652D-9/125 um - PVC - 07/18 00575M"
+	Not glued in ferrule.
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+
+    Fluke 23 Multimeter:  measure DC and AC voltage.
+
+Software commands:
+    raspistill	Raspberry Pi camera
+    jpegtran	Lossless JPEG file crop and grayscale conversion
+    djpeg	decompress a JPEG file to Netpbm format
+    display	Image Magick display image files
+    R		for plotting
+
+Camera code:  camera/src/
+    pgm_box	Bounding box of an elliptical image
+    pgm_stats	Compute image stats - min, max, mean, standard deviation, CG
+    pgm_swatch	Extract a swatch of pixels in table format
+    pgm_width	Width (FWHM) of a spot (circular) image
+
+Exciter code:  exciter/src/
+    sine_mcp4822
+
+----------------------------------------------------------------------------
+## Purpose
+----------------------------------------------------------------------------
+
+Purpose:
+
+    Measure exciter displacement as a function of current.
+
+Method:
+
+    Use the camera to record an image of fiber tip movement from rest to
+    peak excursion in each direction.
+
+    This will take exciter current and power dissipation to near the maximum
+    tolerated by the exciter.
+
+    Normal exciter operation, and thus its rating, is for music where
+    the voice coil is moving and thus gets some air exchange for cooling.
+    Operating the voice coil at DC, there would be virtually no movement
+    and thus worst case heat dissipation.  Probably need to derate power
+    for continuous DC operation.
+
+    We want to avoid over heating, thus we minimize time at maximum DC
+    excursion.
+
+    To avoid overshoot in position, we can use a sinusoidal transition to the
+    peak current.
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+Notes on setting up, with a view toward later simplification.
+
+    Everything is still connected up from before.
+    View documentation/schematics on what it all is.
+
+LED Light schematic:  Breadboard v1.0 2021-12-31
+    % kicad  led_light/kicad/led_fiber_v1/ki.pro &
+    Solderless breadboard.
+
+    Ground GATEn input to enable light.
+    Set sw4=1, 5 mA current.
+
+Camera rpiTouch:
+    Power up.
+    Connect by ssh:
+	% ssh pi@rpiTouch.local
+
+    Run camera in preview mode:
+	% raspistill -v -t 0
+	Preview is on local display only.
+	Touch touchscreen or move mouse to wakeup display.
+
+    Set microscope lens to 1x.
+    Adjust microscope lens position to focus on fiber tip.
+    Use another target (e.g. pencil tip) placed close to fiber to help find it.
+    A millimeter ruler helps see scale of FOV - about 4.5 mm vertical.
+    Apply box cover (keep room light out).
+    Adjust focus for smallest bright spot in fiber core.
+
+DAC Current Buffer, rpiFour:
+    Composed of five subsystems:
+
+    HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Set for +-12.0 V
+	Power both DAC and Current Buffer.
+
+    rpiFour - Spi1 (rgUniSpi) controls the DAC.
+
+    DAC:  Voltage DAC v1.1 2022-07-28
+	12-bit DAC, 1 digital out, 1.3 kHz LP filter, +-256 mV full scale out.
+	Output drives the Current Buffer.
+	% kicad  exciter/kicad/avolt_dac_v1/ki.pro &
+
+    Current Buffer:  Fluxgate - Current Driver  v1.2  2020-06-26
+	Output drives the Exciter.
+	Transfer gain:  1.0 mA/mV
+	% kicad  ~/pro/fluxgate/kicad/v1/v1.pro &
+
+    Software:
+	exciter/doc/sine_mcp4822.text	- design, operation
+	exciter/src/sine_mcp4822.cpp	- main program
+	exciter/src/sine_mcp4822.init	- initialize rgUniSpi Spi1
+
+Verify Software:  sine_mcp4822
+    Run on laptop to view raw output.
+    % bin/sine_mcp4822 --help
+    % bin/sine_mcp4822 --raw --ncyc=1 --freq=1000 --syncmode=2  2>&1 | less
+
+    Run on rpiFour the same.
+
+Powering up previously built system:
+    Verify connections OK, nothing shorted or loose.
+    Exciter disconnected.
+    Current buffer - output shorted to disable.
+    Oscilloscope to observe:
+	Ch1 - GATE  LED gate signal.
+	Ch2 - Voa   DAC circuit output to current buffer input.
+    Power Supply ON - verify voltage +-12.0 V
+	Verify currents are low < 20 mA.
+
+    DAC output voltage:
+	On power up, the MCP4822 should have high-Z outputs until the first
+	valid write command.  This puts first op-amp U2B in unity gain with
+	output at Vref= 0.512 V, and circuit output Voa= 0.128 V.
+	[I did see a faulty power up where DAC output was at 3.2 V.]
+
+    Verify trim offset Vref= 0.512 V, (adjust RV4 trim pot).
+
+Configure rpiFour to run sine_mcp4822:
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    Bit  Mode  Function
+     16  Alt4  spi1_CE2_n
+     17  Alt4  spi1_CE1_n
+     18  Alt4  spi1_CE0_n
+     19  Alt4  spi1_MISO
+     20  Alt4  spi1_MOSI
+     21  Alt4  spi1_SCLK
+
+    % src/sine_mcp4822.init
+    + rgpio uspi -1 --SpiEnable_1=1
+    + rgpio uspi -1 --Speed_12=640 --EnableSerial_1=1 --ShiftLength_6=17
+    + rgpio uspi -1 --OutMsbFirst_1=1 --ChipSelects_3=0
+    ...
+
+Run DAC from rpiFour:
+    % bin/sine_mcp4822 --raw --ncyc=1 --nramp=1 --freq=1000
+	Default gain=0, so output should go to zero.
+
+    % bin/sine_mcp4822 --raw --ncyc=1 --nramp=1  --freq=1000 --gain=2000
+
+    Run sine_mcp4822 - verify current buffer input amplitude and frequency.
+
+    Connect exciter, remove short.
+    Run exciter experiments.
+
+----------------------------------------------------------------------------
+## Maximum Power for Exciters
+----------------------------------------------------------------------------
+
+    Exciter:  PUI Audio ASX04008-R, 8 ohm, rated 3 W
+
+    The exciter power rating is 3 W RMS, continuous.
+    We are driving essentially at DC.
+    For comparison, a 5 W power resistor at 3 W gets fairly warm.
+
+Max current:  8 ohm
+    P = I^2 * R		power in a resistive load
+
+    I = sqrt( P / R )
+
+    Imax = sqrt( (3 W) / (8 ohm) )  = 0.61 A
+
+    Power supply current is limited to 0.5 A:
+	P = (0.5 A)^2 * (8 ohm)  = 2.0 W
+
+	Note the square of current has a big effect on power.
+
+Max current:  4 ohm
+    Imax = sqrt( (3 W) / (4 ohm) )  = 0.87 A
+    Imax = sqrt( (2 W) / (4 ohm) )  = 0.71 A
+
+DAC Output:
+    Max as built is +-250 mV.
+    Gives current buffer +-250 mA.
+    Good for exciter driving fiber resonance.
+
+    For more current (DAC voltage), change R2a/R3a attenuator:
+	R2a       R3a        Voa
+	30 kohm   10 kohm    +-256 mV   original v1.2
+	10 kohm   10 kohm    +-512 mV
+	 0 ohm    10 kohm   +-1024 mV
+
+----------------------------------------------------------------------------
+## Try +-250 mA exciter current  (2022-11-30)
+----------------------------------------------------------------------------
+
+General process:
+    Set camera for 1 s exposure.
+    Run 2 cycles of sine_mcp4822 in that window.
+    Try synchronizing by hand first.  Then maybe a script to launch both.
+
+Other methods:
+    A) Single cycle sine wave.
+    B) Drive DC voltage, wait to settle, take picture.
+
+----------------------------------------
+
+LED current:  sw4 = 5 mA
+
+    pi@rpiTouch:~/work/fiber_scanner/camera/exp/x2022_11_30_exciter/
+
+rpTouch:  camera in preview mode
+    % raspistill -v -t 0
+
+Explored previous resonant cantilever as a way to verify operation.
+
+    % bin/sine_mcp4822 --ncyc=2000 --freq=504 --gain=2000 --nramp=2000
+	About 4 seconds each in ramp-up, hold, ramp-down.
+	See a couple of resonant ellipse modes as amplitude ramps up.
+
+Adjust fiber about flush with end of ferrule.
+    Fiber is slightly recessed.  Adjust focus (Z position) for smallest spot
+	in fiber core.
+
+ >> % raspistill -v -o flush_ferrule_1.jpg
+	Cover off, flashlight illumination of fiber face.
+	LED current sw4, 5 mA.
+	Microscope 1x
+	Nice view of ferrule end face with dark fiber cladding and bright
+	red core.
+
+Explore exciter displacement:
+
+    % bin/sine_mcp4822 --ncyc=2000 --freq=504 --gain=2000 --nramp=2000
+	Camera preview shows very little motion, maybe slight blurring.
+
+Increase current drive capability:
+    Remove 91 kohm resistor (10:1 attenuation) on input to current driver.
+    Now Transfer Gain = 1 mA/mV
+    At gain=2000:
+	Voa = (2000/2048) * 256 mVpp  = 250 mVpp
+	Io  = Voa * 1 mA/mV  = 250 mApp
+
+    % bin/sine_mcp4822 --ncyc=100 --freq=50 --gain=2000 --nramp=10
+	--freq
+	Frequency  = 50.0000
+	Wtab.Nsize = 131072
+	Sox.Gain   = 0
+	Sox.Offset = 2048
+	Sox.HiGain_Qd12   = 8192000
+	Sox.GainStep_Qd12 = 819200
+	Sox.RampDuration  = 10
+	Sox.HoldDuration  = 200
+	Nox.Stride = 327.7000
+	Nox.Phase  = 0.0000
+	NperCycle  = 399.9756
+	nsize   = 131072
+	istride = 328
+	    cycle_cnt=    220
+	    loop_cnt=     46585835
+	    fifo_cnt=     87596      50003 ns/fifo_write
+	    overflow_cnt= 0
+	    delta_ns= 4380089182 ns,    94 ns/loop
+	Fsamp =    19998.8 Hz
+	Fcyc  =       50.0 Hz
+
+        Run at 50 Hz for ~2 seconds.
+    	Shows noticeable movement.
+	About 7 mm on an 86 mm high screen.
+	Current buffer input is 0.176 Vrms (0.250 Vpp)
+
+Try image capture - run long, take auto exposed snapshot:
+
+    % bin/sine_mcp4822 --ncyc=2000 --freq=50 --gain=2000 --nramp=10
+
+ >> % raspistill -v -o i_50Hz_0.176Vrms.jpg
+
+Try 2 cycles on long exposure:  (actually produces 3 cycles)
+    Note:  --ncyc=2 produces 2 cycles and --nramp=1 produces one cycle,
+    all full amplitude.
+
+    % bin/sine_mcp4822 --ncyc=2 --nramp=1 --freq=10 --gain=2000
+
+    % raspistill -v  --shutter 10000 --awb off --awbgains 1.0,1.0 \
+	--analoggain 1.0 --digitalgain 1.0  -o spot1.jpg
+
+    % raspistill -v  --shutter 10000 --awb off --awbgains 1.0,1.0 \
+	--analoggain 1.0 --digitalgain 1.0  -o spot2.jpg
+
+    These all missed the exciter movement.
+
+	--shutter  : Set shutter speed in microseconds
+	--exposure : Set exposure mode (see Notes)
+
+--------
+    % raspistill -v -t 1 --exposure verylong  --shutter 1000000 --awb off \
+	--awbgains 1.0,1.0 --analoggain 1.0 --digitalgain 1.0  -o spot4.jpg
+
+	Wait until preview screen shows, then run exciter.  Worked.
+	Center at:  (2048, 1671)  pixels
+
+	I don't think -t does anything with "--exposure verylong"
+
+--------
+ >> % raspistill --exposure verylong  --shutter 1000000 --awb off \
+	--awbgains 1.0,1.0 --analoggain 1.0 --digitalgain 1.0  \
+	-o x_ncyc2_gain2000.jpg
+
+	Center at:  (2050, 1670)
+
+    % bin/sine_mcp4822 --ncyc=2 --nramp=1 --freq=10 --gain=2000
+	--freq
+	Frequency  = 10.0000
+	Wtab.Nsize = 131072
+	Sox.Gain   = 0
+	Sox.Offset = 2048
+	Sox.HiGain_Qd12   = 8192000
+	Sox.GainStep_Qd12 = 8192000
+	Sox.RampDuration  = 1
+	Sox.HoldDuration  = 2
+	Nox.Stride = 65.5398
+	Nox.Phase  = 0.0000
+	NperCycle  = 1999.8842
+	nsize   = 131072
+	istride = 66
+	    cycle_cnt=    4
+	    loop_cnt=     3198058
+	    fifo_cnt=     6001       49993 ns/fifo_write
+	    overflow_cnt= 0
+	    delta_ns=  300011888 ns,    93 ns/loop
+	Fsamp =    20002.8 Hz
+	Fcyc  =       10.0 Hz
+
+----------------------------------------
+Analyze:  x_ncyc2_gain2000.jpg
+
+    jpegtran
+	-crop WxH+X+Y
+
+ >> % jpegtran -grayscale -crop 256x256+1922+1542 x_ncyc2_gain2000.jpg \
+	> x_ncyc2_gain2000.crop.jpg
+
+	result file:  258x262
+
+    % djpeg x_ncyc2_gain2000.crop.jpg | pgm_stats
+	Ncol   = 258
+	Nrow   = 262
+	Npix   = 67596
+	MaxVal = 255
+	Max    = 255
+	Min    = 0
+	Sum    = 761942
+	Mean   = 11.272
+	SD     = 36.9525
+	CGxy   = 130, 132
+
+    % djpeg x_ncyc2_gain2000.crop.jpg | pgm_box
+	Ncol   = 258
+	Nrow   = 262
+	Npix   = 67596
+	MaxVal = 255
+	Max    = 255
+	Min    = 0
+	Mean   = 11.272
+	SD     = 36.9525
+	CGxy   = 130, 132
+	  Bounding Box Y:
+	YmaxMean = 77
+	YminMean = 0
+	YhalfMax = 38
+	Ytop     = 27
+	Ybot     = 238
+	Yfwhm    = 211
+	  Bounding Box X:
+	XmaxMean = 186
+	XminMean = 0
+	XhalfMax = 93
+	Xleft    = 125
+	Xright   = 135
+	Xfwhm    = 10
+
+	Ydelta = Ybot - Ytop = 211
+
+    Hand pick extent from display image:
+	Ymx  = 233
+	Ymin =  30
+
+	Ydelta = 203
+	Camera 1.5 um/pixel
+
+	Ydelta_um = 304 um
+	    at exciter current Io = 250 mApp
+	    gives 1.22 um/mA
+
+    % djpeg x_ncyc2_gain2000.crop.jpg | pgm_swatch --geo=30x256+115+0 | less
+
+----------------------------------------------------------------------------
+## Repeat with +-500 mA exciter current  (2022-12-01)
+----------------------------------------------------------------------------
+
+Modify Voltage DAC v1.1 2022-07-28:  (exciter/kicad/avolt_dac_v1/)
+    Replace R2a= 30 kohm (4:1) with R2a= 10 kohm  making (2:1) voltage divider.
+    Now output Voa = +-512 mV.
+
+Power up system.
+
+Verify output voltage of DAC circuit Voa:
+
+    % bin/sine_mcp4822 --ncyc=1000 --freq=50 --gain=2000 --nramp=10
+	Voa = 0.351 Vrms  --> 0.496 Vpeak
+
+Connect current buffer, output shorted.
+
+    % bin/sine_mcp4822 --ncyc=200 --freq=50 --gain=2000 --nramp=10
+	Vpp current  0.17 A  DC on power supply meter.
+	If that was a sine wave:  0.17 A * sqrt(2) = 0.24 A peak.
+	And that is only positive half of sine wave, so 2x gives 0.48 A peak,
+	which is close to expected 0.50 A peak.
+
+Drive exciter:  (remove current short)
+    Verify camera and exciter is working.
+
+    % raspistill -v -t 0
+    % bin/sine_mcp4822 --ncyc=1 --nramp=1 --freq=10 --gain=1000
+
+--------
+    % bin/sine_mcp4822 --ncyc=1 --nramp=1 --freq=10 --gain=1000
+ >> % raspistill --exposure verylong  --shutter 1000000 --awb off \
+	--awbgains 1.0,1.0 --analoggain 1.0 --digitalgain 1.0 \
+	-o x_ncyc1_gain1000.jpg
+
+	Center at (2111, 1702)  extent Ytop= 1600, Ybot= 1801  (hand picked)
+	Ydelta = 201 pixel,  at 1.5 um/pixel is  301 um 
+	Io = (1000/2048) * 512 mV * 1 mA/mV = 250 mA
+	Ydelta/Io = 0.804 pixel/mA
+
+--------
+    % bin/sine_mcp4822 --ncyc=1 --nramp=1 --freq=10 --gain=2000
+ >> % raspistill --exposure verylong  --shutter 1000000 --awb off \
+	--awbgains 1.0,1.0 --analoggain 1.0 --digitalgain 1.0 \
+	-o x_ncyc1_gain2000.jpg
+
+	Center at (2110, 1701)  extent Ytop= 1501, Ybot= 1897  (hand picked)
+	Ydelta = 396 pixel,  at 1.5 um/pixel is  594 um
+	Io = (2000/2048) * 512 mV * 1 mA/mV = 500 mA
+	Ydelta/Io = 0.792 pixel/mA
+
+    Comparing amplitudes:
+	Ydelta( 500 mA ) / Ydelta( 250 mA ) = 396 pixel / 201 pixel  = 1.970
+
+	Thus get about twice the amplitude for twice the current, as expected.
+
+	Exciter is a magnetic device, force is proportional to current and
+	the spring return force is linear.  Thus 2x current is 2x force
+	and 2x displacement.
+
+	This 250 mA result is very close to yesterdays result.
+
+	Focus is reasonable, but probably not quite as good as earlier.
+	Images show a bright center spot with blooming and bokeh rings,
+	while the vertical trace is much narrower.
+
+    Crop image files:
+
+ >>	% jpegtran -grayscale -crop 256x512+1982+1446 x_ncyc1_gain2000.jpg \
+	    > ncyc1_gain2000.crop.jpg
+
+ >>	% jpegtran -grayscale -crop 256x512+1982+1446 x_ncyc1_gain1000.jpg \
+	    > ncyc1_gain1000.crop.jpg
+
+Oscilloscope verified:
+    DAC circuit output Voa:  (at 50 Hz)
+	      scope			AC voltmeter
+	Voa = 982 mVpp  at --gain=2000  0.351 Vrms
+	Voa = 485 mVpp  at --gain=1000  0.175 Vrms
+
+    Current buffer voltage drop across 1 ohm sense matches Voa.
+
+    The two cycle (--ncyc=1) waveform looks good.  Full cycles starting from
+	zero going negative (the circuit inverts the DAC code).
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+    Exciter:  PUI Audio ASX04008-R, 8 ohm, rated 3 W
+	computed power at:
+	250 mA peak  Power 0.5 W peak (0.35 Wrms)
+	500 mA peak  Power 2.0 W peak (1.4  Wrms)
+
+    Displacement was sub-millimeter:  (camera 1.5 um/pixel)
+	Ydelta = 201 pixel,  301 um  at 250 mA
+	Ydelta = 396 pixel,  594 um  at 500 mA
+
+    Displacement looks proportional to current as expected.
+	Ydelta/Io = 0.804 pixel/mA, 1.206 um/mA  at 250 mA
+	Ydelta/Io = 0.792 pixel/mA, 1.188 um/mA  at 500 mA
+
+    See grayscale cropped images:
+	ncyc1_gain1000.crop.jpg		250 mA
+	ncyc1_gain2000.crop.jpg		500 mA
+
+    Currents are peak, for a 10 Hz sinusoid, e.g. 250 mA is +-250 mA.
+
+    Camera coordination:  Camera with a 1 second exposure, wait until preview
+    screen shows, then run exciter with sine_mcp4822.  This works, but is
+    a bit awkward.
+
+    Images show an over-exposed center spot where exciter is stationary for
+    almost the whole exposure.  The two cycles of 10 Hz show the exciter
+    excursion very well.  Used a low frequency sinusoid to stay well below
+    any exciter resonances.
+
+Next:
+    Probably develop 2-axis driver circuit and DAC software.
+
+Need:
+    Want a way to have LED ON for only the active cycles.
+	Avoid over-saturated spot in the middle.
+
+    sine_mcp4822 - remove stray "--freq" in the output.
+
+ v  Higher voltage DAC output - 512 mV or 1.024 V
+
+    Higher current power supply to get > 0.5 A.
+
+    Maybe plot displacement vs current.
+
+    Calibrate current delivered.
+
+    Need better way to coordinate exciter and camera.
+
+    Need DAC circuit output to be zero volts at power-up (instead of maximum).
+	Simplify sequencing.
+
+    Way to set DC output on DAC.
+

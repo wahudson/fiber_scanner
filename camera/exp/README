@@ -5,8 +5,8 @@
 
 Write-up experiments here.
 
-Experiment directory names incorporate the date first, since that is most
-meaningful.  New experiments might add to a directory, but more likely to
+Experiment directory names lead with the date, since that is most meaningful.
+New experiments might add to a directory, but more likely to
 start a new one and refer to the old one.
 
 Raw data in:  ../data/
@@ -24,4 +24,6 @@ ex2022_02_05_spot/	Camera Settings on Stationary Fiber Spot
 ex2022_03_20_pmfiber/	PM Fiber on Soberton exciter micrometer stage
 
 ex2022_04_23_sine_mcp4822/	sine_mcp4822 program with LED Gate
+
+ex2022_11_30_exciter/	Exciter Displacement PUI Audio, 2 cycles 10 Hz
 
