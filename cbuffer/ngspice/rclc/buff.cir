@@ -1,0 +1,31 @@
+Buffer Feedback from node no to node nn
+
+.AC dec  10  10  10e6
+* .AC dec  points_per_decade  fstart  fstop
+
+
+* the Load
+Ll  no  nl  0.10mH
+Rl  nl  ns  4.0
+
+* the compensation
+Rd  no  nd  333
+Cd  nd  nn  0.01uF
+Rn  nn  ns  100
+
+* the current sense resistor
+Rs  ns  gnd 1.0
+
+Vin no gnd 0.0  ac  1.0  pulse( -10, +10, 0, 0.5u, 0.5u, 4.5u, 10u )
+
+.end
+
+
+.control
+run
+plot I(Vin) imag( I(Vin) )
+plot real( nn ) imag( nn )
+plot db( nn )
+plot ( ph( nn ) * 180 / pi )  ylabel 'deg'
+.endc
+

@@ -1,0 +1,81 @@
+2022-12-23  William A. Hudson
+
+		Labeling Instrument Panel
+		-------------------------
+
+----------------------------------------------------------------------------
+## Professional panel printing
+----------------------------------------------------------------------------
+
+A) Powder coat panel with two colors.
+    Laser etch thru the top color to reveal lettering in the first layer.
+    Is done a lot in for General Aviation airplane panels.
+    UTube video shows a laser making multiple passes to burn thru first layer.
+
+B) Silk screen labels.  Traditional.
+
+C) Laser engraving on anodized aluminum.
+    https://www.aircraftspecialty.com # panellabel
+
+D) Polycarbonate panel overlays.
+    https://www.nuartgraphics.com
+
+Amature methods:
+
+E) Various label makers.
+
+F) Reverse print labels on plastic sheet covered with hair gel spray.
+    Transfer wet printing to the panel.
+    Cover printed panel with clear Krylon spray paint.
+
+G) CNC router engraving.
+
+H) Hand lettering with various ink/paint marking pens.
+
+----------------------------------------------------------------------------
+## My Idea   2022-12-23
+----------------------------------------------------------------------------
+
+Concepts:
+
+  A) Apply a plastic film to the panel, with some kind of releasing stickum.
+    Low power laser to melt the plastic film onto the panel in the lettering.
+    Peel off background plastic film.
+
+    Peeling off the background film could be problematic if the lettering
+    isolates parts of the film.
+
+  B) The film could be a high-temperature carrier, e.g. Kapton, for the
+    low temperature plastic to be melted on as lettering.
+    This could be like a roll of tape - put the tape only where you need
+    the lettering.  Save on material.
+
+  C) Idea is makers may already have access to a laser cutter.
+    Turn down the power to melt on the lettering.
+    Tape saves trouble of powder coating (or painting) the panel.
+
+    Seems ideal for a tape manufacturer - e.g. 3M.
+
+  D) Lay a thin sheet of plastic for lettering on the panel.  No special
+    adhesive, just tape the edges.
+    Laser melt lettering.
+    Might be tricky to get plastic sufficiently in contact with panel to
+    stick when melted.
+
+    Electro-static attract plastic sheet to panel.
+
+    Glass cover slide over plastic sheet to hold it in contact.  Laser
+    melt thru the glass.
+
+  E) 3D Printer with a filament that sticks well to the panel.
+    Perhaps heat the panel.
+
+  F) Powdered plastic is sprinkled on the panel.
+    Laser fuses the plastic forming the lettering.
+    Brush off un-fused plastic.
+
+  G) Paint on a layer of plastic liquid.  Laser cross-links the plastic
+    forming the lettering.  Solvent removes un-cross-linked plastic.
+
+  H) Inkjet printer directly on the panel.
+

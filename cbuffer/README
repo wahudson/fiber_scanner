@@ -1,0 +1,26 @@
+2022-12-07  William A. Hudson
+
+		Current Buffer Design - Fiber Scanner
+		-------------------------------------
+
+Current buffer for driving exciters.
+Schematics, design, and construction of Current Source.
+
+Files:  (2022-12-07)
+------
+README		this file
+
+doc/		Documentation
+    architecture.text       Overall design
+    bom_parts.text          Bill of Material for a 2-Channel Current Buffer
+    panel_printing.text     Ideas for Labeling an Instrument Panel
+
+kicad/		Schematic design
+    README
+    cbuffer_v2/		initial design
+    lib/		local library
+
+exp/		Experiments and Results
+
+ngspice/	Spice simulations
+

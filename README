@@ -11,10 +11,10 @@ Files:
 ------
     README
     camera/	camera image analysis
+    cbuffer/	current buffer circuit/instrument
     data/
     doc/	general doc
     exciter/	fiber electromagnetic driver systems
-    exp/
     led_light/	LED fiber light source
     lissajous/	Lissajous pattern, ellipse, and lockin theory
     niDAQ/	Matlab language and NI DAQ use

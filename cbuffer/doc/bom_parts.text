@@ -1,0 +1,170 @@
+2022-12-11  William A. Hudson
+
+	    Bill of Material (BOM) - 2 Channel Current Buffer
+	    -------------------------------------------------
+
+----------------------------------------------------------------------------
+## Design Stage
+----------------------------------------------------------------------------
+
+    Selecting components in parallel with the design.
+
+Need quantity
+ -- Have quantity
+    --
+
+Circuit Board, Current Buffer, per channel
+    Need 2x - for 2 channels
+----------------------------------------
+
+ 1  OPA548  High-Voltage, High-Current Operational Amplifier, 5A
+    1	$14.67 DigiKey  OPA548T-1  TO220-7  straight leads
+
+ 1  Heat Sink TO-220, Rectangular, W-shaped fanned fins on single side.
+    1	$2.76  DigiKey  294-1082-ND,  CTS 7-345-2PP-BA
+
+ 1  Thermasil3 Thermal Pad TO-220 mounting kit
+    3	$2.64  DigiKey  4880SG-ND,  Aavid 4880SG
+
+ 1  Protoboard, DIN rail, 3.42"L x 1.29"W
+    5	$3.60  DigiKey  Bud DMB-4770-CB, 11 wide, 3.42" L x 1.29" W
+
+ 1  Screw terminals to PCB, 3 pos - Power connection, +9, -9, Gnd
+    0	$0.68  DigiKey  Phoenix 1935174,  5 mm, 3 pos, para
+
+ 1  Screw terminals to PCB, 2 pos - Output connection
+    0	$0.49  DigiKey  Phoenix 1935161,  5 mm, 2 pos, para
+
+ 4  Male Header pins, 2 pos - Input connection, option jumpers, shutdown, LED
+    v	On-hand.  Cut header strip.
+
+ 4  Female Header sockets, 2-position - mating wires
+    3	$0.33  DigiKey  S7035-ND, Sullins PPPC021LFBN-RC  2-position
+
+ 4  Single solder socket - for optional/change components
+    v	On-hand.
+
+ 2  Electrolytic Capacitor - power bypass
+    8	$0.60  DigiKey   Rubycon 50ZLJ180M8X20   180 uF, 50V, 58 mohm, 1.58 A
+
+ 2  Ceramic Capacitor 1.0 uF - power bypass
+    8	$0.67  DigiKey  Kemet C340C105K1R5TA     1.0uF, 100V, Shoulder 0.200
+
+ 4  Ceramic Capacitor 0.1 uF - power bypass
+    9	$0.22  DigiKey  Kemet C320C104K5R5TA     0.1uF,  50V, Straight 0.100
+	$0.10 *50 DigiKey  Kemet C420C104K5R5TA7200 0.1uF, 50V, X7R, 10%, Axial
+
+ 1  Ceramic Capacitor 0.01 uF - power bypass, C10 ??
+    ??
+
+ 1  Sense Resistor, 1 ohm, 5 W
+	Vishay Wirewound  5%, AC series:  1W, 3W, 4W, 5W, 7W, 10W
+    2	$0.78  DigiKey  AC05000001008JAC00   1 ohm, 5%, 5W
+
+ 1  Op-Amp - input protection/filter
+	TL05x  Enhanced JFET, Low Offset  Op Amp
+    2	$0.71 DigiKey  TL052CP  8-PDIP  Dual
+	$0.70 DigiKey  TL051CP  8-PDIP  Single
+	LM358 series  Industry-Standard Dual Op-Amps, bipolar
+    0	$0.42 DigiKey  LM358AP  8-PDIP, dual
+
+ 1  Socket, 8-PDIP
+    v	On-hand
+
+ 1  NMOS Transistor, TO92-3 - shutdown detection
+	VN0106  N-Channel  60 V, 350 mA, MOSFET
+    9	$0.61  DigiKey  Microchip VN0106N3-G TO92-3  (on-hand)
+
+ 1  Capacitor 12 nF COG, 50 V - Cp3 filter
+    9	On hand Vishay 12 nF COG
+
+ 1  Capacitor 47 nF COG, 50 V - Cf4 stability compensation
+    0	$0.51 *10 DigiKey TDK FG16C0G1H473JNT06 0.047uF, 50V, COG 5%, 2.5 mm
+
+    Resistors, 1/4 W, Metal Film, 1%
+ 3	10 kohm  R1, R2, Rp3
+ 1	402 ohm  Rf4
+ 1	100 ohm  Rf5
+ 1	750 ohm  R6 -- 402 ohm
+
+Front Panel:
+------------
+
+ 1  Binding Post - for equipment ground
+    0	$7.56  DigiKey  Cinch 111-2223-001, Grounding, metal knurled knob
+
+ 1  Binding Post - for StarGnd
+    0	$5.49  DigiKey  Pomona 3760-0, Black, Insulated
+
+ 2  Terminal Block Header - output current connector
+	Terminal Block Header, Panel Mount, Male pins, 0.200 inch pitch
+    0	$3.12  DigiKey  Phoenix 0707248  2-pos, Front flange, solder, grn
+
+ 2  SPST toggle Switch - Output Shunt/Short
+    4	$1.87 DigiKey  100SP1T1B1M1QEH  SPDT, On-On, Round 10.41 mm, Solder lug
+
+ 1  DPST toggle Switch - Op-Amp enable/disable 2 channels
+    2	$2.39 DigiKey  100DP1T1B1M1QEH  DPDT, On-On, Round 10.41 mm, Solder lug
+
+ 2  LED - Shutdown indicator
+    v	Red LED, 5 mm, 20 mA (on hand)
+
+ 1  LED - Power indicator
+    v	Red LED, 5 mm, 20 mA (on hand)
+
+ 3  LED Clip/Ring Mount for 5mm LED (T1-3/4)
+    0	$0.53  DigiKey  Broadcom HLMP-0103,  5mm LED
+
+ 1  Resistor 1/4 W - power-on LED
+    0	470 ohm  R6 -- 402 ohm
+
+
+Output Cable:
+-------------
+
+ 4  Terminal Block PCB Header, Male pins, Shrouded, 0.200 inch pitch
+    0	$1.07  DigiKey Molex 0395355002 2-pos, vertical, retain, flange, grn
+
+ 6  Terminal Block Plug, Female Sockets, 0.200 inch pitch
+    0	$0.72  DigiKey Weidmuller 2647250000  2-pos, 180 deg, 12-30 AWG $3.10
+
+    Cable, 2-conductor, twisted pair
+
+Power Supply System:
+--------------------
+
+ 2  Power Supply AC-DC - for +-9 V
+    0	$20.08  DigiKey  CUI  PSK-S20C-9-T   9 V, 2.20 A, 20 W, LED  obsolete
+    0	$16.34  DigiKey  CUI  PSK-20D-9-T    9 V, 2.2 A,  20 W, LED Fuse
+
+ 1  Power Entry Module, Line Filter - for AC line power connection
+    0	$21.44  DigiKey  Schurter DD12.1111.111, Filter 1 A, 1-pole fuse
+
+ 1  Schurter Fuse drawer
+    0	$3.26  DigiKey  Schurter 4301.1405, 1-pole fuse, fingertip
+
+ 1  Fuse - see switching supply surge requirements.
+	Fuse cartridge, 5mm x 20mm, glass, Slow
+    0	$0.55  DigiKey  BelFuse 5ST 3.15-R,  3.15 A,  33 A2s
+
+ 1  Ground Post - for StarGnd
+	Screw and Nut (on hand)
+
+Enclosure:
+----------
+
+ 1  Enclosure Box, plastic
+	Hammond 1598 Series - ABS Plastic Instrument Enclosures - Split Shell
+    0	$25.76  DigiKey  Hammond 1598GGY   9.84 L, 6.30 W, 3.00 H, Gray
+
+ 1  Mounting Plate - to hold everything in enclosure.
+	1/8 inch acrylic sheet?  1/4 inch?
+
+
+Hardware:
+---------
+
+ 8  Stand-off, #40 1/4 inch long
+
+ 12 Screw, sheet metal, #40 3/8 inch long
+

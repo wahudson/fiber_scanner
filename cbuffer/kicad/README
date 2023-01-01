@@ -1,0 +1,14 @@
+2022-12-14  William A. Hudson
+
+		Current Buffer Systems - Schematics
+		-----------------------------------
+
+Library from (2022-04-14):  /home/wah/pro/fiber_scanner/exciter/kicad/lib/
+Kicad:  Version: 5.0.2-bee76a0~70~ubuntu18.04.1, release build
+
+Files:
+------
+README
+cbuffer_v2/	Single OPA548 Current Buffer
+lib/		Library
+

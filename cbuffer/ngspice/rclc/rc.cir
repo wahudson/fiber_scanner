@@ -1,0 +1,23 @@
+Simple lowpass RC
+
+* .tran 1.0u 2000u
+.AC dec 5  10  1000000
+* .AC dec  points_per_decade  fstart  fstop
+
+R1 n0  n1 1000
+C1 n1  gnd 0.10uF
+
+Vin n0 gnd 0.0  ac  1.0  pulse( -10, +10, 0, 0.5u, 0.5u, 4.5u, 10u )
+
+.plot n1
+.end
+
+
+.control
+run
+plot I(Vin)
+plot real( n1 )  imag( n1 )
+plot db( n1 )
+plot ( ph( n1 ) * 180 / pi )  ylabel 'deg'
+.endc
+

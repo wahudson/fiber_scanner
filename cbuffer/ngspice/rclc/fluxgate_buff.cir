@@ -1,0 +1,70 @@
+Fluxgate Buffer Compensation
+* 2022-12-19  William A. Hudson
+*
+* Choose the compensation gain to equal the load gain.
+*    Rload/Rsense == Rcomp/(Rncmp + Rsense)
+*    For Rload = 4.0, Rsense = 1.0; then
+*       Rcomp = 400,  Rncmp = 100  and Ccomp = 0.05uF
+*    Or Rcomp = 4000, Rncmp = 1000 and Ccomp = 0.005uF
+* There is a Ccomp that exactly balances Lload.
+*    Lload = 0.10mH and Ccomp = 0.05uF gives f0 = 7.3 kHz and flat phase=0.
+
+.AC dec  10  10  10e6
+* .AC dec  points_per_decade  fstart  fstop
+
+.param Lload = 0.10mH
+.param Rload = 4.0
+
+.param Ccomp = 10nF
+.param Rcomp = 3.9k
+.param Rncmp = 1000
+
+* .param Rsense = 1.0	// did not work
+
+.func  ph_deg(x) { ph( x ) * 180 / pi ) }
+
+* The full network
+Ll  no  nl  Lload
+Rl  nl  ns  Rload
+
+Rd  no  nd  Rcomp
+Cd  nd  nn  Ccomp
+Rn  nn  ns  Rncmp
+
+Rs  ns  gnd  1.0
+
+* The load path
+Lal  no   nal  Lload
+Ral  nal  nas  Rload
+Ras  nas  gnd  1.0
+
+* The compensation path
+Rbd  no   nbd  Rcomp
+Cbd  nbd  nbn  Ccomp
+Rbn  nbn  nbs  Rncmp
+Rbs  nbs  gnd  1.0
+
+Vin no gnd 0.0  ac  1.0  pulse( -10, +10, 0, 0.5u, 0.5u, 4.5u, 10u )
+
+.end
+
+
+.control
+run
+
+*plot I(Vin) imag( I(Vin) )
+*plot (no - nl)
+
+let nas_deg = ph( nas ) * 180 / pi
+let nbn_deg = ph( nbn ) * 180 / pi
+let nn_deg  = ph( nn )  * 180 / pi
+
+plot db( nas )  db( nbn )  db( nn )
+plot nas_deg  nbn_deg  nn_deg
+
+*plot real( nn ) imag( nn )
+*plot db( nn )
+*plot ( ph( nn ) * 180 / pi )  ylabel 'deg'
+
+.endc
+

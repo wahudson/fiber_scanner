@@ -1,0 +1,504 @@
+2022-12-07  William A. Hudson
+
+		Current Buffer for Fiber Scanner
+		--------------------------------
+
+See also projects:
+    dac_adc/    DAC circuits
+    fluxgate/	Current buffer circuits
+
+----------------------------------------------------------------------------
+## Discussion
+----------------------------------------------------------------------------
+
+Making a Current Buffer instrument.  Organized as a sub-project.
+
+    The fluxgate/ buffer, which was built earlier, will be called version v1,
+    so this is version v2.
+
+Exciter as Load:
+    An exciter is essentially the voice coil driver of a speaker, a speaker
+    without a sound cone.
+    8 ohm and 4 ohm is common.
+    There are 1 ohm for very low voltage drive, but we won't consider those.
+
+    In particular, we have a 4 ohm, 5 W, 40 mm dia speaker with a
+    5 mm excursion that we want to drive.
+
+----------------------------------------------------------------------------
+## Overview Initial Design - v2
+----------------------------------------------------------------------------
+
+Attributes:  (basic capabilities/constraints)
+
+    2 channel, for XY drive exciters.
+
+    1 A max current
+    4 V compliance
+	i.e. able to drive a 4 ohm exciter at 1 A
+
+    Load must be isolated, e.g. an exciter.
+    Input is 1 Vpp max.
+    Enable output switch.
+    Power supplies built-in, with a line power cord.
+    Box enclosure - suitable for use in the optics lab.
+
+    Works as a stand-alone instrument.
+	AC line cord.
+	BNC input
+	Screw terminal output
+
+    This is a guide about what we want, NOT rigid requirements.
+
+System Overview:
+    Power Entry Module.
+    +-9 V switching power supplies.
+    Current buffer circuits on soldered protoboard, heatsinks.
+    Front panel - terminals, BNC, switches, LED status.
+    Mechanical enclosure, mounting.
+
+Current Buffer Circuit:
+    Based on fluxgate/ v1 buffer.
+
+    OPA548 power op-amp.
+	Supply +-4 V to +-30 V
+	Output current: 3 A continuous.
+	Output voltage within 4 V of rail.
+
+    Sense resistor - 1.0 ohm, gives 1.0 V at 1 A.
+	Lots of sensitivity.  No need for low voltage drop.
+
+    Supply voltage choice:  +-9 V
+	Limits output voltage range.
+	Higher voltage increases op-amp power dissipation.
+
+	OPA548 output cannot swing close to the rails.
+	From graph:  at 1.0 A output current
+	    output current:	1 A	2 A	3 A
+	    			-----	---	---
+	    abs( Vpp - Vo ) =	2.4 V	3.0	3.8
+	    abs( Vnn - Vo ) =	1.3 V	2.2	3.1
+
+	For conservative design, use 3.0 V as supply headroom (both rails).
+	For 9 V supplies, this gives 6.0 V output swing.
+	With 1 V drop over 1 ohm sense resistor at 1 A, gives 5.0 V compliance.
+	This is good enough for our 4 ohm exciter.
+
+	An 8 ohm exciter is limited to (5.0 V)/(8 ohm) = 0.6 A output.
+	Good enough, since it also would have twice the force.
+
+	Easy to swap in higher voltage supplies, if needed.
+
+	Power dissipation (heat) in op-amp:  lower voltage supplies are better
+	(less heat and lower temperature rise).
+
+	Max power in op-amp is:  (assume DC case)
+	    (Vpp - (Rsense * Iomax) ) * Iomax
+	    (9.0 V - 1.0 V) * 1.0 A  = 8 W
+
+	    Heatsink around 5 C/W, 8 W gives 40 C temp rise.  OK
+
+	A 12 V supply would dissipate 11 W, a 55 C temp rise.
+	Thus we prefer the 9 V supply.
+
+	Commonly available supply voltages are:  3.3, 5, 9, 12, 15, 24 V.
+
+Controls and Indicators:
+    Should be able to determine state of system by looking at front panel.
+
+    Balance essential function and complexity.  Better to get it working
+    sooner, and save extra features for the next version.
+
+Power Indicator:	=> YES
+    If no other indicator is normally ON, then need a power indicator.
+    Green LED seems natural.  Red may confuse with other fault status.
+
+Op-Amp Shutdown:	=> YES
+    The OPA548 has thermal overload shutdown indication.
+	Want Red LED indication of shutdown.
+
+    The OPA548 has a disable input, which can shutdown to HiZ output.
+	Want switch to disable Op-Amp output.
+	Can be one switch for both channels.
+	[This could meet need for Current Output OFF.]
+
+Current Output OFF:	=> YES
+    A current output is disabled by shorting (shunting) it.
+
+    If a current output is made open, i.e. no load, then the output goes
+    to max voltage.  If the input control voltage is alternating, then
+    the output will also alternate at the power rail voltages.
+    Connecting the load at max voltage results in a current spike, and is
+    especially undesirable for exciter/speakers.
+
+    Want a switch to shunt the output current.  This allows the user to
+    disable output current without shutting down the system.
+    Idea is user can shunt the output before connecting/disconnecting
+    the exciter (load).  Probably good at the front panel, but still
+    may have problem if the load end becomes open.
+
+    An automatic latching shutdown on an open load might be nice.
+    i.e. latch into shutdown if compliance voltage is exceeded.
+    Then user Op-Amp disable could reset it.
+    Seems a bit complicated - implement later if needed.
+
+Low Pass Filter:	=> YES
+    For when driven by a DAC that has no filter.
+    Help reduce noise beyond the frequency of interest.
+
+    Thinking of driving low frequency (< 1 kHz) exciters.
+    Slow scan exciters could be ~1 Hz or less.
+    Thinking of computer control via a DAC, which typically don't have
+    a low-pass filter.
+
+    It is awkward to put a breadboard filter in a mostly instrument system.
+    Thus this is really a convenience feature.
+
+    A simple first-order filter is enough, e.g. simple RC, and avoids
+    component matching and complexity of higher order filters.
+    Flatness and phase delay is not critical for mostly fixed frequency
+    operation of typical exciter scenarios.
+
+    Switchable frequency range might be nice.
+    Maybe just use a fixed frequency, but able to change the capacitor.
+
+    Switching filter IN/OUT might be nice.
+    Probably not worth complexity.  Put corner frequency between exciter
+    at 1 kHz and a low speed DAC at 20 kHz.
+
+    Generally want sampling rate 5x the bandwidth.
+    Maybe filter at 2 kHz to 4 kHz.
+
+Input Attenuator:  i.e. 10:1	=> NO
+    This would enable a 100 mA full scale range.
+    Or could allow a 10 V input for 1000 mA full scale.
+    Pretty easy with a switch and series input resistor.
+
+    Extra front panel complexity for small benefit.
+    A 100 mA full scale might be better met by a different circuit.
+    A 10 V input source seems unlikely.  The NI DAQ can change it's output
+    range.
+
+----------------------------------------------------------------------------
+## Power Entry Module - v2
+----------------------------------------------------------------------------
+
+    Want line-cord powered system.
+
+    A) Classic built from components:
+	Line cord, Plug with bare wire end.
+	Strain relief.
+	Fuse.
+	Switch.
+	EMI suppression.
+	Mechanical mounting of it all.
+
+    B) Power Entry Module
+	A single unit does it all.
+	The power cord is removable, much better than permanently attached.
+	Cost is ~$25 with EMI filter (without cord).
+	Well worth the time savings in construction.
+
+Components:
+    Schurter, Power Entry Modules with Line Filter
+	Line switch 2-pole, Line cord connector.
+	Screw mount on ends.  Spade lug terminals.  Aluminum case.
+	Fuse drawer (separate), 1- or 2-pole fuse, 5x20 mm fuse.
+	Filter current ratings:  1, 2, 4, 6, 8, 10 A  Commercial.
+	    Lower current has better attenuation.
+	https://www.schurter.com/en/datasheet/typ_DD12.pdf
+ >	$21.44  DigiKey  Schurter DD12.1111.111, Filter 1 A, 1-pole fuse
+	$21.44  DigiKey  Schurter DD12.2111.111, Filter 2 A, 1-pole fuse
+
+    Schurter Fuse drawer
+ >	$3.26  DigiKey  Schurter 4301.1405, 1-pole fuse, fingertip
+	$3.26  DigiKey  Schurter 4301.1407, 1-pole fuse, extra-safe
+
+    This one looks very good.
+
+    Dimensions:  Schurter DD12.1111.111  Screw version A
+	55 mm deep, panel to ends of spade lugs
+	31.5 mm wide  (1.24 inch)
+	66 mm long overall screw mounts  (2.60 inch)
+	56 mm screw center-to-center  (2.20 inch)
+
+    Choose the 1 A rated unit (120 W load) is plenty adequate.
+    Consider surge current from switching supply turn-on?
+
+Fuse:
+    CUI AC-DC power supply recommends 3.15 A fuse.
+    We have two power supplies, which might double the inrush current, but that
+    makes 6 A which seems excessive.
+
+    The Schurter Power Entry Module is rated 1.0 A, but there is no surge
+    rating.  I assume it will handle surges.
+
+    Fuse cartridge, 5mm x 20mm, glass, Slow, High Surge-proof
+ >	$0.42  DigiKey  BelFuse 5ET 3.15-R,  3.15 A, 203 A2s
+
+----------------------------------------------------------------------------
+## Power Supplies - v2
+----------------------------------------------------------------------------
+
+General:
+    Require 9 V at 2.0 A, ~18 W.
+	We have two channels at 1.0 A each.
+
+    AC to DC switching converters.
+	Linear supplies are much more expensive and bulky.
+
+	Open frame supplies are exposed, typically have some sort of
+	    plugable pin connections.
+
+	Closed metal frame are nice, and have screw terminals.
+	    Tend to be a little larger and more expensive.
+
+ >>	Encapsulated modules look really nice.  Even have units with a base
+	    plate providing screw terminals.
+	    These are small, nicely packaged, and reasonably low cost.
+	    I like the units from CUI Inc.
+
+CUI PSK series AC-DC power supply:
+    These come in 3.3, 5, 9, 12, 15, and 24 V versions.
+
+	$14.37  DigiKey  CUI  PSK-15D-9-T    9 V, 1.66 A, 15 W, LED Fuse
+ >>	$16.34  DigiKey  CUI  PSK-20D-9-T    9 V, 2.2 A,  20 W, LED Fuse
+
+	$22.11  DigiKey  CUI  PSK-S15C-9-T   9 V, 1.60 A, 14 W, LED
+ >>	$20.08  DigiKey  CUI  PSK-S20C-9-T   9 V, 2.20 A, 20 W, LED  obsolete
+	$22.68  DigiKey  CUI  PSK-S25D-9-T   9 V, 2.5 A,  23 W
+
+	The 15 W units don't have enough current.
+	The 25 W units are a little more current than we need.
+	The PSK-20D-9-T looks about perfect, but currently no stock at DigiKey.
+
+	I choose the PSK-S20C-9-T, even though it is obsolete there is
+	stock at DigiKey (2022-12-07).  It is the same size as PSK-20D-9-T,
+	which has no stock.
+	Either one should be fine.
+
+	The PSK-S20C series looks good, and only the 9V unit is obsolete.
+	I suspect obsolete means they are discontinuing manufacture of that
+	model, perhaps to reduce the number of variants.  It means in future
+	we may not be able to buy more (that's OK).
+
+    Dimensions:  CUI  PSK-S20C-9-T
+	31.5 mm wide
+	76.0 mm long, screw terminals on ends
+	32.3 mm high
+	Mounting holes on two corners 23.0 mm x 61.6 mm
+
+CUI PSK-S20C-9-T  9 V, 2.20 A, 20 W  AD-DC power supply:
+    Spec
+	Input Current:  440 mA max at 115 VAC
+	Inrush Current:  12 A typ  at 115 VAC
+	Capacitive Load:  4400 uF
+    Recommendations:
+	Fuse:  3.1 A, 250 V
+
+----------------------------------------------------------------------------
+## Output Connectors (1 A current)
+----------------------------------------------------------------------------
+
+Requirements, wants:
+    Two contact, delivering 1 A current.
+    Isolated from equipment ground.
+    Plug for easy connect/disconnect.
+    Able to also connect bare wire - e.g. screw terminals.
+	Aux output on a separate connector is fine.
+    Low frequency <= 1 kHz
+    Low voltage <= 20 V
+
+Possibilities:
+
+    A) BNC connector
+	+ Looks good.  Common.  Handles the current.
+	- Need isolated ground.
+	- Confuse with other low-level signals.
+	- Consequences of cross/wrong connection?
+
+    B) Banana Plugs
+	+ Standard.  Suitable.
+	- Two separate connections.
+	- Two separate wires, unless use coax and adapter.
+
+    C) Audio Jack - Mono with Ring and Tip
+	+ Common for audio headphones.
+	+ Shorting is not a problem for a current source.
+	- Cable assemblies are typ 26 AWG, a bit too small (1.3 A ampacity).
+
+    D) Barrel Power Connectors
+	+ Made for DC power connection.
+	- Possible confusion with a DC power pod?
+	+ Cable assemblies are typ 24 AWG, round or flat cable.
+	- Need isolated ground, most are grounded to frame.
+	- Barrel body is often slightly exposed.
+
+ >  E) Terminal Blocks - Plugs and Sockets with enclosed terminals
+	++ Does both plug connection and screw terminals.
+	+ Made for power connections up to 15 A.
+	+ Screw terminals are very common wire connection method.
+	- Lifetime ~150 cycles?  Probably OK.
+	+ Both panel mount and PCB mount headers (usually pins).
+	+ No confusion with other consumer devices.
+	o More robust than header pins, less than circular connectors.
+
+    F) 0.1 inch Header pins/connectors, shrouded header
+	+ Cheap, very common.
+	+ Free hanging in-line plugs, have retaining latch.
+	- Mount on perfboard glued to front panel.
+	- Seem light and fragile, not really high current?
+
+    G) Circular Connectors
+	+ Look professional and custom purpose.
+	+ Better lifetime?
+	- Tend to be expensive, although some < $4.00
+	- Time consuming to assemble.  Often crimp contacts.
+	- Almost too specialized, too robust.
+
+----------------------------------------------------------------------------
+## Enclosure - v2
+----------------------------------------------------------------------------
+
+Requirements, wants:
+    About 7 W, 8 D, 3 H  inch
+    Bench top use.  Instrument type case.
+    Top cover opening with fixed front and rear panels.
+	Operable with cover off.
+    Metal for heat dissipation.
+    Plastic OK for low cost.
+
+Possibilities:
+
+ >  A) Hammond 1598 Series - ABS Plastic Instrument Enclosures
+	+ Cost ~$25
+	+ Clam shell top and bottom halves.
+	+ Aluminum front/rear panels.
+	+ Looks good.
+	1598GGY 6.30 W, 9.84 D, 3.00 H
+
+    B) Hammond RM Series - ABS Plastic Instrument Enclosures
+	RM2095L  9.84 W, 7.09 D, 3.94 H
+
+    C) U-Shaped Aluminum Enclosures
+	e.g. Hammond 1411-1412 Series Utility Enclosures
+	One half has flanges, other half plane U-shape.
+	Either half could be bottom.  They show Flange half as the cover.
+	+ Low cost, Aluminum.
+	- Looks kind of cheap and tinny.
+	- Hard to drill U-shaped panels.
+
+    D) Metal Clamshell Enclosures
+	- More expensive, ~$60
+
+----------------------------------------------------------------------------
+## Buffer Circuit - v2
+----------------------------------------------------------------------------
+
+See:  kicad/cbuffer_v2/ki.pro
+
+References:
+    The Apex application notes are quite good.  Examples use their power
+    op-amps and are applicable to this situation.
+
+    Voltage to Current Conversion
+	Apex Microtechnology AN13
+	www.apexanalog.com # resources # appnotes
+
+    Techniques for Stabilizing Power Operational Amplifiers
+	Apex Microtechnology AN47
+	www.apexanalog.com # resources # appnotes
+
+    Precision Magnetic Deflection
+	Apex Microtechnology AN05
+	www.apexanalog.com # resources # appnotes
+
+Basic circuit:  (floating load)
+
+ >> A power op-amp drives the floating load, where the return current flows
+    thru a 1.0 ohm sense resistor to ground.  The sense voltage is negative
+    feed back to the op-amp inverting input, where it is compared with the
+    input (reference) voltage on the non-inverting input.
+
+    The sense resistor Rs sets the conversion gain:
+	Iout = Vin / Rs
+
+    The ground reference sense resistor makes feedback very simple and
+    robust.  But it does require a floating load, which is naturally met
+    by voice coil exciters (speaker) in this application.
+
+    A high-side sense resistor could be used with a differential
+    instrumentation amplifier to allow a ground referenced load.  This seems
+    like unnecessary complexity.
+
+    An "Improved Howland Current Pump" could be used for a ground referenced
+    load.  A major disadvantage is it requires matched components.
+
+Power Op-amp:
+ >> OPA548
+
+Stability/Compensation:
+
+    See:  OPA548 datasheet "9.1 Output Stage Compensation" p.22
+    Increasing closed-loop gain can enhance stability.
+    If the OPA548 is intended to be driven into current limit, an R/C network
+    may be required.
+
+    Suggested snubber network:  Typically 3 ohm to 10 ohm in series with
+    0.01 uF to 0.1 uF on the op-amp output is adequate.
+    For driving large inductive or capacitive loads.
+    Their example is for a ground referenced load.
+
+    In our case of driving voice coil exciters, no compensation is likely
+    needed.  The inductance is typically small, 40 uH, and in series with
+    4 ohms.
+
+    For a more general instrument, I think adding some compensation will
+    be helpful.
+
+ >> I choose the Apex compensation method for a current buffer, essentially
+    a series RC providing a second negative feedback path.  It seems to be
+    the best technique for this application.
+    Playing with ngspice simulation seems to show it works quite well and
+    could cover a 10x range of inductive load.
+
+Feedback paths:
+
+    Fb1:  Vo - Load L1 - Vs - Sense Resistor Rs - Gnd
+
+    Fb2:  Vo - Cf4 - Rf4 - Vn - R5 - Rs - Gnd
+
+    Vo = Op-amp output
+    Vs = sense voltage across sense resistor
+    Vn = Op-amp inverting input
+
+    Rs  = Sense Resistor
+    Cf4 = compensation capacitor
+    Rf4 = compensation resistor
+    R5  = compensation coupling
+
+Input Protection:
+    See:  Analog Devices ADA4177 data sheet, Rev. E
+	"OVP and EMI Protected, Precision, Low Noise and Bias Current Op Amps"
+	Common Protection Methods p.26
+
+    Op-amp inputs can be damaged when input voltage exceeds power supply rails.
+    This can occur when power is off.  A damage mechanism is excessive current
+    thru the forward biased ESD protection diodes in the IC.  Limiting the
+    current avoids damage.
+
+    A common protection method is to add a series input resistor, which will
+    also add thermal noise.  A 6 kohm series resistor exhibits 10 nV/rHz
+    noise.
+    Our OPA548 power op-amp has 90 nV/rHz typ input noise voltage, so added
+    thermal noise is not very significant.
+
+    A series input resistor also causes an input offset voltage from the
+    input bias current.
+    Our OPA548 power op-amp has -500 nA max input bias current, and
+    +-10 mV max input offset voltage.
+    A 10 kohm series input resistor at 500 nA is 5 mV offset voltage,
+    comparable to the intrinsic offset voltage, and thus could be tolerated.
+    This offset could be balanced by an equal series input resistors on
+    both inputs.
+
