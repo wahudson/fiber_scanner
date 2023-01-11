@@ -50,6 +50,8 @@ Test suites:  (2022-03-10)
  u   s  t_dNcRamp_a/	dNcRamp		Gain Ramp class, test base class
  u   s  t_dNcScaler/	dNcScaler	Signal Scaler class
  u   s  t_dNcWave/	dNcWave		Wave Table class
+ u   s  t_extShift/	extShift	Extended shift register data class
+ u   s  t_uspi_mcp4822x/ uspi_mcp4822x	Operating mcp4822 DAC on rgUniSpi
 
 
 Test Setup:

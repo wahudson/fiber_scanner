@@ -12,6 +12,8 @@ test:
 	cd t_dNcRamp_a        && make test
 	cd t_dNcScaler        && make test
 	cd t_dNcWave          && make test
+	cd t_extShift         && make test
+	cd t_uspi_mcp4822x    && make test
 
 clean:
 	cd t_dNcOsc           && make clean
@@ -19,4 +21,6 @@ clean:
 	cd t_dNcRamp_a        && make clean
 	cd t_dNcScaler        && make clean
 	cd t_dNcWave          && make clean
+	cd t_extShift         && make clean
+	cd t_uspi_mcp4822x    && make clean
 
