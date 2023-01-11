@@ -32,7 +32,9 @@ OBJS       = \
 	$(OJ)/dNcOsc.o \
 	$(OJ)/dNcRamp.o \
 	$(OJ)/dNcScaler.o \
-	$(OJ)/dNcWave.o
+	$(OJ)/dNcWave.o \
+	$(OJ)/extShift.o \
+	$(OJ)/uspi_mcp4822x.o
 
 		# link libraries, order matters
 LIBFLAGS   = -lrgpio -lcap
@@ -88,6 +90,12 @@ $(OJ)/dNcScaler.o:	dNcScaler.cpp  dNcScaler.h
 
 $(OJ)/dNcWave.o:	dNcWave.cpp  dNcWave.h
 	g++ $(CXXFLAGS) -o $@  -c dNcWave.cpp
+
+$(OJ)/extShift.o:	extShift.cpp  extShift.h
+	g++ $(CXXFLAGS) -o $@  -c extShift.cpp
+
+$(OJ)/uspi_mcp4822x.o:	uspi_mcp4822x.cpp  uspi_mcp4822x.h
+	g++ $(CXXFLAGS) -o $@  -c uspi_mcp4822x.cpp
 
 $(OJ)/Error.o:		Error.cpp  Error.h
 	g++ $(CXXFLAGS) -o $@  -c Error.cpp
