@@ -20,6 +20,26 @@ Shared resources:
     The program cannot know what the actual external configuration is.
     Thus it should not reconfigure the Gpio pins, leave that to the user.
 
+Use cases:  (2023-01-03)
+
+    a) Set DC state of DAC.
+	e.g.  DAC was left in an undesirable state, and want to set it to
+	zero or Hi-Z.
+
+    b) Apply a sequence of operations.
+
+Ideas:  (2023-01-03)
+
+    Command line arguments could be an ordered series of states to set.  e.g.
+	-a 22 33 -b 11 22 -a --shutdown -b --shutdown
+
+    Enable streaming data from another program or file.
+	Read a stream of data to be applied.  Data could be one value per line
+	to be applied as a UniSpi Write FIFO transaction.
+
+	The stream idea seems fairly simple and quite useful, especially as
+	an alternate to the NC oscillator approach.
+
 ----------------------------------------------------------------------------
 ## Design
 ----------------------------------------------------------------------------
@@ -88,4 +108,487 @@ Questions:
 
     Often it is better to separate the config program from operation.
 
+
+----------------------------------------------------------------------------
+## Design Streaming Data
+----------------------------------------------------------------------------
+
+    The mcp4822 DAC has a 16-bit data word, sent most significant bit (MSB)
+    first.  Extra data bits can follow and are ignored by mcp4822, but can
+    be captured in a shift register as in schematic kicad/dual_dac_v1/ .
+
+Data format:
+    Data stream should be ASCII characters, not binary.
+
+    Values could be broken into fields corresponding the the DAC word format.
+
+    Idea is one line per SPI transaction, up to 32-bits.
+
+    Possible chip select (CS) values could be part of each line.  Note rgUniSpi
+    can set these simultaneous with 24 bits of data in "Variable width" mode.
+    This could increase generality to multiple DACs on the SPI port.
+
+Field names:
+    Chan_1	C	-- DAC config
+    Unused_1	X	|
+    Gain_1	G	|
+    Shutdown_1	S	|
+    Data_12		DAC data value
+    Extra_8		extra shift register data
+
+    Cs_3
+
+Field separators:
+
+    C.X.G.S.dddddddddddd.xxxxxxxx
+
+    C,X,G,S,dddddddddddd,xxxxxxxx
+
+    C X G S dddddddddddd xxxxxxxx
+
+    Commas like a csv file.
+    White space like a table.
+
+Thoughts:
+    The data bits are the main payload.  The other bits are DAC configuration,
+    which likely does not change.  Thus could put the configuration bits
+    as separate commands to change configuration.
+
+    Interleaving two DAC channels is a likely use.  Thus at least channel
+    selection should be on every line.
+
+    The configuration bits could be abstracted to a single character.
+    Maybe provide only for the useful combinations.
+    Gain_1 is a gain configuration, and should not be used to synthesize
+    another bit of precision.
+    Shutdown_1 is really only applied at beginning or end of a stream.
+    Chan_1 must be applied to every data line, to interleave channels.
+    The Unused_1 is really a don't care.
+
+	a  active
+	b  active
+	A  shutdown
+	B  shutdown
+
+    Data_12 bits should be hexadecimal.
+
+    Extra_8 bits could be hex or binary (base 2).
+
+	Hex config bits C,X,G,S
+	    0000  0  A
+	    0001  1  A
+	    0010  2  A
+	    0011  3  A
+	    1000  8  B
+	    1001  9  B
+	    1010  a  B
+	    1011  b  B
+
+	Not seeing a human sensible encoding.
+
+    Maybe reorder the config bits:  X,S,G,C
+	Pack into a single hex digit.
+	This way a value 0 or 1 is the active channel.
+	Shutdown and gain change are higher values.
+	Thus hex values 4, 5 could shutdown channels 0,1.
+	And  hex values 2, 3 could switch to higher gain.
+
+    Maybe Gain_1 could be a latching specification:  X,S,G,C
+	Setting the high-bit X could indicate to latch the new gain for channel.
+	Then a simple 0 or 1 indicates active channel at saved gain.
+
+	0000  specify ch0 at saved gain
+	0001  specify ch1 at saved gain
+
+	10G0  save gain for ch0
+	10G1  save gain for ch0
+
+	11G0  shutdown, do not change saved gain
+	11G1
+
+	[This makes a saved configuration embedded in the data stream, but
+	seems a bit complex.]
+
+    Maybe a command word on a separate line.
+	The previous data could be sent with the new configuration.
+	This seems much more human friendly, and captures what we mean.
+
+	Or the command could simply change the saved configuration state, and
+	is sent with the next data line.
+
+ >  Maybe only the channel, DAC value, and extra value bits need be specified.
+	The other config bits could be changed before or after the data
+	stream.  e.g.
+
+	    a 0x123 0xff
+	    b 0x321 0x00
+
+Stream Modes:
+    a) Dac data value only
+    b) Channel, Dac
+    c) Channel, Dac, ExData
+
+    Maybe build only one of these modes first, and see how it goes.
+
+    Stream mode could be specified as an command option.
+    Switching modes within the stream depends on an identification mechanism,
+    which seems too complex.
+    Balance complexity in parsing the stream.
+
+----------------------------------------------------------------------------
+## uspi_mcp4822 Class  (NOT USED)  Initial Ideas
+----------------------------------------------------------------------------
+Class for operating mcp4822 DAC on rgUniSpi.
+
+    It has a reference to the rgUniSpi object being used.  Several DAC (or
+    other) devices could be driven by the same SPI channel, so it makes
+    sense that it would be provided.
+
+    The most significant bits (MSB) are sent first.
+    Assume the rgUniSpi object is configured to send at least 16-bits.
+    Additional trailing bits (ExData) are ignored by the MCP4822 DAC.
+
+    SPI data word has upper 16-bits as DAC data, and lower 16-bit is
+    extra bits left justified in the half word.
+    This way the the SPI transaction length in rgUniSpi controls how many
+    extra bits are actually used.  Trailing ExData bits get ignored.
+
+    Model as two separate DAC units in one object.
+
+class uspi_mcp4822 {
+  private:
+    rgUniSpi*		Uspi;
+
+				// extra shift register bits
+    uint32_t		ExData;		// data left justified in half-word
+    uint32_t		ExMask;		// mask valid bits, right justified
+    uint32_t		ExLen;		// length N of extra bits, 0..16
+
+    // config prefix bits [15:12]
+    uint32_t		PrefixA;
+    uint32_t		PrefixB;
+	// Prefix[15] = 0  Channel
+	// Prefix[14] = 0  Unused
+	// Prefix[13] = 0  Gain_1
+	// Prefix[12] = 0  Shutdown_1
+
+  public:
+    uspi_mcp4822(			// constructor
+	rgUniSpi*	uspi,
+	uint32_t	n_extra		// number of extra bits
+    );
+
+    void		send_raw( uint32_t w );
+
+    void		send_A( uint32_t v );
+    void		send_A( uint32_t v, uint32_t x );
+
+    void		send_B( uint32_t v );
+    void		send_B( uint32_t v, uint32_t x );
+
+    void		send_ch( uint32_t ch,  uint32_t v );
+    void		send_ch( uint32_t ch,  uint32_t v, uint32_t x );
+
+    // Accessor functions, switch on channel
+    uint32_t		get_Gain_1(     uint32_t ch )
+    uint32_t		put_Gain_1(     uint32_t ch,  uint32_t v )
+
+    uint32_t		get_Shutdown_1( uint32_t ch )
+    uint32_t		put_Shutdown_1( uint32_t ch,  uint32_t v )
+
+    uint32_t		get_exdata()
+    void		put_exdata( uint32_t v );
+
+    uint32_t		get_exlen()
+    void		put_exlen( uint32_t v );
+};
+
+Prefix per channel.
+    Idea is to keep a record of last DAC config state for each channel.
+    Then the same config can be repeated with new DAC value.
+
+Data word assembly:
+    word[31:0] = PrefixA[15:12], DacData[11:0], ExData[15:0]
+
+    Maybe assemble by shift and mask.  e.g.
+	word = (word << N) | ( value & ((1 << N) - 1) )
+
+// Send data word to channel A
+void
+uspi_mcp4822::send_A(
+    uint32_t		v
+)
+{
+    uint32_t		word;
+
+    word = PrefixA | ( v & 0xfff ) );
+    word = (word << 16) | ExData );	// require ExData upper bits zero
+
+    send_raw( word );
+}
+
+// Send data word to channel
+void
+uspi_mcp4822::send_ch(
+    uint32_t		ch,
+    uint32_t		v,
+    uint32_t		exdat
+)
+{
+    uint32_t		word;
+
+    word = ( ch ) ? PrefixA : PrefixB;
+    word = word | ( v & 0xfff ) );
+    word = (word << 16) | ( (exdat & ExMask) << ExLen );
+
+    Wait for FIFO not full first
+    Uspix.Fifo.write( word );
+}
+  OR
+{
+    if ( ch ) {
+	send_A( v, exdat );
+    }
+    else {
+	send_B( v, exdat );
+    }
+}
+
+
+void
+uspi_mcp4822::get_exlen()
+{
+    return  (16 - ExLen);
+}
+
+void
+uspi_mcp4822::put_exlen(
+    uint32_t		n
+)
+{
+    Check that (n <= 16), or limit.
+    ExLen = 16 - n;
+    ExMask  = (1 << n) - 1;
+}
+
+
+// Extra Bits accessors, right justified field value
+
+void
+uspi_mcp4822::get_exdata()
+{
+    return  ExData >> ExLen;
+}
+
+void
+uspi_mcp4822::put_exdata(
+    uint32_t		v
+)
+{
+    // ensure bit positioning for simple ORing with word assembly
+    ExData = (v & ExMask) << ExLen;
+}
+
+Above was NOT USED:
+    This was initial exploration of ideas.
+
+    Putting both channels and the ExData in the object made sense because
+    the ExData is shared between them.
+    However the channels are essentially independent, resulting in much
+    duplication.  Management functions for the ExData also increased
+    complexity in the class.
+
+    A better structure is to pull out ExData as a separate object.
+    Let each DAC channel be a separate object, each of which references the
+    same ExData object.  Now the user can manipulate ExData and it is clear
+    that it is used by both DAC objects.  In addition the two classes are
+    much simpler and focused.
+
+----------------------------------------------------------------------------
+## uspi_mcp4822x Class
+----------------------------------------------------------------------------
+Class for operating mcp4822 DAC on rgUniSpi with extended shift register.
+
+    Model each DAC channel of the mcp4822 dual DAC as separate objects.
+    This makes efficient re-use of code and avoids internal switching on the
+    channel number.
+
+    The channel is selected at construction and cannot be changed.
+
+    The ExShift object is shared with other DAC objects.  To make this sharing
+    explicit, it is constructed by the user and given to each DAC object at
+    construction.  The DAC objects only read the ExShift when sending data
+    to the DAC, no modification is allowed.  The user may then modify the
+    explicit ExShift object data value at any time.
+
+    The shift register data value is an object to ensure the upper 16-bits
+    are always zero, for efficient application to the dac word.
+
+    Note the Shutdown_1 bit is inverted, where 0= shutdown.
+    Maybe rename Enable_1?  Except the documentation is in terms of shutdown.
+    Maybe accessors invert the bit?
+    Maybe name:  ShutdownN_1  ShutdowN_1  Shutdown_n_1  >> nShutdown_1
+
+    Field accessor function names include field width like librgpio.
+
+    Assume rgUniSpi is in normal mode, not Variable Width mode.
+    A future version could add variable width and variable chip select (CS).
+
+    [A nice goal is to have the object state reflect the hardware state, at
+    least at the last SPI transaction.  NOT a requirement.]
+
+
+class uspi_mcp4822x {
+  private:
+    rgUniSpi*		Uspi;
+    extShift*		ExShift;
+
+    uint32_t		Prefix;		// config prefix bits [15:12]
+	// Prefix[15] = 0  Chan_1       0= A, 1= B fixed channel number
+	// Prefix[14] = 0  Unused_1
+	// Prefix[13] = 0  Gain_1       0= 1x, 1= 2x
+	// Prefix[12] = 0  nShutdown_1  0= shutdown, 1= enabled
+
+    void		send_raw( uint32_t w );
+
+  public:
+    uspi_mcp4822x(		// constructor
+	uint32_t	channel,	// 0= A, 1= B
+	rgUniSpi*	uspi,
+	extShift*	exs
+    );
+
+    void		send_dac_12( uint32_t v );
+
+    // Accessor functions
+    uint32_t		get_Chan_1();
+
+    uint32_t		get_Gain_1();
+    uint32_t		put_Gain_1(      uint32_t v );
+
+    uint32_t		get_nShutdown_1();
+    uint32_t		put_nShutdown_1( uint32_t v );
+};
+
+
+// Send raw word to rgUniSpi
+void
+uspi_mcp4822x::send_raw(
+    uint32_t		v
+)
+{
+    do {			// wait for FIFO not full
+	Uspi->Stat.grab();
+    } while ( Uspi->Stat.get_TxFull_1() );
+
+    Uspi->Fifo.write( v );
+}
+
+// Send data word to channel
+void
+uspi_mcp4822x::send_dac(
+    uint32_t		v,
+    uint32_t		exdat
+)
+{
+    uint32_t		word;
+
+    word = (Prefix | (v & 0xfff) ) << 16;
+    word = word | ( ExShift->get_ExData() );
+
+    send_raw( word );
+}
+
+----------------------------------------------------------------------------
+## extShift Class
+----------------------------------------------------------------------------
+Extended shift register used with class uspi_mcp4822x.
+
+    Extension shift length is selected at construction and cannot be changed.
+
+class extShift {
+  private:
+				// extra bits
+    uint32_t		ExData;		// data left justified in half-word
+    uint32_t		ExMask;		// mask valid bits, right justified
+    uint32_t		ExLen;		// length N of extra bits, 0..16
+
+  public:
+    extShift(			// constructor
+	uint32_t	len		// number of extension bits, 0..16
+    );
+
+    // Accessor used by uspi_mcp4822x class
+    uint32_t		get_ExData()		{ return  ExData; }
+    void		put_ExData( uint32_t v )  { ExData = v & 0xffff; }
+
+    // Accessor functions
+    uint32_t		get_ExLen()		{ return  ExLen; }
+
+    uint32_t		get_exdata();		// right justified
+    uint32_t		put_exdata( uint32_t v );
+};
+
+
+extShift::extShift(		// constructor
+    uint32_t		len
+)
+{
+    if ( len > 16 ) { throw exception }
+    ExLen  = len;
+    ExMask = (1 << len) - 1;
+}
+
+uint32_t
+extShift::get_exdata()
+{
+    return  (ExData >> ExLen);
+}
+
+void
+extShift::put_exdata(
+    uint32_t		v
+)
+{
+    ExData = (v & ExMask) << ExLen;
+}
+
+
+----------------------------------------------------------------------------
+## Explore command usage
+----------------------------------------------------------------------------
+
+usage:  dac_mcp4822 [options][stream mode] < file
+usage:  dac_mcp4822 [options] data..
+    data  = 12-bit data values to send
+
+  stream mode:  (read stdin)
+    --stream	stream data has channel, DAC value and optional extShift
+    --plain	stream plain DAC values to selected channel
+    --raw	write raw 32-bit words  to selected channel
+
+  channel select:  (one or both)
+    -a		    channel A (default)
+    -b		    channel B
+
+  apply gain:  (choose one)
+    --gain1x        gain setting 1x (default)
+    --gain2x        gain setting 2x
+
+  apply shutdown:
+    --shutdown      apply shutdown to each data word, send 0 if needed
+
+  options:
+    --reset         reset DAC channels to shutdown ??
+
+Examples:
+    dac_mcp4822 --shutdown -a  0
+    dac_mcp4822 --shutdown -b  0
+    dac_mcp4822 --shutdown -a -b  0
+
+    dac_mcp4822 --gain2x -a  0
+
+    dac_mcp4822 --stream --gain2x  < file
+
+    dac_mcp4822 --stream --gain2x --shutdown < file
 
