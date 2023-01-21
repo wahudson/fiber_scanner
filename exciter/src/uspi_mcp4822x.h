@@ -22,10 +22,8 @@ class uspi_mcp4822x {
     uint32_t		Prefix;		// config prefix bits [15:12]
 	// Prefix[15] = 0  Chan_1       0= A, 1= B fixed channel number
 	// Prefix[14] = 0  Unused_1
-	// Prefix[13] = 0  Gain_1       0= 1x, 1= 2x
-	// Prefix[12] = 0  nShutdown_1  0= shutdown, 1= enabled
-
-    void		send_raw( uint32_t w );
+	// Prefix[13] = 0  Gain1x_1     0= 2x, 1= 1x
+	// Prefix[12] = 0  nShutdown_1  0= shutdown, 1= active
 
   public:
     uspi_mcp4822x(		// constructor
@@ -34,17 +32,28 @@ class uspi_mcp4822x {
 	extShift*	exs
     );
 
+    uint32_t		LastSend;	// assembled word last sent to Uspi
+
+    void		send_raw_32( uint32_t w );
+
     void		send_dac_12( uint32_t v );
 
     // Accessor functions
     uint32_t		get_Chan_1()	{ return  ((Prefix >> 15) & 0x1); }
 			// Cannot change Chan_1 after construction.
 
-    uint32_t		get_Gain_1()	{ return  ((Prefix >> 13) & 0x1); }
-    void		put_Gain_1(      uint32_t v );
+    uint32_t		get_Gain1x_1()	{ return  ((Prefix >> 13) & 0x1); }
+    void		put_Gain1x_1(   uint32_t v );
 
     uint32_t		get_nShutdown_1()  { return  ((Prefix >> 12) & 0x1); }
     void		put_nShutdown_1( uint32_t v );
+
+    // Preferred interface
+    void		set_Gain1x()	{ Prefix |=  (0x1 << 13); }
+    void		set_Gain2x()	{ Prefix &= ~(0x1 << 13); }
+
+    void		set_Active()	{ Prefix |=  (0x1 << 12); }
+    void		set_Shutdown()	{ Prefix &= ~(0x1 << 12); }
 };
 
 #endif

@@ -424,18 +424,46 @@ Class for operating mcp4822 DAC on rgUniSpi with extended shift register.
     The shift register data value is an object to ensure the upper 16-bits
     are always zero, for efficient application to the dac word.
 
-    Note the Shutdown_1 bit is inverted, where 0= shutdown.
-    Maybe rename Enable_1?  Except the documentation is in terms of shutdown.
-    Maybe accessors invert the bit?
-    Maybe name:  ShutdownN_1  ShutdowN_1  Shutdown_n_1  >> nShutdown_1
-
-    Field accessor function names include field width like librgpio.
-
     Assume rgUniSpi is in normal mode, not Variable Width mode.
     A future version could add variable width and variable chip select (CS).
 
     [A nice goal is to have the object state reflect the hardware state, at
     least at the last SPI transaction.  NOT a requirement.]
+
+Bit Field Naming:
+    Note the Shutdown_1 bit is inverted, where 0= shutdown.
+    Maybe rename Enable_1?  Except the documentation is in terms of shutdown.
+    Maybe accessors invert the bit?
+    Maybe name:  ShutdownN_1  ShutdowN_1  Shutdown_n_1  >> nShutdown_1
+
+    Tried using accessor put_nShutdown_1(), but then it was confusing to
+    think inverted, leaving me to wonder if I had it right.
+    Related confusion with what put_Gain_1() means - 1x or 2x?
+    A high value is the user code having a clear meaning to a human.
+
+    Maybe move the abstraction slightly further from the hardware where
+    the accessors are positive true.
+    put_Shutdown_1( v )		1= Shutdown, 0= active
+    put_Gain1x_1( v )		1= gain 1x,  0= gain 2x
+
+    But then what does put_Gain1x_1( 0 ) mean?
+ >  Decide on two named accessors with no argument:
+    set_Gain1x()
+    set_Gain2x()
+
+ >  Similarly for the Shutdown bit:
+    set_Active()
+    set_Shutdown()
+
+    The raw get_(), put_() accessors can remain for test/debug.
+
+    Field accessor function names include field width like librgpio.
+
+Prefix Configuraton Bits:
+    The Prefix and DAC value are both stored in the lower half word, i.e.
+    bits [15:0], which is then shifted to the MSB word position (shifted
+    left 16-bits) when sent to rgUniSpi.
+    Thus the bit positions match the DAC documentation.
 
 
 class uspi_mcp4822x {
@@ -446,7 +474,7 @@ class uspi_mcp4822x {
     uint32_t		Prefix;		// config prefix bits [15:12]
 	// Prefix[15] = 0  Chan_1       0= A, 1= B fixed channel number
 	// Prefix[14] = 0  Unused_1
-	// Prefix[13] = 0  Gain_1       0= 1x, 1= 2x
+	// Prefix[13] = 0  Gain1x_1     0= 2x, 1= 1x
 	// Prefix[12] = 0  nShutdown_1  0= shutdown, 1= enabled
 
     void		send_raw( uint32_t w );
@@ -464,10 +492,20 @@ class uspi_mcp4822x {
     uint32_t		get_Chan_1();
 
     uint32_t		get_Gain_1();
-    uint32_t		put_Gain_1(      uint32_t v );
+    void		put_Gain_1(      uint32_t v );
+
+    uint32_t		get_Gain1x_1()	{ return  ((Prefix >> 13) & 0x1); }
+    void		put_Gain1x_1(    uint32_t v );
 
     uint32_t		get_nShutdown_1();
-    uint32_t		put_nShutdown_1( uint32_t v );
+    void		put_nShutdown_1( uint32_t v );
+
+    // Preferred interface
+    void		set_Gain1x()	{ Prefix |=  (0x1 << 13); }	// 1
+    void		set_Gain2x()	{ Prefix &= ~(0x1 << 13); }	// 0
+
+    void		set_Active()	{ Prefix |=  (0x1 << 12); }	// 1
+    void		set_Shutdown()	{ Prefix &= ~(0x1 << 12); }	// 0
 };
 
 
@@ -497,6 +535,9 @@ uspi_mcp4822x::send_dac(
     word = word | ( ExShift->get_ExData() );
 
     send_raw( word );
+
+    return  word;
+    // maybe return word as a debug/trace mechanism
 }
 
 ----------------------------------------------------------------------------
@@ -578,7 +619,14 @@ usage:  dac_mcp4822 [options] data..
   apply shutdown:
     --shutdown      apply shutdown to each data word, send 0 if needed
 
+  extended shift:
+    --exlen=N       bit length {0:16}
+    --exdata=0xff   extended value, right justified
+
+    --exleft=0xf000 extended data, left justified
+
   options:
+    --check         check bit length against current rgUniSpi
     --reset         reset DAC channels to shutdown ??
 
 Examples:
@@ -591,4 +639,28 @@ Examples:
     dac_mcp4822 --stream --gain2x  < file
 
     dac_mcp4822 --stream --gain2x --shutdown < file
+
+
+usage:  dac_mcp4822 [options] [vdac,exleft]..
+    Send only one word.
+    With left justified ExData, may not need extended length.
+
+    Stream data:  with -a or -b
+
+	4095,0x000f
+
+    Stream data:  with --stream (without -a or -b)
+
+	a,4095,0x000f
+	b,4095,0x000f
+
+    Stream data with left justified ExData:
+
+	4095,0xf000
+
+    ExData could be optional.
+
+    We need to choose one simple way, and move on.
+    Seems like a comma separated format (CSV) might be simpler as it avoids
+    issues of white-space variability.
 

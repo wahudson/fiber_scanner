@@ -2,7 +2,7 @@
 //
 // Testing:  uspi_mcp4822x class - Operating mcp4822 DAC on rgUniSpi.
 //    10-19  Constructor
-//    20-29  Set Prefix bits  put_Gain_1(), put_nShutdown_1()
+//    20-29  Set Prefix bits  put_Gain1x_1(), put_nShutdown_1()
 //    30-39  Send data to rgUniSpi, send_dac_12()
 //    40-49  .
 //--------------------------------------------------------------------------
@@ -42,7 +42,7 @@ extShift		Esx  ( 8 );		// constructor
     try {
 	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
     }
     catch (...) {
@@ -53,7 +53,7 @@ extShift		Esx  ( 8 );		// constructor
     try {
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
     }
     catch (...) {
@@ -103,18 +103,18 @@ extShift		Esx  ( 8 );		// constructor
     }
 
 //--------------------------------------------------------------------------
-//## Set Prefix bits  put_Gain_1(), put_nShutdown_1()
+//## Set Prefix bits  put_Gain1x_1(), put_nShutdown_1()
 //--------------------------------------------------------------------------
 
-  CASE( "20", "put_Gain_1()" );
+  CASE( "20", "put_Gain1x_1()" );
     try {
 	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
     }
     catch (...) {
@@ -125,28 +125,28 @@ extShift		Esx  ( 8 );		// constructor
     try {
 	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	tx.put_nShutdown_1( 1 );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "24", "put_Gain_1()" );
+  CASE( "24", "put_Gain1x_1()" );
     try {
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
-	tx.put_Gain_1( 0 );
+	tx.put_Gain1x_1( 0 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
     }
     catch (...) {
@@ -156,14 +156,14 @@ extShift		Esx  ( 8 );		// constructor
   CASE( "25", "put_nShutdown_1()" );
     try {
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	tx.put_nShutdown_1( 0 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
     }
     catch (...) {
@@ -183,11 +183,11 @@ extShift		Esx  ( 8 );		// constructor
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	tx.send_dac_12(   0x00000ccc );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	CHECKX(           0x8ccc0000, Uspix.Fifo.read() );
     }
@@ -201,11 +201,11 @@ extShift		Esx  ( 8 );		// constructor
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	tx.send_dac_12(   0x00000ccc );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	CHECKX(           0x0ccc0000, Uspix.Fifo.read() );
     }
@@ -219,11 +219,11 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	tx.send_dac_12(   0x00000fff );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xbfff0000, Uspix.Fifo.read() );
     }
@@ -236,11 +236,11 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	Uspix.Fifo.write( 0xffffffff );
 	CHECKX(           0xffffffff, Uspix.Fifo.read() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	tx.send_dac_12(   0xfffff000 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb0000000, Uspix.Fifo.read() );
     }
@@ -254,12 +254,12 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	Esx.put_exdata(   0x000000ff );
 	tx.send_dac_12(   0x00000000 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb000ff00, Uspix.Fifo.read() );
     }
@@ -272,12 +272,12 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	Uspix.Fifo.write( 0xffffffff );
 	CHECKX(           0xffffffff, Uspix.Fifo.read() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	Esx.put_exdata(   0xffffff00 );
 	tx.send_dac_12(   0x00000000 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb0000000, Uspix.Fifo.read() );
     }
@@ -291,12 +291,12 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
-	tx.put_Gain_1( 1 );
+	tx.put_Gain1x_1( 1 );
 	tx.put_nShutdown_1( 1 );
 	Esx.put_exdata(   0x000000cc );
 	tx.send_dac_12(   0x00000777 );
 	CHECK(  1,  tx.get_Chan_1() );
-	CHECK(  1,  tx.get_Gain_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb777cc00, Uspix.Fifo.read() );
     }
@@ -310,12 +310,12 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
 	Uspix.Fifo.write( 0x00000000 );
 	CHECKX(           0x00000000, Uspix.Fifo.read() );
-	tx.put_Gain_1( 0 );
+	tx.put_Gain1x_1( 0 );
 	tx.put_nShutdown_1( 1 );
 	Esx.put_exdata(   0x00000033 );
 	tx.send_dac_12(   0x00000ccc );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0x1ccc3300, Uspix.Fifo.read() );
     }
@@ -328,12 +328,12 @@ extShift		Esx  ( 8 );		// constructor
 	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
 	Uspix.Fifo.write( 0xffffffff );
 	CHECKX(           0xffffffff, Uspix.Fifo.read() );
-	tx.put_Gain_1( 0 );
+	tx.put_Gain1x_1( 0 );
 	tx.put_nShutdown_1( 1 );
 	Esx.put_exdata(   0x00000033 );
 	tx.send_dac_12(   0x00000ccc );
 	CHECK(  0,  tx.get_Chan_1() );
-	CHECK(  0,  tx.get_Gain_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0x1ccc3300, Uspix.Fifo.read() );
     }

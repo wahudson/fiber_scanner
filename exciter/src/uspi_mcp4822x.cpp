@@ -20,8 +20,9 @@ using namespace std;
 * Constructor.
 *    Once constructed, the channel cannot be changed.
 *    Assume rgUniSpi is in normal mode, not "variable width mode".
+*    The argument pointers are owned by the caller.
 * Initial condition is:
-*    Gain_1      = 0,  1x gain
+*    Gain1x_1    = 0,  2x gain
 *    nShutdown_1 = 0,  shutdown
 */
 uspi_mcp4822x::uspi_mcp4822x(
@@ -59,10 +60,10 @@ uspi_mcp4822x::uspi_mcp4822x(
 //--------------------------------------------------------------------------
 
 /*
-* Set Gain_1:  0= 1x, 1= 2x
+* Set Gain1x_1:  0= 2x, 1= 1x
 */
 void
-uspi_mcp4822x::put_Gain_1(
+uspi_mcp4822x::put_Gain1x_1(
     uint32_t		v
 )
 {
@@ -70,8 +71,9 @@ uspi_mcp4822x::put_Gain_1(
     Prefix |= (v & 0x1) << 13;
 }
 
+
 /*
-* Set nShutdown_1:  0= shutdown, 1= enabled
+* Set nShutdown_1:  0= shutdown, 1= active
 */
 void
 uspi_mcp4822x::put_nShutdown_1(
@@ -88,7 +90,7 @@ uspi_mcp4822x::put_nShutdown_1(
 
 // Send raw word to rgUniSpi
 void
-uspi_mcp4822x::send_raw(
+uspi_mcp4822x::send_raw_32(
     uint32_t		v
 )
 {
@@ -97,9 +99,16 @@ uspi_mcp4822x::send_raw(
     } while ( Uspi->Stat.get_TxFull_1() );
 
     Uspi->Fifo.write( v );
+
+    LastSend = v;
 }
 
-// Send data word to DAC channel, along with current ExShift value.
+/*
+* Send data word to DAC channel, along with current ExShift value.
+* call:
+*    send_dac_12( v )
+*    v = DAC 12-bit value, right justified.
+*/
 void
 uspi_mcp4822x::send_dac_12(
     uint32_t		v
@@ -110,6 +119,6 @@ uspi_mcp4822x::send_dac_12(
     word = (Prefix | (v & 0x0fff) ) << 16;
     word = word | ( ExShift->get_ExData() );
 
-    send_raw( word );
+    send_raw_32( word );
 }
 
