@@ -4,7 +4,7 @@
 //    10-19  Constructor
 //    20-29  Set Prefix bits  put_Gain1x_1(), put_nShutdown_1()
 //    30-39  Send data to rgUniSpi, send_dac_12()
-//    40-49  .
+//    40-49  Preferred set_Gain1x(), set_Gain2x(), set_Active(), set_Shutdown()
 //--------------------------------------------------------------------------
 
 #include <iostream>	// std::cerr
@@ -190,6 +190,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	CHECKX(           0x8ccc0000, Uspix.Fifo.read() );
+	CHECKX(           0x8ccc0000, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -208,6 +209,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  0,  tx.get_nShutdown_1() );
 	CHECKX(           0x0ccc0000, Uspix.Fifo.read() );
+	CHECKX(           0x0ccc0000, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -226,6 +228,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xbfff0000, Uspix.Fifo.read() );
+	CHECKX(           0xbfff0000, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -243,6 +246,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb0000000, Uspix.Fifo.read() );
+	CHECKX(           0xb0000000, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -262,6 +266,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb000ff00, Uspix.Fifo.read() );
+	CHECKX(           0xb000ff00, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -280,6 +285,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb0000000, Uspix.Fifo.read() );
+	CHECKX(           0xb0000000, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -299,6 +305,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  1,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0xb777cc00, Uspix.Fifo.read() );
+	CHECKX(           0xb777cc00, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -318,6 +325,7 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0x1ccc3300, Uspix.Fifo.read() );
+	CHECKX(           0x1ccc3300, tx.LastSend );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
@@ -336,6 +344,189 @@ extShift		Esx  ( 8 );		// constructor
 	CHECK(  0,  tx.get_Gain1x_1() );
 	CHECK(  1,  tx.get_nShutdown_1() );
 	CHECKX(           0x1ccc3300, Uspix.Fifo.read() );
+	CHECKX(           0x1ccc3300, tx.LastSend );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+
+//--------------------------------------
+  CASE( "37", "chA send_raw_32()" );
+    try {
+	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
+	Uspix.Fifo.write( 0x00000000 );
+	CHECKX(           0x00000000, Uspix.Fifo.read() );
+	tx.LastSend     = 0x00000000;
+	CHECKX(           0x00000000, tx.LastSend );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	tx.send_raw_32(   0xfccccccc );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	CHECKX(           0xfccccccc, Uspix.Fifo.read() );
+	CHECKX(           0xfccccccc, tx.LastSend );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "38", "chB send_raw_32()" );
+    try {
+	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
+	tx.put_Gain1x_1( 1 );
+	tx.put_nShutdown_1( 1 );
+	Uspix.Fifo.write( 0xffffffff );
+	CHECKX(           0xffffffff, Uspix.Fifo.read() );
+	tx.LastSend     = 0xffffffff;
+	CHECKX(           0xffffffff, tx.LastSend );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	tx.send_raw_32(   0x03333333 );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	CHECKX(           0x03333333, Uspix.Fifo.read() );
+	CHECKX(           0x03333333, tx.LastSend );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------------------------------------------
+//## Preferred set_Gain1x(), set_Gain2x(), set_Active(), set_Shutdown()
+//--------------------------------------------------------------------------
+
+  CASE( "41a", "set_Gain1x()" );
+    try {
+	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	tx.set_Gain1x();
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "41b", "set_Gain2x()" );
+    try {
+	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	tx.set_Gain2x();
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "42a", "set_Active()" );
+    try {
+	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	tx.set_Active();
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "42b", "set_Shutdown()" );
+    try {
+	uspi_mcp4822x	tx  ( 0, &Uspix, &Esx );
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+	tx.set_Shutdown();
+	CHECK(  0,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "43a", "set_Gain2x()" );
+    try {
+	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
+	tx.put_Gain1x_1( 1 );
+	tx.put_nShutdown_1( 1 );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	tx.set_Gain2x();
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  0,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "43b", "set_Gain1x()" );
+    try {
+	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
+	tx.put_Gain1x_1( 1 );
+	tx.put_nShutdown_1( 1 );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	tx.set_Gain1x();
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+//--------------------------------------
+  CASE( "44a", "set_Shutdown()" );
+    try {
+	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
+	tx.put_Gain1x_1( 1 );
+	tx.put_nShutdown_1( 1 );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	tx.set_Shutdown();
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  0,  tx.get_nShutdown_1() );
+    }
+    catch (...) {
+	FAIL( "unexpected exception" );
+    }
+
+  CASE( "44a", "set_Active()" );
+    try {
+	uspi_mcp4822x	tx  ( 1, &Uspix, &Esx );
+	tx.put_Gain1x_1( 1 );
+	tx.put_nShutdown_1( 1 );
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
+	tx.set_Active();
+	CHECK(  1,  tx.get_Chan_1() );
+	CHECK(  1,  tx.get_Gain1x_1() );
+	CHECK(  1,  tx.get_nShutdown_1() );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
