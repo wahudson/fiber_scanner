@@ -73,6 +73,7 @@ class yOptLong : public yOption {
     bool		verbose;
     bool		debug;
     bool		TESTOP;
+    bool		TESTMODE = 0;
 
   public:
     yOptLong( int argc,  char* argv[] );	// constructor
@@ -125,6 +126,7 @@ yOptLong::parse_options()
 	else if ( is( "-v"           )) { verbose    = 1; }
 	else if ( is( "--debug"      )) { debug      = 1; }
 	else if ( is( "--TESTOP"     )) { TESTOP     = 1; }
+	else if ( is( "--TESTMODE"   )) { TESTMODE   = 1; }
 	else if ( is( "--help"       )) { this->print_usage();  exit( 0 ); }
 	else if ( is( "-"            )) {                break; }
 	else if ( is( "--"           )) { this->next();  break; }
@@ -218,6 +220,7 @@ yOptLong::print_usage()
 
 // Hidden options:
 //       --TESTOP       test mode show all options
+//       --TESTMODE     test mode disable awkward output
 }
 
 /*
@@ -263,7 +266,7 @@ main( int	argc,
 	rgAddrMap		Amx;			// constructor
 
 	Amx.open_dev_mem();
-	if ( Amx.is_fake_mem() ) {
+	if ( Amx.is_fake_mem() && ! Opx.TESTMODE ) {
 	    cerr << "Using Fake memory" <<endl;
 	}
 
@@ -455,13 +458,15 @@ main( int	argc,
 		ns_loop      =         ( delta_ns / loop_cnt );
 	    }
 
-	    cerr << "    loop_cnt=     " << loop_cnt     <<endl;
-	    cerr << "    overflow_cnt= " << overflow_cnt <<endl;
+	    if ( ! Opx.TESTMODE ) {
+		cerr << "    loop_cnt=     " << loop_cnt     <<endl;
+		cerr << "    overflow_cnt= " << overflow_cnt <<endl;
 
-	    cerr << "    delta_ns= "
-		 <<setw(10) <<right << delta_ns  << " ns,  "
-		 <<setw(4)          << ns_loop   << " ns/loop"
-		 <<endl;
+		cerr << "    delta_ns= "
+		     <<setw(10) <<right << delta_ns  << " ns,  "
+		     <<setw(4)          << ns_loop   << " ns/loop"
+		     <<endl;
+	    }
 	}
 
 	//---- Apply Shutdown  (use last value set for ExData)
