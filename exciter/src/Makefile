@@ -45,14 +45,16 @@ CXXFLAGS   = -Wall  -std=c++11  -I $(IH)  -I $(INCDIR)
 
 
 run:	compile
-	$(BINDIR)/sine_mcp4822 --TESTOP
+	$(BINDIR)/dac_mcp4822 --TESTOP -a 0,0
 
 compile:  $(OJ)  $(BINDIR) \
+	$(BINDIR)/dac_mcp4822 \
 	$(BINDIR)/sine_mcp4822 \
 	$(BINDIR)/awave
 
 cap:
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/awave
+	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/dac_mcp4822
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/sine_mcp4822
 
 mkdirs:   $(OJ)  $(BINDIR)
@@ -73,6 +75,10 @@ $(OJ):
 $(BINDIR)/awave:	 awave.cpp  $(OBJS)  $(INCS)  $(LIBS)
 	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
 			 awave.cpp  $(OBJS)  $(LIBFLAGS)
+
+$(BINDIR)/dac_mcp4822:	 dac_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
+	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
+			 dac_mcp4822.cpp  $(OBJS)  $(LIBFLAGS)
 
 $(BINDIR)/sine_mcp4822:	 sine_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
 	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
