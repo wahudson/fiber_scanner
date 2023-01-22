@@ -277,13 +277,20 @@ main( int	argc,
 	uspi_mcp4822x		BDax  ( 1, &Uspix, &Esx );
 
 	if ( Opx.a ) {
-	    ( Opx.gain2x ) ? ADax.set_Gain2x() : ADax.set_Gain1x();
 	    ADax.set_Active();
 	}
 
 	if ( Opx.b ) {
-	    ( Opx.gain2x ) ? BDax.set_Gain2x() : BDax.set_Gain1x();
 	    BDax.set_Active();
+	}
+
+	if ( Opx.gain2x ) {
+	    ADax.set_Gain2x();
+	    BDax.set_Gain2x();
+	}
+	else {			// default
+	    ADax.set_Gain1x();
+	    BDax.set_Gain1x();
 	}
 
 	//---- Argv Data
