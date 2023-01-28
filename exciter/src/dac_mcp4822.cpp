@@ -8,14 +8,14 @@
 // Schematic:  (initial version)
 //    kicad/dual_dac_v1/
 //    Analog output is -1.000 V to +1.000 V with zero at code 2048:
-//    code 4095  at +1.0235 V
-//    code 4048  at +1.0000 V
+//    code 4095  at -1.0235 V
+//    code 4048  at -1.0000 V
 //    code 2048  at  0.0000 V
-//    code   48  at -1.0000 V
-//    code    0  at -1.0240 V
+//    code   48  at +1.0000 V
+//    code    0  at +1.0240 V
 //    A 12-bit DAC, LSB is 0.0005 V
-//        Vout = 0.0005 V * (Code - 2048)
-//        Code = (Vout / 0.0005 V) + 2048
+//        Vout = -0.0005 V * (Code - 2048)	Inverting output
+//        Code = -(Vout / 0.0005 V) + 2048
 // Provide external configuration:  e.g.
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
 //   rgpio uspi -1 --SpiEnable_1=1
