@@ -49,7 +49,7 @@ dNcRamp::reset_init()
 * Can be set while running - will continue in the same state with new
 *     configuration.
 * The set_() functions do not update the active Gain used by
-*     dNcScaler::scale(), only ramp_step() does that.
+*     dNcScaler::scale_Qd30(), only ramp_step() does that.
 *#!! Is an apply_config() needed to update active Gain?
 */
 
@@ -71,7 +71,7 @@ dNcRamp::restart_ramp()
 * Set the Gain high level of ramp.
 *    The current GainStep_Qd12 is also updated based on RampDuration,
 *    regardless of RampState.
-*    Gain is limited by the dNcScaler::scale() fixed-point computation.
+*    Gain is limited by the dNcScaler::scale_Qd30() fixed-point computation.
 *    #!! Only positive gain is allowed as an initial simplification.
 * call:
 *    set_HiGain( gain )

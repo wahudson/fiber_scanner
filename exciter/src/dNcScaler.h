@@ -31,7 +31,7 @@ class dNcScaler {
     int32_t		get_Gain()	{ return Gain; }
     int32_t		get_Offset()	{ return Offset; }
 
-    uint32_t		scale( int32_t v );
+    uint32_t		scale_Qd30( int32_t v );
 
     uint32_t		Qd30_float(   float y );
     float		float_Qd30( int32_t u );

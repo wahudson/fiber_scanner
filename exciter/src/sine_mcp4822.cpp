@@ -397,7 +397,7 @@ main( int	argc,
 	    for ( int i=0;  i<nsize;  i++ )
 	    {
 		entry = Wx.WavTab[i];
-		vdac  = Sox.scale( entry );
+		vdac  = Sox.scale_Qd30( entry );
 
 		cout <<setw(6) << i <<setfill('0')
 		     << "  0x" <<setw(8) <<hex << entry <<setfill(' ')
@@ -470,7 +470,7 @@ main( int	argc,
 		    }
 
 		    vsin = Nox.next_sample();
-		    vdac = Sox.scale( vsin );
+		    vdac = Sox.scale_Qd30( vsin );
 		    sync = vsin & 0x1;		// sync mark
 
 		    if ( Opx.raw ) {	// show raw waveform output

@@ -100,15 +100,14 @@ dNcScaler::set_Offset(
 *    preserving 16 bits of precision.
 *    Result is saturated to avoid glitches from wrap-around.
 * call:
-*    scale( i )
+*    scale_Qd30( i )
 *      i = signed Q2.30 fixed point,  -2 < i < +2
 * return:
 *    ()  = ((i * Gain) + Offset) unsigned Nbits integer, clamped (saturated)
 *          in range [0 .. MaskFS], where MaskFS = 2^Nbits - 1
-*#!! rename to scaleQd30() ?
 */
 uint32_t
-dNcScaler::scale(
+dNcScaler::scale_Qd30(
     int32_t		value
 )
 {

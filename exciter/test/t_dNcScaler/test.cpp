@@ -3,7 +3,7 @@
 // Testing:  dNcScaler  Signal Scaler class for Numeric Controlled Oscillator.
 //    10-19  Constructors
 //    20-29  Configure set_Gain(), set_Offset()
-//    30-39  Scale values scale()  v= Q2.30
+//    30-39  Scale values scale_Qd30()  v= Q2.30
 //    40-49  Conversions for Q2.30  Qd30_float(), float_Qd30()
 //--------------------------------------------------------------------------
 
@@ -161,7 +161,7 @@ dNcScaler		Tx  ( 12 );	// constructor
     }
 
 //--------------------------------------------------------------------------
-//## Scale values scale()  v= Q2.30
+//## Scale values scale_Qd30()  v= Q2.30
 //--------------------------------------------------------------------------
 
   CASE( "30", "setup" );
@@ -170,85 +170,85 @@ dNcScaler		Tx  ( 12 );	// constructor
 	Tx.set_Offset(    0 );
 	CHECK(    1, Tx.get_Gain()   );
 	CHECK(    0, Tx.get_Offset() );
-	CHECK(    0, Tx.scale(    0 ) );
+	CHECK(    0, Tx.scale_Qd30(    0 ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "32", "scale()" );
+  CASE( "32", "scale_Qd30()" );
     try {
 	Tx.set_Gain(   1000 );
 	Tx.set_Offset(    0 );
 	CHECK(  1000, Tx.get_Gain()   );
 	CHECK(     0, Tx.get_Offset() );
-	CHECK(     0, Tx.scale( 0x00000000 ) );
-	CHECK(  1000, Tx.scale( 0x40000000 ) );	// 1.00
-	CHECK(   500, Tx.scale( 0x20000000 ) );	// 0.50
-	CHECK(  1500, Tx.scale( 0x60000000 ) );	// 1.50
-	CHECK(  1999, Tx.scale( 0x7fffffff ) );
-	CHECK(     0, Tx.scale( 0xc0000000 ) );	// clamp -v
-	CHECK(  1003, Tx.scale( 0x40400000 ) );
+	CHECK(     0, Tx.scale_Qd30( 0x00000000 ) );
+	CHECK(  1000, Tx.scale_Qd30( 0x40000000 ) );	// 1.00
+	CHECK(   500, Tx.scale_Qd30( 0x20000000 ) );	// 0.50
+	CHECK(  1500, Tx.scale_Qd30( 0x60000000 ) );	// 1.50
+	CHECK(  1999, Tx.scale_Qd30( 0x7fffffff ) );
+	CHECK(     0, Tx.scale_Qd30( 0xc0000000 ) );	// clamp -v
+	CHECK(  1003, Tx.scale_Qd30( 0x40400000 ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "33", "scale()" );
+  CASE( "33", "scale_Qd30()" );
     try {
 	Tx.set_Gain(   1000 );
 	Tx.set_Offset( 2048 );
 	CHECK(  1000, Tx.get_Gain()   );
 	CHECK(  2048, Tx.get_Offset() );
-	CHECK(  2048, Tx.scale( 0x00000000 ) );
-	CHECK(  4047, Tx.scale( 0x7fffffff ) );
-	CHECK(  3048, Tx.scale( 0x40000000 ) );	// 1.00
-	CHECK(  1048, Tx.scale( 0xc0000001 ) );	// -1.00
-	CHECK(  2047, Tx.scale( -1         ) );
-	CHECK(  3048, Tx.scale( 1.0 * (float) 0x40000000 ) );
+	CHECK(  2048, Tx.scale_Qd30( 0x00000000 ) );
+	CHECK(  4047, Tx.scale_Qd30( 0x7fffffff ) );
+	CHECK(  3048, Tx.scale_Qd30( 0x40000000 ) );	// 1.00
+	CHECK(  1048, Tx.scale_Qd30( 0xc0000001 ) );	// -1.00
+	CHECK(  2047, Tx.scale_Qd30( -1         ) );
+	CHECK(  3048, Tx.scale_Qd30( 1.0 * (float) 0x40000000 ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
 //--------------------------------------
-  CASE( "34a", "scale()" );
+  CASE( "34a", "scale_Qd30()" );
     try {
 	Tx.set_Gain(   2000 );
 	Tx.set_Offset( 2048 );
 	CHECK(  2000, Tx.get_Gain()   );
 	CHECK(  2048, Tx.get_Offset() );
-	CHECK(  2048, Tx.scale( 0x00000000 ) );
-	CHECK(  4048, Tx.scale( 0x40000000 ) );	// 1.00
-	CHECK(  3048, Tx.scale( 0x20000000 ) );	// 0.50
-	CHECK(    48, Tx.scale( 0xc0000000 ) );	// -1.00
-	CHECK(  1048, Tx.scale( 0xe0000000 ) );	// -0.50
-	CHECK(  4095, Tx.scale( 0x7fffffff ) );	// saturate
-	CHECK(  4095, Tx.scale( 0x60000000 ) );	// 1.50  saturate
-	CHECK(     0, Tx.scale( 0xa0000000 ) );	// -1.50  saturate
-	CHECK(     0, Tx.scale( -1.1 * (float) 0x40000000 ) );
-	CHECK(     0, Tx.scale( Tx.Qd30_float( -1.1 ) ) );
+	CHECK(  2048, Tx.scale_Qd30( 0x00000000 ) );
+	CHECK(  4048, Tx.scale_Qd30( 0x40000000 ) );	// 1.00
+	CHECK(  3048, Tx.scale_Qd30( 0x20000000 ) );	// 0.50
+	CHECK(    48, Tx.scale_Qd30( 0xc0000000 ) );	// -1.00
+	CHECK(  1048, Tx.scale_Qd30( 0xe0000000 ) );	// -0.50
+	CHECK(  4095, Tx.scale_Qd30( 0x7fffffff ) );	// saturate
+	CHECK(  4095, Tx.scale_Qd30( 0x60000000 ) );	// 1.50  saturate
+	CHECK(     0, Tx.scale_Qd30( 0xa0000000 ) );	// -1.50  saturate
+	CHECK(     0, Tx.scale_Qd30( -1.1 * (float) 0x40000000 ) );
+	CHECK(     0, Tx.scale_Qd30( Tx.Qd30_float( -1.1 ) ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );
     }
 
-  CASE( "34b", "scale() negative gain" );
+  CASE( "34b", "scale_Qd30() negative gain" );
     try {
 	Tx.set_Gain(  -2000 );
 	Tx.set_Offset( 2048 );
 	CHECK( -2000, Tx.get_Gain()   );
 	CHECK(  2048, Tx.get_Offset() );
-	CHECK(  2048, Tx.scale( 0x00000000 ) );
-	CHECK(    48, Tx.scale( 0x40000000 ) );	// 1.00
-	CHECK(  1048, Tx.scale( 0x20000000 ) );	// 0.50
-	CHECK(  4048, Tx.scale( 0xc0000000 ) );	// -1.00
-	CHECK(  3048, Tx.scale( 0xe0000000 ) );	// -0.50
-	CHECK(     0, Tx.scale( 0x7fffffff ) );	// saturate
-	CHECK(     0, Tx.scale( 0x60000000 ) );	// 1.50  saturate
-	CHECK(  4095, Tx.scale( 0xa0000000 ) );	// -1.50  saturate
-	CHECK(  4095, Tx.scale( -1.1 * (float) 0x40000000 ) );
-	CHECK(  4095, Tx.scale( Tx.Qd30_float( -1.1 ) ) );
+	CHECK(  2048, Tx.scale_Qd30( 0x00000000 ) );
+	CHECK(    48, Tx.scale_Qd30( 0x40000000 ) );	// 1.00
+	CHECK(  1048, Tx.scale_Qd30( 0x20000000 ) );	// 0.50
+	CHECK(  4048, Tx.scale_Qd30( 0xc0000000 ) );	// -1.00
+	CHECK(  3048, Tx.scale_Qd30( 0xe0000000 ) );	// -0.50
+	CHECK(     0, Tx.scale_Qd30( 0x7fffffff ) );	// saturate
+	CHECK(     0, Tx.scale_Qd30( 0x60000000 ) );	// 1.50  saturate
+	CHECK(  4095, Tx.scale_Qd30( 0xa0000000 ) );	// -1.50  saturate
+	CHECK(  4095, Tx.scale_Qd30( -1.1 * (float) 0x40000000 ) );
+	CHECK(  4095, Tx.scale_Qd30( Tx.Qd30_float( -1.1 ) ) );
     }
     catch (...) {
 	FAIL( "unexpected exception" );

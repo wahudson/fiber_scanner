@@ -323,7 +323,7 @@ main( int	argc,
 		if ( ! Uspix.Stat.get_TxFull_1() ) {
 		    // vdac = (Nox.next_sample() & 0x0fff) || 0x3000;
 		    vsin = Nox.next_sample();
-		    vdac = Sox.scale( vsin );
+		    vdac = Sox.scale_Qd30( vsin );
 		    cout <<fixed;
 		    cout <<setw(9) <<setprecision(6) << Sox.float_Qd30( vsin )
 			 <<setw(6) <<dec << vdac <<endl;
