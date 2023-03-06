@@ -171,6 +171,7 @@ Fiber Patch Cable
 	Cladding dia:  125 +-1  um
 	Coating dia:   245 +-15 um
 	Cutoff Wavelength:  730 +- 30 nm
+	Minimum Bend Radius:  13 mm long term, 6 mm momentary (fiber only)
 	NA:  0.13
 	This is the one we have on v1.0 scanner on bench.
 	https://www.thorlabs.com/thorproduct.cfm?partnumber=P1-780A-FC-1
@@ -338,6 +339,15 @@ Analog Input:
     Sample rate 250 kS/s is shared across all active channels.
 
 NI has the crappiest website.
+
+Using NI DAQs with Matlab, are the advertised sample rates possible?
+    Matlab Answers, USB-6211, May 2015
+    https://www.mathworks.com/matlabcentral/answers/217795-using-ni-daqs-with-matlab-are-the-advertised-sample-rates-possible
+    "250 KSamp/s is truly unachievable with USB 2.0".
+
+It appears the USB-6211 is obsolete - no specs or manual can be found on
+    NI website.  Maybe replaced by another device.  Very unprofessional to
+    not have data on their old products.  (2022-12-20)
 
 ----------------------------------------
 Linux:

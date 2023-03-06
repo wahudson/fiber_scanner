@@ -31,6 +31,13 @@ Photodetector
     Manual
     https://www.thorlabs.com/_sd.cfm?fileName=TTN135069-D02.pdf&partNumber=PDA36A2
 
+Ray Optics Simulation - Yi-Ting Tu
+    https://ricktu288.github.io/ray-optics/
+    Create & simulate 2D geometric optical scenes interactively.
+    Totally free and web-based.  No download needed.
+    Save as local ASCII file.
+    ***** Works really well.
+
 ----------------------------------------------------------------------------
 ## Magnetic Actuators:
 ----------------------------------------------------------------------------
@@ -183,6 +190,14 @@ Introduction to Polarized Light
 Polarization - Feynman Lectures
     https://www.feynmanlectures.caltech.edu/I_33.html
     **** Well written.
+
+Fused Silica Material Properties
+    https://www.translume.com/resources/item/186-fused-silica-material-properties
+    Fused Silica Mean Coefficient of Thermal Expansion (Source:
+	Präzisions Glas & Optik GmbH, Menden, Germany):
+    0.52 x 10-6/K over    5°C to 35°C temperature range
+    0.57 x 10-6/K over    0°C to 200°C
+    0.48 x 10-6/K over -100°C to 35°C
 
 ----------------------------------------------------------------------------
 ## Fitting Ellipses
@@ -652,4 +667,28 @@ Phase sensitive detection:  the lock-in amplifier
     Faraday effect.  Chopping and harmonics.  Low-pass filters in the time
     domain - see the connection between frequency filtering and time averaging.
     **** Practical insights
+
+A pragmatic guide to multiphoton microscope design
+    Michael D. Young, Jeffrey J. Field, Kraig E. Sheetz, Randy A. Bartels,
+    and Jeff Squier
+    Adv Opt Photonics. 2015 Jun 30; 7(2): 276-378.
+    doi: 10.1364/AOP.7.000276
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4863715/
+    The paper from Colorado School of Mines that Jesse referred to.
+    Abbe's theory of image formation by diffracted light.
+    **** A good overview and practical construction.
+
+Fiber-optic confocal microscope using a MEMS scanner and miniature
+	objective lens
+    Hyun-Joon Shin, et.al.
+    2007  Optics Express  https://doi.org/10.1364/OE.15.009113
+    https://opg.optica.org/oe/fulltext.cfm?uri=oe-15-15-9113&id=139683
+    (see doc/mems_compare_2023.text)
+
+MEMS-based multiphoton endomicroscope for repetitive imaging of mouse colon
+    Xiyu Duan, et.al.
+    2015  Biomedical Optics Express
+    doi: 10.1364/BOE.6.003074
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4541532/
+    (see doc/mems_compare_2023.text)
 

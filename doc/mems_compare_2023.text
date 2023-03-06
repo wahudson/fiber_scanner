@@ -1,0 +1,165 @@
+2023-03-06  William A. Hudson
+
+		Gleanings from two MEMS Papers
+		------------------------------
+
+Compare/contrast MEMS with piezo fiber cantilever scanning.
+Thinking only about the light scanning mechanism.
+
+## Reference papers:
+--------------------
+
+[1] Fiber-optic confocal microscope using a MEMS scanner and miniature
+	objective lens
+	2007  Optics Express  https://doi.org/10.1364/OE.15.009113
+    https://opg.optica.org/oe/fulltext.cfm?uri=oe-15-15-9113&id=139683
+
+[2] MEMS-based multiphoton endomicroscope for repetitive imaging of mouse colon
+	2015  Biomedical Optics Express  doi: 10.1364/BOE.6.003074
+    https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4541532/
+
+## My Thoughts:
+---------------
+
+Geometry, arrangement of elements:
+    The fiber cantilever is inherently coaxial, and is directly scanned,
+    requiring no other optical elements.
+
+    The MEMS is an additional optical mirror to provide mechanical steering
+    of the light beam and is inherently off-axis.
+
+    An endoscope application would care, but is not significant for our use.
+
+Actuation Complexity:
+    Two single-axis MEMS can be used much like mirror galvanometers.
+    Dual axis MEMS use a gimbal system to tilt a single mirror on two axis.
+    The MEMS is a complex micro-mechanical device, but seems to be a very
+    well developed technology.
+
+    Piezo-electric drive elements are also a well developed technology.
+    A piezo tube has essentially no moving sub-components, as the tube
+    itself changes dimension resulting in a small deflection.
+
+DC vs Resonant actuation:
+    The piezo tube has too small a deflection, on order 5 um, to directly
+    position the fiber tip over a 1 mm range.
+    Thus resonant gain of the fiber cantilever is required, precluding
+    arbitrary frequency operation down to DC.
+    However stacked (layered) piezoelectric elements could achieve a larger
+    displacement.
+
+    MEMS with electrostatic comb drive are also operated at resonance in
+    both papers.  However [1] used a raster scan at an 8 Hz frame rate, well
+    below resonance.  Thus MEMS might have acceptable angular displacement
+    at DC.
+
+Angle of deflection:
+    MEMS [1], at near-maximum driving amplitudes, had total optical angular
+    deflections of:
+	11.3 degrees at 6.37 kHz  on fast axis (inner gimbal)
+	 5.5 degrees at 8 Hz      on slow axis (outer gimbal)
+
+    MEMS [2] had mechanical angles up to +-4.5 degrees.  (Double this for
+    total optical angular deflection.)
+
+    The fiber cantilever is literally bent by resonant inertia to provide
+    equivalent angular deflection of the light beam leaving the fiber tip.
+
+    Thorlabs 780HP fiber has minimum bend radius of 13 mm long term, and
+    6 mm momentary duration.
+    A 1/4 turn bend, i.e. 90 degrees, is ((2*Pi * 13 mm)/4) = 20 mm long.
+    Thus even a short fiber cantilever can easily exceed typical MEMS
+    angle rotation.
+
+    All methods have sufficient angular deflection, so is not a significant
+    distinction.
+
+Efficiency, reflecting surfaces, laser damage:
+    The fiber cantilever needs no additional optical elements for deflection,
+    and is a basis for comparison here.
+    Essentially it gets down to losses in the MEMS mirror.
+
+    MEMS [1] had an uncoated silicon mirror with 500 um x 500 um scanning area.
+    "The system delivers an optical power of 2.75 mW to the sample, with the
+     most significant source of power loss (~5 dB) due to the low reflectivity
+     of the uncoated MEMS scanner.  While the current scanning surface is
+     uncoated silicon (measured R ~= 32% at 635 nm), techniques have recently
+     been developed to add an additional metallic layer to the scanning surface,
+     increasing the reflectivity to around 70-80% without adversely affecting
+     scanner performance."
+
+    MEMS [2] has a 1.8 mm diameter mirror coated with a ~50 nm layer of
+    aluminum.  A concern was increased stress of a thicker layer could
+    deform the curvature.
+    Measured radius of curvature was ~1.7 meter.
+    Measured reflectivity >80% at 488 and 780 nm.
+    The laser is not focused onto the mirror, and they did not observe any
+    mirror damage.
+
+    I conjecture that if the laser is focused on a biological sample and
+    not focused on the mirror, then it seems unlikely that the mirror
+    would be damaged before the sample.
+
+Robustness against perturbation:
+    Thinking about perturbation of the optical spot position due to external
+    movement or vibration of the whole device.
+
+    MEMS mirrors typically have two torsional supports on opposite sides
+    of the mirror with the mirror center-of-gravity on that axis.
+    This makes mirror rotation intrinsically resistant to acceleration of
+    the whole MEMS device, e.g. due to movement or shaking of the device.
+
+    A fiber cantilever has the center-of-gravity well away from the base
+    support as is necessary to store resonant energy in the movement of
+    the fiber.  Any acceleration of the whole device can thus transfer
+    a force (and energy) to the fiber.  If that movement or shaking is
+    near the resonant frequency, it could build a resonant response as
+    large (or larger) than the intentional drive from the piezo tube.
+
+    Thus the fiber cantilever is much more sensitive to movement or vibration
+    than a MEMS mirror.
+
+Supporting electronics:
+    Both papers used MEMS with electrostatic vertical comb actuators.
+    MEMS [2] drove at 40 Vpp to achieve +-4.5 degree mechanical angle.
+
+    Breakdown voltage is a limiting factor for both electrostatic actuators
+    and piezoelectric actuators.
+    Both are voltage driven devices, with typically low current due to 
+    capacitance of the device at the driving frequency.
+    Thus they have very similar electronics requirements.
+
+Scanning ray path:
+    In the fiber cantilever, the fiber tip moves on a curved surface concave
+    toward the fiber, and points either on-axis or away from the axis.
+
+    In MEMS [1] the mirror scans diverging light from the fiber.
+    The virtual fiber tip moves on a surface concave toward the mirror
+    (away from the virtual fiber), and points toward the mirror.
+
+    In MEMS [2] the mirror scans parallel light from an intervening
+    collimating lens.  The corresponding virtual surface is flat, i.e.
+    infinite radius.
+    I suspect this is the preferred condition?
+    Note the collimating lens must have a very short focal length (f = 3 mm),
+    a correspondingly small diameter, and be close to the fiber tip.
+
+Conclusions:
+    Major differences affecting our application include:
+
+    Geometry - Fiber cantilever is coaxial, mirrors not.
+
+    Efficiency - Fiber cantilever has no additional optical elements.
+    MEMS mirror represents a light loss.  Laser damage potential seems
+    insignificant.
+
+    Robustness against perturbation - MEMS looks like a clear winner here.
+
+    Actuation Complexity - Piezo tube is solid state.  MEMS is a complex
+    mechanical device.
+
+    DC vs Resonant - MEMS seems to have potential operation to DC,
+    while piezo tube drive is pretty much limited to resonant operation.
+    DC operation is not really important for Lissajous image scanning, but
+    is important for raster scan.
+
