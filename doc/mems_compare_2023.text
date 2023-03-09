@@ -163,3 +163,82 @@ Conclusions:
     DC operation is not really important for Lissajous image scanning, but
     is important for raster scan.
 
+----------------------------------------------------------------------------
+## 2023-03-08  More thoughts on improving our scanner
+----------------------------------------------------------------------------
+
+In comparing results of the two MEMS papers above, I see these main areas
+where ours could be improved, and could have comparable results:
+
+Optics:
+    Both papers had detailed analysis of their optics, and seem to have
+    gone further than just a simple 4f lens system.
+    It seems spherical aberration may be the major limiter.
+
+    Does the 0.13 NA fiber imply that the optics must be at least that good?
+
+ADC Sample rate:
+    Our sample rate of 62.5 kSPS (kilo Samples Per Second) is way too low.
+    At 800 Hz, one ellipse cycle is:
+	Fc = 800 Hz		frequency
+	Tc = 1 / Fc  = 1.25 ms		period of one cycle
+    One ellipse is two scan lines across the field:
+	Tl = Tc / 2  = 0.625 ms		duration of one scan line
+    Sample rate:
+	Ts = 1 / (62.5 kSPS) = 16 us/sample
+    One scan line across the field has
+	Ns = Tl / Ts  = 39 samples/line		number of samples in a line
+
+    It seems we would want at least 100 samples/line, or even 500.
+    e.g. At 1 MSPS, Ns= 625.
+
+    Digital oscilloscopes suggest sample rate should be 5x the bandwidth.
+
+    MEMS [1] Using Mu-Tech MV-1000 video frame grabber, ~40 MSPS.
+
+    MEMS [2] Using National Instruments PCI-6115, 12-bit, 10 MSPS.
+    The board samples florescence PMT, return light to photodiode, and
+    generates the MEMS drive signals (much like our DAQ).
+
+Extraneous light:  (i.e. back reflections)
+    MEMS [1] used polarizing beam splitters to reduce light unwanted from
+    unwanted reflections.  (Also suggested by Jesse)
+    MEMS [2] is a multiphoton endoscope and used a dichroic mirror and
+    bandpass filter to reject the excitation wavelength.
+
+    Our scanner has two outputs on the fiber beam splitter (one used, and
+    one to a beam dump).  Back reflection at the glass-air interface
+    (cleaved end of the fiber cantilever, and FC/PC connector at beam dump)
+    contributes unwanted light back to the photodetector.
+    Eliminating this could be a significant improvement in sensitivity.
+
+Scan pattern density:
+    MEMS [1] used a raster scan (6.37 kHz, 8 Hz).
+	Lines across one frame is
+	Nl = 6.37 kHz / 8 Hz  = 796
+
+    MEMS [2] used a Lissajous scan at 5 frames/second.
+	2*w0 = (5820 Hz, 1610 Hz)
+	Actual tilting frequencies:  2.91 kHz, 0.805 kHz forms a dense
+	Lissajous scan pattern which repeats itself at 5 Hz to encompass
+	images with dimensions of 400x400 pixels with 100% coverage.
+	Nl = 2.91 kHz /  5 Hz  = 582
+
+    Our Lissajous pattern at (804 Hz, 807 Hz) repeats at 3 Hz.
+	Nl = 807 Hz / 3 Hz =  269
+	This is a reasonable density (much better than the ADC 39 sample/line),
+	but could easily double to be more comparable to the MEMS papers.
+
+FOV:
+    MEMS [1]  140 um x  70 um
+    MEMS [2]  300 um x 300 um  (400 x 400 pixel)
+
+Image Reconstruction:
+    The time series from the ADC could be interpolated to provide effectively
+    more samples across the FOV.  Adjacent samples should be fairly
+    coherent (i.e. well correlated), so interpolation would be a valid way
+    to get more pixels, but not more resolution.
+    Adjacent samples are intrinsically better correlated than adjacent
+    Lissajous scan lines, and especially orthogonal ellipse paths (i.e
+    center of pattern with spot travelling at right angles).
+
