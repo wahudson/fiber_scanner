@@ -1,0 +1,78 @@
+2023-03-27  William A. Hudson
+
+		Enclosure Design
+		----------------
+
+Drawings are pencil and paper.
+
+----------------------------------------------------------------------------
+## Overall Design
+----------------------------------------------------------------------------
+
+Enclosure Box:
+    Hammond 1598 Series - ABS Plastic Instrument Enclosure - Split Shell
+    Aluminum end panels.
+    $25.76  DigiKey  Hammond 1598GBK   9.84 L, 6.30 W, 3.00 H, Black
+
+    This box has plenty of extra room, so not too crowded.
+    I looked at smaller boxes, but some were just too tight.
+
+    Gray is my preferred color, as the lighter color is easier to see inside
+    details of the box, and can write on it with black marker.
+    Ended up with Black, because Gray was not available at DigiKey when
+    I placed my order and it was better to get started with the best form
+    and function, sacrificing color.
+
+----------------------------------------------------------------------------
+## Assembly/Disassembly Order
+----------------------------------------------------------------------------
+
+Assembly:  (critical element sequence)
+
+    Mount Baseplate in bottom half of enclosure.
+	Rear is secured with 2 each #4 flat head sheet metal screws thru
+	modified bottom half of enclosure screwing into the baseplate.
+	Necessitated because screws from the inside would interfere with
+	protoboards and power entry module.
+	Front is secured with 2 each #6-32 Button Head machine screws threaded
+	from baseplate into raised bosses on the plastic enclosure bottom,
+	which were modified by tapping #6-32 threads.
+
+    Mount Power Entry Module on rear panel.
+	There is no access to the lower inside nut when the panel in installed.
+	Ensure it is tight, perhaps with a lock washer.
+
+    Slide rear panel into bottom half of enclosure.
+	Secure rear panel to baseplate with #4 sheet metal retaining screw.
+	This is essential to keep rear panel from sliding out when the
+	cover is lifted up and stressing power op-amps bolted to the heatsinks.
+
+    Mount protoboards onto baseplate with #4 x 5/8 inch sheet metal screws
+	and 1/4 inch nylon standoffs.
+
+    Bolt power op-amps (TO220 package) to heatsink with thermal mounting
+	hardware.
+
+    Assembly order is not critical for other components.
+
+Disassembly:
+    Reverse order of assembly, as is typical.
+
+Access to inside:
+
+    Cover is aligned by grooves on each side and by front and rear panel
+	slots.  It is attached by M3-0.5 x 10 mm Flat Head screws (cross-slot
+	drive) in deep holes from the bottom side.
+	It takes some gentle force to slide it over the front and rear
+	aluminum panels.
+
+    The baseplate and rear panel should remain attached to the enclosure
+	bottom shell.
+    This is essential to avoid stressing the power op-amp leads.
+    The power op-amps are bolted to the heatsinks on the rear panel, while
+    their leads are soldered to the protoboards that are screwed to the
+    baseplate.  Only the enclosure bottom shell provides mechanical stability
+    between the rear panel (i.e. heatsinks) and the baseplate (i.e.
+    protoboards).
+    While this is not quite ideal, it is good enough.  Be careful.
+

@@ -3,6 +3,8 @@
 	    Bill of Material (BOM) - 2 Channel Current Buffer
 	    -------------------------------------------------
 
+Schematic:  kicad/cbuffer_v2/ki.pro  v2.0
+
 ----------------------------------------------------------------------------
 ## Design Stage
 ----------------------------------------------------------------------------
@@ -41,7 +43,7 @@ Circuit Board, Current Buffer, per channel
  4  Female Header sockets, 2-position - mating wires
     3	$0.33  DigiKey  S7035-ND, Sullins PPPC021LFBN-RC  2-position
 
- 4  Single solder socket - for optional/change components
+ 4  Single solder socket - for optional/change components Cp3, Cf4
     v	On-hand.
 
  2  Electrolytic Capacitor - power bypass
@@ -54,8 +56,8 @@ Circuit Board, Current Buffer, per channel
     9	$0.22  DigiKey  Kemet C320C104K5R5TA     0.1uF,  50V, Straight 0.100
 	$0.10 *50 DigiKey  Kemet C420C104K5R5TA7200 0.1uF, 50V, X7R, 10%, Axial
 
- 1  Ceramic Capacitor 0.01 uF - power bypass, C10 ??
-    ??
+ 1  Ceramic Capacitor 0.01 uF - power bypass, C10
+	Vishay capacitor kit  10 nF, 100 V, X0U
 
  1  Sense Resistor, 1 ohm, 5 W
 	Vishay Wirewound  5%, AC series:  1W, 3W, 4W, 5W, 7W, 10W
@@ -68,8 +70,8 @@ Circuit Board, Current Buffer, per channel
 	LM358 series  Industry-Standard Dual Op-Amps, bipolar
     0	$0.42 DigiKey  LM358AP  8-PDIP, dual
 
- 1  Socket, 8-PDIP
-    v	On-hand
+ 0  Socket, 8-PDIP - for op-amp protection op-amp
+    v	On-hand - decided to direct solder
 
  1  NMOS Transistor, TO92-3 - shutdown detection
 	VN0106  N-Channel  60 V, 350 mA, MOSFET
@@ -85,7 +87,9 @@ Circuit Board, Current Buffer, per channel
  3	10 kohm  R1, R2, Rp3
  1	402 ohm  Rf4
  1	100 ohm  Rf5
- 1	750 ohm  R6 -- 402 ohm
+
+    Resistors, 1/2 W, Carbon, 10%
+ 1	470 ohm  R6  LED current limit
 
 Front Panel:
 ------------
@@ -93,7 +97,7 @@ Front Panel:
  1  Binding Post - for equipment ground
     0	$7.56  DigiKey  Cinch 111-2223-001, Grounding, metal knurled knob
 
- 1  Binding Post - for StarGnd
+ 1  Binding Post - for StarGnd external connection
     0	$5.49  DigiKey  Pomona 3760-0, Black, Insulated
 
  2  Terminal Block Header - output current connector
@@ -147,8 +151,8 @@ Power Supply System:
 	Fuse cartridge, 5mm x 20mm, glass, Slow
     0	$0.55  DigiKey  BelFuse 5ST 3.15-R,  3.15 A,  33 A2s
 
- 1  Ground Post - for StarGnd
-	Screw and Nut (on hand)
+ 1  Power terminal strip for Vnn, Gnd, Vpp distribution.
+	Made from cut-off end of protoboard.  Drill for #4 SM screws.
 
 Enclosure:
 ----------
@@ -158,13 +162,31 @@ Enclosure:
     0	$25.76  DigiKey  Hammond 1598GGY   9.84 L, 6.30 W, 3.00 H, Gray
 
  1  Mounting Plate - to hold everything in enclosure.
-	1/8 inch acrylic sheet?  1/4 inch?
-
+	1/4 inch thick hardboard
+	Works well with #4 x 5/8 inch sheet metal screws.
+	Consider 1/8 inch acrylic sheet?
 
 Hardware:
 ---------
 
- 8  Stand-off, #40 1/4 inch long
+ 8  Stand-off, #4 nylon, 1/4 inch long
+	Mount protoboards.
 
- 12 Screw, sheet metal, #40 3/8 inch long
+ 12 Screw, #4 sheet metal, 5/8 inch long
+	Mount protoboards and power supply to base plate.
+
+ 1  Screw, #4 sheet metal, 5/8 inch long
+	Back panel retainer, screw into edge of 1/4 inch thick baseplate.
+
+ 2  Screw, #6-32 Button Head, 3/8 inch long
+	Base plate mount to enclosure - front end
+
+ 2  Screw, #4 Sheet Metal, 3/8 inch long
+	Base plate mount to enclosure - rear end (under PCB)
+
+ 2  Screw, M3.5? Flat Head x 5 mm
+	Power entry module mounting.
+
+ 2  Nut, M3.5?
+	Power entry module mounting.
 
