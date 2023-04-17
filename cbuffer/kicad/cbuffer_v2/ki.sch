@@ -1,11 +1,12 @@
 EESchema Schematic File Version 4
+LIBS:ki-cache
 EELAYER 26 0
 EELAYER END
 $Descr A 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Current Buffer"
-Date "2022-12-23"
+Date "2023-04-08"
 Rev "v2.0"
 Comp "William A. Hudson"
 Comment1 ""
@@ -95,7 +96,7 @@ L Device:R_US Rs
 U 1 1 5EB4E054
 P 7400 5250
 F 0 "Rs" H 7332 5204 50  0000 R CNN
-F 1 "1.0" H 7332 5295 50  0000 R CNN
+F 1 "1.0R  5W, 1%, Wirewound" H 7332 5295 50  0000 R CNN
 F 2 "" V 7440 5240 50  0001 C CNN
 F 3 "~" H 7400 5250 50  0001 C CNN
 	1    7400 5250
@@ -387,7 +388,7 @@ Power op-amp\non heatsink
 Text Notes 8850 3850 0    50   ~ 0
 Current Limit
 Text Notes 5300 6350 0    50   ~ 0
-Future:\n    TVS Diode on output\n    RC snubber on output
+Future:\n    TVS Diode on output\n    RC snubber on output\n    Offset trim
 Connection ~ 7200 3000
 Connection ~ 7400 5000
 $Comp
@@ -417,7 +418,7 @@ L Device:R_US R6
 U 1 1 639DE1C9
 P 8600 2250
 F 0 "R6" H 8532 2204 50  0000 R CNN
-F 1 "750" H 8532 2295 50  0000 R CNN
+F 1 "470R 0.5W, 10% Carbon" H 8532 2295 50  0000 R CNN
 F 2 "" V 8640 2240 50  0001 C CNN
 F 3 "~" H 8600 2250 50  0001 C CNN
 	1    8600 2250
@@ -453,8 +454,6 @@ Wire Wire Line
 	8000 3400 8100 3400
 Wire Wire Line
 	6950 3350 6950 3400
-Wire Wire Line
-	6700 2000 8600 2000
 Wire Wire Line
 	8600 2000 8600 2100
 Wire Wire Line
@@ -495,10 +494,10 @@ Wire Wire Line
 	9700 5500 9700 5700
 Text Notes 9800 5450 0    50   ~ 0
 Output Shunt:
-Text Notes 7700 5350 0    50   ~ 0
+Text Notes 7500 5550 0    50   ~ 0
 Current Sense\nResistor
 Text Notes 8700 2100 0    50   ~ 0
-Iled = (VPP - 1.7 V) / R6
+Iled = (VNN - 1.7 V) / R6
 Text Notes 2600 7100 0    50   ~ 0
 Ilim = 15000 * (4.75 V) / (13750 ohm + Rlim)\n\n
 Text Notes 9550 5050 0    50   ~ 0
@@ -508,7 +507,7 @@ L Amplifier_Operational:LM358 U2
 U 1 1 63AA4F68
 P 4300 2900
 F 0 "U2" H 4500 3100 50  0000 C CNN
-F 1 "LM358" H 4550 3200 50  0000 C CNN
+F 1 "TL052" H 4550 3200 50  0000 C CNN
 F 2 "" H 4300 2900 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm2904-n.pdf" H 4300 2900 50  0001 C CNN
 	1    4300 2900
@@ -519,7 +518,7 @@ L Amplifier_Operational:LM358 U2
 U 2 1 63AA50DF
 P 4300 1400
 F 0 "U2" H 4450 1600 50  0000 C CNN
-F 1 "LM358" H 4500 1700 50  0000 C CNN
+F 1 "TL052" H 4500 1700 50  0000 C CNN
 F 2 "" H 4300 1400 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/lm2904-n.pdf" H 4300 1400 50  0001 C CNN
 	2    4300 1400
@@ -551,7 +550,7 @@ L Device:R_US R2
 U 1 1 63AABED9
 P 3650 3000
 F 0 "R2" V 3445 3000 50  0000 C CNN
-F 1 "10k" V 3536 3000 50  0000 C CNN
+F 1 "20k" V 3536 3000 50  0000 C CNN
 F 2 "" V 3690 2990 50  0001 C CNN
 F 3 "~" H 3650 3000 50  0001 C CNN
 	1    3650 3000
@@ -573,7 +572,7 @@ L Device:R_US Rp3
 U 1 1 63AAC13C
 P 4950 2900
 F 0 "Rp3" V 4745 2900 50  0000 C CNN
-F 1 "10k" V 4836 2900 50  0000 C CNN
+F 1 "10k 1%" V 4836 2900 50  0000 C CNN
 F 2 "" V 4990 2890 50  0001 C CNN
 F 3 "~" H 4950 2900 50  0001 C CNN
 	1    4950 2900
@@ -977,4 +976,23 @@ Wire Wire Line
 	8600 3800 8600 4100
 Text Notes 8200 3750 0    50   ~ 0
 no load
+$Comp
+L _Local:GND #PWR?
+U 1 1 63CDC7E0
+P 8300 2000
+F 0 "#PWR?" H 8300 1750 50  0001 C CNN
+F 1 "GND" H 8300 1827 50  0000 C CNN
+F 2 "" H 8200 1650 50  0001 C CNN
+F 3 "" H 8300 1750 50  0001 C CNN
+	1    8300 2000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8600 2000 8300 2000
+Text Notes 9800 2900 0    50   ~ 0
+5 mm, 20 mA
+Text Notes 6300 6700 0    70   ~ 0
+Current Buffer:  1 mA/mV, 1.0 A Full Scale, 1.3 kHz lowpass filter
+Text Notes 2400 7600 0    50   ~ 0
+Resistors:  1/4 W, 5% Carbon
 $EndSCHEMATC
