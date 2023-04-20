@@ -6,8 +6,8 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Current Buffer"
-Date "2023-04-08"
-Rev "v2.0"
+Date "2023-04-19"
+Rev "v2.0.1"
 Comp "William A. Hudson"
 Comment1 ""
 Comment2 ""
@@ -392,7 +392,7 @@ Future:\n    TVS Diode on output\n    RC snubber on output\n    Offset trim
 Connection ~ 7200 3000
 Connection ~ 7400 5000
 $Comp
-L Device:Q_NMOS_GDS Q1
+L Device:Q_NMOS_SGD Q1
 U 1 1 639D8B60
 P 8200 2600
 F 0 "Q1" H 8100 2850 50  0000 L CNN
@@ -995,4 +995,8 @@ Text Notes 6300 6700 0    70   ~ 0
 Current Buffer:  1 mA/mV, 1.0 A Full Scale, 1.3 kHz lowpass filter
 Text Notes 2400 7600 0    50   ~ 0
 Resistors:  1/4 W, 5% Carbon
+Text Notes 8650 2700 0    50   ~ 0
+A
+Text Notes 8650 2800 0    50   ~ 0
+C
 $EndSCHEMATC
