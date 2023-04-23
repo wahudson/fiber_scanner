@@ -502,3 +502,121 @@ Input Protection:
     This offset could be balanced by an equal series input resistors on
     both inputs.
 
+----------------------------------------------------------------------------
+## Schematic Overview:  cbuffer_v2/  v2.1.0  2023-04-22
+----------------------------------------------------------------------------
+
+This is a tour of the schematic explaining the function of each component.
+
+J1 Input Connector:
+    Single-ended input is ground referenced.
+
+R1 Input parallel resistor:  10 kohm
+    Provides a zero volt input when no signal source is connected.
+    This is the input impedance of the circuit.
+
+R2 Input series resistor:  20 kohm
+    Provides input current-limit protection for op-amp U2A.
+    Common signal sources could provide a +-10 Vpp signal, which would exceed
+    the 9.0 V power supply.  Supplies OFF is the worst case.
+    Current is limited to  Vin / R1 = (10 V) / (20 kohm) = 0.5 mA
+
+    Op-amp U2A is TL052, absolute max input current is +-1 mA.
+    Input bias current is 4 nA max, thus 20 kohm produces 80 uV max offset.
+
+U2B Unused half of op-amp.
+U2A Op-amp:  TL052  JFET-input, bipolar
+    Unity-gain configuration to buffer the input and provide low drive
+    impedance for the lowpass filter.
+
+Rp3  Filter Resistor:  10 kohm 1%
+Cp3  Filter Capacitor:  12 nF COG
+    Form a simple single-pole lowpass filter.
+	F0 = 1 / (2*Pi * Rp3 * Cp3)		corner frequency
+	F0 = 1 / (2 * 3.14 * 10e3 ohm * 12e-9 F)  = 1.3 kHz
+    Filter output goes to high-impedance input of power op-amp.
+
+U1 Power op-amp:  OPA548, TO-220 package mounted on a heatsink.
+    Is the heart of the current buffer.
+    Output current goes thru the load and returns thru the sense resistor
+    to ground.  The resulting sense voltage (Vs = Iout * Rs) is passed to the
+    op-amp negative input.  The op-amp gain adjusts the output voltage Vo such
+    that The sense voltage Vs matches the positive input voltage, which is
+    a buffered and filtered copy of Vin.  Thus (neglecting filtering)
+	Iout = Vin / Rs
+	Iout = (1.0 mA/mV) * Vin
+
+Rs Sense resistor:  1.0 ohm, 5%, 5 W, wirewound
+    Output current returns thru this sense resistor to ground.
+    The resistance value IS the transconductance (1/Rs) factor of the
+    instrument.  Resistor precision affects accuracy.  Temperature coefficient
+    affects drift with current variation.
+
+Cf4, Rf4, Cf5  Stability Compensation:
+    Cf4 = 47 nF,   in socket for optional application
+    Rf4 = 402 ohm
+    Rf5 = 100 ohm
+    Probably not needed for typical voice coil loads.
+
+D2, D3 Output Protection:  Vishay SB240 Schottky diode, 2 A, 40 V
+    When current thru an inductive load is interrupted, the collapsing
+    magnetic field generates a back EMF (electromotive force) causing the
+    output voltage Vo to rise.  If Vo rises more than the power supply, the
+    op-amp can be damaged.  These diodes dump the excess charge onto the
+    power supply.  Since the power supply is unlikely to be able to sink
+    excess current, the supply voltage rises, thus preventing damage to the
+    op-amp.  Supply bypass capacitors help absorb the excess charge.
+
+Rlim  Current Limit:  Any value, zero ohm to open.
+    Sets the OPA548 output current limit.
+	Ilim = 15000 * (4.75 V) / ((13750 ohm) + Rlim)
+    Zero ohms sets Ilim = 5 A.
+    Open sets Ilim = 0 A.
+
+SW1 Output Disable:  SPST toggle switch
+    Connects OPA548 op-amp enable/shutdown (ES) input to VNN to disable
+    (high impedance) the output.  Normally open (N.O.) is the enabled
+    condition.
+
+SW2 Output Shunt:  SPST toggle switch
+    Shorts the output terminals together.  Normally open (N.O.) is the normal
+    operating condition with a load attached.  A current source is perfectly
+    happy driving a zero ohm load (i.e. shorted output).
+
+    When no load is attached, the op-amp is effectively open-loop and the
+    output voltage will go to the rails.  While not harmful to the op-amp, it
+    is unpleasant when attaching a speaker to the active circuit.  This switch
+    gives another method of control.
+
+    Note:  In the shunt condition, the op-amp will be dissipating the full
+    output current power, i.e. the power supply voltage times the output
+    current.
+
+Q1 Enable/Shutdown MOSFET:  Vishay VN0106, N-Channel, 60 V, 350 mA
+D1 LED Shutdown Indicator:  Red LED, 20 mA
+R6 LED Resistor:  470 ohm, 10%, 0.5 W
+    The MOSFET gate monitors the OPA548 enable/shutdown (ES) output with
+    respect to VNN.  In normal operation ES is typically at (VNN + 3.5 V)
+    turning ON Q1, shunting current away from the LED which is then OFF.
+    In thermal shutdown ES is typically at (VNN + 0.350 V), turning OFF Q1
+    and allowing the LED to illuminate.
+    Note the Output Disable switch SW1 also connects ES to VNN, thus turning
+    ON the LED when the output is disabled.
+
+C1 Enable/Shutdown noise capacitor:  Not used.
+    The OPA548 may need this in noisy environments.
+
+Bypass Capacitors:
+    C21, C22  0.1 uF, 50 V, ceramic
+    C10       0.01 uF, 50 V, ceramic
+    C11, C14  0.1 uF, 50 V, ceramic
+    C12, C15  1.0 uF, 50 V, ceramic
+    C13, C16  180 uF, 50 V, electrolytic
+    All are placed appropriately close to their corresponding op-amp.
+
+J2, J3  Screw Terminal connectors.
+    For higher current power supply and output connectors.
+
+J1, J4, J5, J6  Header Pins, 0.1 inch pitch.
+    For low current connections.
+

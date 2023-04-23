@@ -6,10 +6,10 @@ $Descr A 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Current Buffer"
-Date "2023-04-19"
-Rev "v2.0.1"
+Date "2023-04-22"
+Rev "v2.1.0"
 Comp "William A. Hudson"
-Comment1 ""
+Comment1 "v2.1  output back EMF protection D2,D3"
 Comment2 ""
 Comment3 ""
 Comment4 ""
@@ -96,7 +96,7 @@ L Device:R_US Rs
 U 1 1 5EB4E054
 P 7400 5250
 F 0 "Rs" H 7332 5204 50  0000 R CNN
-F 1 "1.0R  5W, 1%, Wirewound" H 7332 5295 50  0000 R CNN
+F 1 "1.0R  5W, 5%, Wirewound" H 7332 5295 50  0000 R CNN
 F 2 "" V 7440 5240 50  0001 C CNN
 F 3 "~" H 7400 5250 50  0001 C CNN
 	1    7400 5250
@@ -174,7 +174,7 @@ Wire Wire Line
 	6400 2650 6700 2650
 Connection ~ 6700 2650
 Wire Wire Line
-	7400 3000 7400 4800
+	7400 3000 7400 4500
 $Comp
 L _Local:GND #PWR0104
 U 1 1 5EB51758
@@ -827,8 +827,6 @@ Wire Wire Line
 Wire Wire Line
 	9200 4900 9200 5500
 Wire Wire Line
-	7400 4800 8700 4800
-Wire Wire Line
 	7400 5000 8700 5000
 Wire Wire Line
 	9000 5700 9700 5700
@@ -936,7 +934,7 @@ Text Notes 4900 2550 0    50   ~ 0
 Lowpass Filter
 Text Notes 9850 4200 0    50   ~ 0
 Rlim    Ilim\n129k    0.5 A\n57.6k   1.0 A\n20.0k   2.1 A\n14.7k   2.5 A
-Text Notes 5300 5800 0    50   ~ 0
+Text Notes 5500 5150 0    50   ~ 0
 Stability Compensation:  Cf4, Rf4, Rf5
 Text Notes 2600 6900 0    50   ~ 0
 Rlim = (15000 * (4.75 V) / Ilim) - (13750 ohm)
@@ -999,4 +997,63 @@ Text Notes 8650 2700 0    50   ~ 0
 A
 Text Notes 8650 2800 0    50   ~ 0
 C
+$Comp
+L Device:D_Schottky_Small_ALT D2
+U 1 1 64440762
+P 7600 4400
+F 0 "D2" V 7554 4468 50  0000 L CNN
+F 1 "SB240" V 7645 4468 50  0000 L CNN
+F 2 "" V 7600 4400 50  0001 C CNN
+F 3 "~" V 7600 4400 50  0001 C CNN
+	1    7600 4400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:D_Schottky_Small_ALT D3
+U 1 1 6444404A
+P 7600 4600
+F 0 "D3" V 7554 4668 50  0000 L CNN
+F 1 "SB240" V 7645 4668 50  0000 L CNN
+F 2 "" V 7600 4600 50  0001 C CNN
+F 3 "~" V 7600 4600 50  0001 C CNN
+	1    7600 4600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7600 4500 8200 4500
+Wire Wire Line
+	8200 4500 8200 4800
+Wire Wire Line
+	8200 4800 8700 4800
+Connection ~ 7600 4500
+$Comp
+L _Local:VNN #PWR?
+U 1 1 6445544B
+P 7600 4700
+F 0 "#PWR?" H 7600 4450 50  0001 C CNN
+F 1 "VNN" H 7617 4527 50  0000 C CNN
+F 2 "" H 7600 4700 50  0001 C CNN
+F 3 "" H 7600 4700 50  0001 C CNN
+	1    7600 4700
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:VPP #PWR?
+U 1 1 644554D4
+P 7600 4300
+F 0 "#PWR?" H 7600 4550 50  0001 C CNN
+F 1 "VPP" H 7617 4473 50  0000 C CNN
+F 2 "" H 7600 4300 50  0001 C CNN
+F 3 "" H 7600 4300 50  0001 C CNN
+	1    7600 4300
+	1    0    0    -1  
+$EndComp
+Text Notes 7800 4300 0    50   ~ 0
+Output back EMF\nprotection
+Wire Wire Line
+	7400 4500 7600 4500
+Text Notes 8600 4800 0    50   ~ 0
+Ho
+Text Notes 8600 5000 0    50   ~ 0
+Lo
 $EndSCHEMATC

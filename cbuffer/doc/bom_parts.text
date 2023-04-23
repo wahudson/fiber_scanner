@@ -3,7 +3,7 @@
 	    Bill of Material (BOM) - 2 Channel Current Buffer
 	    -------------------------------------------------
 
-Schematic:  kicad/cbuffer_v2/ki.pro  v2.0
+Schematic:  kicad/cbuffer_v2/ki.pro  v2.1
 
 ----------------------------------------------------------------------------
 ## Design Stage
@@ -12,7 +12,7 @@ Schematic:  kicad/cbuffer_v2/ki.pro  v2.0
     Selecting components in parallel with the design.
 
 Need quantity
- -- Have quantity
+ -- Have quantity (2022-12-11)
     --
 
 Circuit Board, Current Buffer, per channel
@@ -59,9 +59,13 @@ Circuit Board, Current Buffer, per channel
  1  Ceramic Capacitor 0.01 uF - power bypass, C10
 	Vishay capacitor kit  10 nF, 100 V, X0U
 
- 1  Sense Resistor, 1 ohm, 5 W
+ 1  Sense Resistor Rs, 1 ohm, 5 W
 	Vishay Wirewound  5%, AC series:  1W, 3W, 4W, 5W, 7W, 10W
+	Tempco:  -10 to -80 ppm/K
     2	$0.78  DigiKey  AC05000001008JAC00   1 ohm, 5%, 5W
+
+ 2  Diode, Schottky - D2, D3  output back EMF protection
+	$0.45  Digikey  Vishay SB240-E3/73   2 A, 40 V, DO-204AC (DO-15)
 
  1  Op-Amp - input protection/filter
 	TL05x  Enhanced JFET, Low Offset  Op Amp
@@ -70,7 +74,7 @@ Circuit Board, Current Buffer, per channel
 	LM358 series  Industry-Standard Dual Op-Amps, bipolar
     0	$0.42 DigiKey  LM358AP  8-PDIP, dual
 
- 0  Socket, 8-PDIP - for op-amp protection op-amp
+ 0  Socket, 8-PDIP - for op-amp protection op-amp (not used)
     v	On-hand - decided to direct solder
 
  1  NMOS Transistor, TO92-3 - shutdown detection
