@@ -1,0 +1,372 @@
+2023-04-29  William A. Hudson
+
+	    Current Buffer Calibration -- ex2023_04_29_cal
+	    --------------------------
+
+Purpose:
+    Initial calibration measurements of  cbuffer_v2  v2.1.0
+    DC measurement of transfer function (Io, for Vin) at Rload = 1 ohm.
+
+Files:
+    notes.text		this file
+    cal_1R0.tab		original data
+    cal_1R0.sort.tab	sorted measurements
+    cal_1R0.pdf		Sense Voltage at Rload= 1.0 ohm
+    cal_1R0_Kd.pdf	Load Scale Factor Kd = Rd / Rs
+
+	The "_1R0" is the load resistor value, Rload = 1.0 ohm.
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Schematic:  kicad/cbuffer_v2/	v2.1.0
+
+This is the first circuit constructed and mounted in the Channel 1 position
+of the instrument case.  Front panel is not used (not built).
+Powered by two power supplies:  9 V, 2.2 A, CUI PSK-20D-9T
+
+Sense resistor in protoboard:
+    Rs = 1.0 ohm, 5%, 5 W, Vishay AC05000001008JAC00
+
+Current limit:  (of OPA548 op-amp)
+    Ilim = 15000 * (4.75 V) / (13750 ohm + Rlim)
+
+    Rlim = 66.5 kohm,  Ilim =  888 mA
+    Rlim = 51.0 kohm,  Ilim = 1100 mA
+    Rlim = 20.0 kohm,  Ilim = 2111 mA
+
+Lowpass Filter:  Cp3 none
+Compensation:  Cf4 none
+
+Load Leads:
+    20 AWG stranded wire on alligator clips, ~14 inch long.
+
+Resistor Loads:
+    Rload = resistor nominal value
+    Pr   = resistor power rating
+    Imax = sqrt( Pr / R )
+    Vmax = sqrt( Pr * R )
+	Rload	Pr	Imax	Vmax	Description
+	(ohm)	(W)	(A)	(V)
+	0.1	3	5.5	0.55	Dale  RS-2B, 1%
+	1.0	5	2.2	2.2	Vishay AC05, 5%
+	2.0     3	1.2	2.4	Vishay AC03, 5%
+	4.0     6	1.2	4.9	Vishay AC03, 5%, two in series
+	10	159	4.0	40.0	Ohmite RW38V100
+
+Meter:  Fluke model 23 Multimeter
+
+Input voltage source:  Keysight DSOX12046 oscilloscope, wavegen output.
+
+----------------------------------------------------------------------------
+## Measurements
+----------------------------------------------------------------------------
+
+Procedure:
+    1. Disable output, connect load, enable output.
+    2. Sweep Vset, measure Vin, Vs, Vo.
+
+Rs measurement:
+    Fluke ohm meter connected across Rs, no load connected.
+    Rs = 1.0 ohm, 0.1 ohm resolution.
+    Meter offset was 0.0 to 0.1 ohm, as typical.
+    Thus use the resistor nominal value as a reference.  [Perhaps attempt
+    a better measurement later.]
+
+Voltage measurements:  (probe points)
+    Meter ground lead attached to power terminal block ground "G" input.
+    Vin  = probe Vin header pin on PCB
+    Vs   = probe "Lo" terminal of output terminal block
+    Vo   = probe "Ho" terminal of output terminal block
+
+    Vset = wavegen voltage setting
+
+Derived values:
+    Io = Vs / Rs		output current thru both Rload and Rs
+    Vd = Vo - Vs		voltage across the load
+    Rd = (Vo - Vs) / Io		effective load resistance
+
+    Rd = (Vo/Vs - 1) * Rs
+    Kd =  Vo/Vs - 1		load scale factor,  Rd == Kd * Rs
+
+
+    Rload = 1.0 ohm
+    Rlim = 66.5 kohm,  Ilim = 888 mA
+    VPP = +9.07 V
+    VNN = -9.07 V
+	Vset	Vin	Vs	Vo	Io	Kd
+	(mV)	(mV)	(mV)	(V)	(mA)
+	-----	-----	-----	-----	-----	-----
+	 open	    0	   2	    5
+	  gnd	    0	   2	    5
+	  100	   98	 101	  206
+	    0	    2	   2	    5
+	 -100	  -98	 -96	 -196
+	 -200	 -197	-195	 -397
+	 -500	 -494	-491	 -999
+	  200	  197	 200	  407
+	  500	  495	 498	 1013
+	  700	  693	 696	 1416
+	  800	  792	 795	 1616
+	  900	  891	 894	 1818
+	 1000	  989	 939	 1910
+	 1100	 1089	 941	 1913
+	  100	   98	 101	  205
+	   10	   10	  11	   24
+	 -700	 -692	-689	-1402
+	 -800	 -791	-789	-1605
+	 -900	 -890	-888	-1805
+	-1000	 -989	-911	-1854
+	-1100	-1088	-905	-1841	VNN=-9.06  VPP=+9.07
+	    0	    0	   2	    4
+	 -2.2	   -2	   0	    0	adjust to Vs=0 mV
+
+    Looks like a good set of measurements.
+
+    Power supply regulation looks good, < +-10 mV at Io= 900 mA load
+    Heat sink only slightly warm.  Resistors cool.
+
+Idea:  If Rload is known to high precision, then it can be used to
+    calibrate value of Rs from measurements of Kd.  Rs = Rd / Kd
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Data Files:
+    cal_1R0.tab		above raw data, in measurement order
+
+	Vset_mV Vin_mV  Vs_mV   Vo_mV
+	 open       0      2        5
+	  gnd       0      2        5
+	  100      98    101      206
+	    0       2      2        5
+	 -100     -98    -96     -196
+	 -200    -197   -195     -397
+	...
+
+    cal_1R0.sort.tab	sort by Vset_mV, remove "open" and "gnd" entries
+
+Running R:
+    df <- read.table( "cal_1R0.tab", header=TRUE )
+    plot( df$Vin_mV, df$Vs_mV )
+    df$Vs_mV - df$Vin_mV
+
+    df <- read.table( "cal_1R0.sort.tab", header=TRUE )
+
+    plot( df$Vset_mV, df$Vin_mV )
+    df$deltain_mV = df$Vin_mV - df$Vset_mV
+	# deviation of Vin from Vset
+
+    plot( df$deltain_mV, df$Vset_mV )
+	Looks like about  11 mV/V  gain error between Vset and Vin
+
+    plot( df$Vin_mV, df$Vs_mV )
+
+    plot( df$Vset_mV, df$Vs_mV )
+    abline( h=888, col='red' )
+    abline( h=-888, col='red' )
+
+    df$Kd = (df$Vo_mV / df$Vs_mV) - 1
+	# load scale factor,  Rd == Kd * Rs
+
+    % print(df)
+	   Vset_mV Vin_mV Vs_mV Vo_mV deltain_mV       Kd
+	1  -1100.0  -1088  -905 -1841       12.0 1.034254
+	2  -1000.0   -989  -911 -1854       11.0 1.035126
+	3   -900.0   -890  -888 -1805       10.0 1.032658
+	4   -800.0   -791  -789 -1605        9.0 1.034221
+	5   -700.0   -692  -689 -1402        8.0 1.034833
+	6   -500.0   -494  -491  -999        6.0 1.034623
+	7   -200.0   -197  -195  -397        3.0 1.035897
+	8   -100.0    -98   -96  -196        2.0 1.041667
+	9     -2.2     -2     0     0        0.2      NaN
+	10     0.0      0     2     4        0.0 1.000000
+	11     0.0      2     2     5        2.0 1.500000
+	12    10.0     10    11    24        0.0 1.181818
+	13   100.0     98   101   205       -2.0 1.029703
+	14   100.0     98   101   206       -2.0 1.039604
+	15   200.0    197   200   407       -3.0 1.035000
+	16   500.0    495   498  1013       -5.0 1.034137
+	17   700.0    693   696  1416       -7.0 1.034483
+	18   800.0    792   795  1616       -8.0 1.032704
+	19   900.0    891   894  1818       -9.0 1.033557
+	20  1000.0    989   939  1910      -11.0 1.034079
+	21  1100.0   1089   941  1913      -11.0 1.032944
+
+Linear regression of Vs and Vin
+    https://r-statistics.co/Linear-Regression.html
+
+    Using Vs as an analog for output current Io, i.e. Io = Vs / Rs
+    Since Rs = 1.0 ohm, there is no point in computing Io (same as Vs).
+
+    % cor( df$Vs_mV, df$Vin_mV )
+	[1] 0.9976558
+
+    % linearMod <- lm( Vs_mV ~ Vin_mV, data=df )
+	# Construct the linear model, heading names in dataframe df
+	# lm( Y ~ X, ... )
+
+    % print(linearMod)
+	Call:
+	lm(formula = Vs_mV ~ Vin_mV, data = df)
+
+	Coefficients:
+	(Intercept)       Vin_mV
+	     5.2042       0.9444
+
+    % plot( df$Vin_mV, df$Vs_mV )
+    % plot( df$Vin_mV, df$Vs_mV, xlim=c(-1100,1100), ylim=c(-1000,1000) )
+    % abline( 5.2042, 0.9444 )
+
+    Note this data includes the three saturated value at either end.
+    Thus the fit line does not match the non current limited values.
+
+    Extract non- current limited region of data frame, rows 4:18
+
+    % dg <- df[4:18,]
+    % cor( dg$Vs_mV, dg$Vin_mV )
+	[1] 0.9999981
+	Much better correlation without saturated points.
+
+    % linMod <- lm( Vs_mV ~ Vin_mV, data=dg )
+    % print(linMod)
+	Call:
+	lm(formula = Vs_mV ~ Vin_mV, data = dg)
+
+	Coefficients:
+	(Intercept)       Vin_mV
+	       2.33         1.00
+
+    % points( dg$Vin_mV, dg$Vs_mV, col='red' )
+    % abline( 2.33, 1.00, col='red' )
+	This fits much better.
+
+    % abline( h=0 )
+    % abline( v=0 )
+
+    % title( main='Sense Voltage at Rload= 1.0 ohm', sub='Input Voltage' )
+    % text( 20, -400, pos=4, "slope= 0.944, intercept Vs= 5.20", col='black' )
+    % text( 20, -600, pos=4, "slope= 1.00, intercept Vs= 2.33", col='red' )
+
+ >> % dev.copy2pdf( file="cal_1R0.pdf" )
+
+    The op-amp feedback ensures that Vs = Vin, so getting a fit slope of 1.00
+    is not surprising.
+    The actual output current Io is totally dependent on the accuracy of the
+    sense resistor Rs.
+
+Plot Kd load scale factor:
+    Kd =  (Vo / Vs) - 1		load scale factor,  Rd == Kd * Rs
+
+    plot( df$Vin_mV, df$Kd )
+    abline( h=1.034 )
+    title( main='Load Scale Factor Kd = Rd / Rs,   Rs= 1.0 ohm' )
+    text( 400, 1.1, pos=4, "Kd = 1.034" )
+ >> dev.copy2pdf( file="cal_1R0_Kd.pdf" )
+
+    The value measurements in range (-100 mV <= Vin <= 100 mV) have poor
+    resolution, i.e. only 2 significant figures, and thus large uncertainty.
+    The mean value outside this range is ~1.034, while values inside this
+    range are up to Kd= 1.5 or even infinity when Vo=0.  (See data frame df
+    above.)
+
+    Note op-amp current limiting does not affect Kd.  This is because Kd
+    depends on the voltage ratio, not current.
+
+Comparing the linear model summary statistics on df and dg:
+
+    % summary(linearMod)	# df
+	Call:
+	lm(formula = Vs_mV ~ Vin_mV, data = df)
+
+	Residuals:
+	    Min      1Q  Median      3Q     Max
+	-92.611 -14.166  -3.204  17.766 117.258
+
+	Coefficients:
+		    Estimate Std. Error t value Pr(>|t|)
+	(Intercept)  5.20417    9.57581   0.543    0.593
+	Vin_mV       0.94436    0.01486  63.547   <2e-16 ***
+	---
+	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+	Residual standard error: 43.88 on 19 degrees of freedom
+	Multiple R-squared:  0.9953,    Adjusted R-squared:  0.9951
+	F-statistic:  4038 on 1 and 19 DF,  p-value: < 2.2e-16
+
+    % summary(linMod)		# dg
+	Call:
+	lm(formula = Vs_mV ~ Vin_mV, data = dg)
+
+	Residuals:
+	    Min      1Q  Median      3Q     Max
+	-2.3312 -0.3101  0.3491  0.6100  0.9497
+
+	Coefficients:
+		     Estimate Std. Error  t value Pr(>|t|)
+	(Intercept) 2.3303384  0.2361741    9.867  2.1e-07 ***
+	Vin_mV      1.0004047  0.0005459 1832.610  < 2e-16 ***
+	---
+	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+	Residual standard error: 0.9146 on 13 degrees of freedom
+	Multiple R-squared:      1,     Adjusted R-squared:      1
+	F-statistic: 3.358e+06 on 1 and 13 DF,  p-value: < 2.2e-16
+
+    The fit on dg is much better.
+    Residual standard error (closer to zero is better).
+    R-squared (higher is better).
+    F-statistic (higher is better).
+
+    Not totally sure what all the summary means.  Probably unimportant, since
+    we have almost no repeated Vin values and little variation.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    We apply Vset and then measure Vin, Vs, Vo.
+	Rs  = sense resistance
+	Vin = input voltage (measured value of Vset)
+	Vs  = sense voltage across Rs
+	Vo  = output voltage across Rload + Rs
+
+    The output current was not directly measured, but instead was inferred
+    from the sense resistor Rs = 1.0 ohm, so  Io = Vs mA/mV.
+	Io = Vs / Rs
+
+    The current buffer DC transfer function is:  (assuming Rs = 1.0 ohm)
+
+	Io = (1.0 mA/mV) * Vin + 2.3 mA
+
+	The small offset current seems reasonable and acceptable.
+
+    Direct measurement verified that (Vs == Vin) for all values below the
+    op-amp current limit.  The op-amp feedback ensures this relationship.
+    (See plot and linear regression above.)
+
+    The op-amp current limit occurred at  |Vs| > 900 mV, i.e. |Io| > 900 mA.
+    A little higher than the theoretical Ilim = 888 mA for Rlim= 66.5 kohm.
+
+    The computed load scale factor Kd has good precision for |Vin| > 200 mV
+
+	Kd = Rd / Rs		load scale factor definition
+
+	Kd = (Vo / Vs) - 1	measurement
+
+	Kd = 1.034	for this nominal Rload = 1.0 ohm, 5 W, 5% resistor.
+
+    The accuracy of the current buffer depends on the accuracy of the sense
+    resistor Rs, which has a 5% tolerance.
+    It would be nice to calibrate this resistor to at least 1% accuracy.
+    Perhaps use a higher accuracy resistor.
+
+Next:
+    Compute op-amp power.
+
+    Measure DC performance at a couple other load resistor values.
+
+    Script to compute Kd and plot Vs versus Vin.
+

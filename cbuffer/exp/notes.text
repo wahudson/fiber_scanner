@@ -1,0 +1,95 @@
+2023-04-23
+		Current Buffer
+		--------------
+
+Notes for experiments:
+
+----------------------------------------------------------------------------
+## Characterization
+----------------------------------------------------------------------------
+
+Loads:
+    0 ohm shunt
+    1 ohm
+    4 ohm
+    5 ohm
+    Resistors:  0.1, 1,   2,   5,   10,    100
+	I: (A)	2.0, 2.0, 2.0, 1.0,  0.5,  0.05
+	V: (V)	0.2, 2.0, 4.0, 5.0,  5.0,  5.0
+    Power:      0.4, 4.0, 8,   5,    2.5,  0.25
+    Power:  P = V^2 / R,   P = I^2 * R
+	V = 5.0 V max
+	I = 2.0 A max
+
+Resistor Loads:
+    R  = resistor nominal value
+    Pr = resistor power rating
+    Imax = sqrt( Pr / R )
+    Vmax = sqrt( Pr * R )
+	R	Pr	Imax	Vmax	Description
+	(ohm)	(W)	(A)	(V)
+	0.1	3	5.5	0.55	Dale RS-2B, 1%
+	1.0	5	2.2	2.2	Vishay AC05, 5%
+	2.0     3	1.2	2.4	Vishay AC03, 5%
+	4.0     6	1.2	4.9	Vishay AC03, 5%, two in series
+	10	159	4.0	40.0	Ohmite RW38V100
+
+Power supplies:
+    Voltage at various currents.
+    Ripple/noise.
+    Measure at supply output and OPA548 power pins.
+
+Sense Resistor Rs:
+    Measure resistance.
+    Measure DC voltage drop at various currents.
+
+Calibration:
+    Output current Io as a function of input voltage Vin.
+	DC positive, negative currents
+	AC sine wave
+	AC square wave
+    Compute DC offsets.
+    Transfer function equations.
+	Vin:  1 mV to 1000 mV
+      Vin (mV)	Rl	Vl (V)
+	10	10	0.1
+	10	500	5.0
+	100	1	0.1
+	100	5	0.5
+	100	10	1.0
+	100	50	5.0
+	1000	0.1	0.1
+	1000    0.5	0.5
+	1000    1.0	1.0
+	1000    5.0	5.0
+	2000	0.1	0.2
+	2000	1	2.0
+
+Configurations:
+    A) Cp3= 12 nF  Filter capacitor in/out.
+    B) Cf4= 47 nF  Compensation capacitor in/out.
+
+Frequency response:
+    Sweep sine wave.
+    Square wave rise/fall times.
+    Filter configurations.
+    Compensation configurations.
+
+Noise:
+    Measure at DC and various output currents.
+    Measure at Vin, OPA548 input, Vo, Vs
+    Filter configurations.
+
+Current limit testing:
+    DC
+    AC sine wave
+    1 ohm load
+    Current sweep:  100 mA to 1000 mA, maybe 2000 mA
+    Current limits:  1000 mA, 500 mA, 100 mA, 1800 mA
+
+Shutdown testing:
+    Pull shutdown to VNN, measure output voltage and current.
+    Observe transient response.
+
+Inductive load testing:
+
