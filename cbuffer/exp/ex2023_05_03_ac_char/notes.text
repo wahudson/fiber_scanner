@@ -1,0 +1,394 @@
+2023-05-03  William A. Hudson
+
+	    Current Buffer AC Characterization
+	    ----------------------------------
+
+Purpose:
+    Initial AC measurements of  cbuffer_v2  v2.1.0
+    Sine wave response for Rload = 1 ohm and 10 ohm.
+
+Follows from:  ex2023_04_29_cal/
+
+Files:
+    notes.text		this file
+    ac_1R0.tab		original data, Rload = 1.0 ohm
+    ac_10R0.tab		original data, Rload = 10.0 ohm
+
+	The "_1R0" is the load resistor value, Rload = 1.0 ohm.
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Schematic:  kicad/cbuffer_v2/	v2.1.0
+
+This is the first circuit constructed and mounted in the Channel 1 position
+of the instrument case.  Front panel is not used (not built).
+Powered by two power supplies:  9 V, 2.2 A, CUI PSK-20D-9T
+
+Sense resistor in protoboard:
+    Rs = 1.0 ohm, 5%, 5 W, Vishay AC05000001008JAC00
+
+Current limit:  (of OPA548 op-amp)
+    Ilim = 15000 * (4.75 V) / (13750 ohm + Rlim)
+
+ >  Rlim = 66.5 kohm,  Ilim =  888 mA
+    Rlim = 51.0 kohm,  Ilim = 1100 mA
+    Rlim = 20.0 kohm,  Ilim = 2111 mA
+
+Lowpass Filter:  Cp3 none
+Compensation:  Cf4 none
+
+Load Leads:
+    20 AWG stranded wire on alligator clips, ~14 inch long.
+
+Resistor Loads:
+    Rload = resistor nominal value
+    Pr   = resistor power rating
+    Imax = sqrt( Pr / R )
+    Vmax = sqrt( Pr * R )
+	Rload	Pr	Imax	Vmax	Description
+	(ohm)	(W)	(A)	(V)
+	0.1	3	5.5	0.55	Dale  RS-2B, 1%
+    >	1.0	5	2.2	2.2	Vishay AC05, 5%
+	2.0     3	1.2	2.4	Vishay AC03, 5%
+	4.0     6	1.2	4.9	Vishay AC03, 5%, two in series
+    >	10	5	0.71	7.1	Vishay AC05, 5%
+	10	159	4.0	40.0	Ohmite RW38V100
+
+Meter:  Fluke model 23 Multimeter
+
+Input voltage source:  Keysight DSOX12046 oscilloscope, wavegen output.
+
+----------------------------------------------------------------------------
+## Measurements
+----------------------------------------------------------------------------
+
+Stimulus:
+    Connect Rload resistor to current buffer output.
+    Apply wavegen sine wave to Vin, setting Vset in mVpp.
+
+Voltage measurements:  (probe points)
+    Ground leads attached to power terminal block ground "G" input.
+    Vin  = ch1 probe Vin header pins on 6 inch input lead
+    Vs   = ch2 probe "Lo" terminal of output terminal block
+    Vo   = ch3 probe "Ho" terminal of output terminal block
+		via stub wires soldered to load leads.
+
+    Vset = wavegen voltage setting, mVpp sine wave
+    Scope probes:  10x, DC coupled, BW limit OFF
+	(except ch2 was 1x probe)
+
+    Scope Measurement mode:  AC RMS FS over full screen, about 10 cycles.
+
+Derived values:
+    Io = Vs / Rs		output current thru both Rload and Rs
+    Vd = Vo - Vs		voltage across the load
+    Rd = (Vo - Vs) / Io		effective load resistance
+
+    Rd = (Vo/Vs - 1) * Rs
+    Kd =  Vo/Vs - 1		load scale factor,  Rd == Kd * Rs
+
+
+DC Measurement:  Cross check prior result.
+    Rload = 1.0 ohm
+    Rlim = 66.5 kohm,  Ilim = 888 mA
+    VPP = +9.07 V
+    VNN = -9.07 V
+	Vset	Vin	Vs	Vo	Io	Kd
+	(mV)	(mV)	(mV)	(V)	(mA)
+	-----	-----	-----	-----	-----	-----
+	 -2.2	   -2	   0	    0	adjust to Vs=0 mV
+	200	197	200	407
+
+	DC matches prior result.
+
+AC Measurements:
+    Vin = 50.0 mVpp, 10 kHz
+    Vs  = 47.5 mVpp
+	Crossover distortion step at -7 mV to -17 mV (10 mV step).
+
+    At 1 kHz, distortion step is much reduced, about 1 mV step.
+    At 500 Hz, distortion step is barely visible in scope trace.
+
+    Automatic measurements are fairly noisy.
+    Peak-to-peak measurement includes noise spikes, not used.
+    AC RMS is better, and seems to match my cursor measurement.
+    Switching power supply spikes (noise) appear as randomly visible samples.
+
+    Scope Measurement mode:  AC RMS FS over full screen, about 10 cycles.
+
+    AC measurement, sine wave
+    Rload = 1.0 ohm
+	Freq	Vset	Vin	Vs	Vo
+	(kHz)	(mVpp)	(mVrms)	(mVrms)	(Vrms)
+	-----	-----	-----	-----	-----
+	1.00	200	 70.3	 69.7	143.4		ch 100 mV/div
+	10.0	200	 70.8	 69.8	145.1
+	0.100	200	 70.2	 69.6	142.6
+	0.100	300	105.7	105.3	215.1
+
+	0.100	400	140.6	140.4	286.2		ch 100 mV/div
+	0.100	400	140.8	139.4	286.5		ch 200 mV/div
+
+	0.100	500	175.9	174.6	358.6
+	0.100	600	210.9	209.5	429.
+	0.100	700	246.0	244.7	501.4
+	0.100	800	280.5	279.3	572.6
+	0.100	100	 35.3	 35.0	 71.5		ch 50 mV/div
+
+	The 2 mA output DC offset is not noticeable on the scope, but
+	is measurable with the multimeter.
+
+    Note in shutdown, if Rload is open, then Vo goes to the rail.
+
+    AC measurement, sine wave
+    Rload = 10.0 ohm
+	Freq	Vset	Vin	Vs	Vo
+	(kHz)	(mVpp)	(mVrms)	(mVrms)	(Vrms)
+	-----	-----	-----	-----	-----
+	0.100	100	 35.33	 35.04	381.6	ch1,2 50 mV/div, ch3 500 mV/div
+	0.100	 50	 17.7	 17.38	190.5
+	0.100	200	 70.2	 69.6	759.0	ch1,2 100 mV/div, ch3 1.0 V/div
+	0.100	300	105.6	105.3	1144
+	0.100	400	140.9	139.5	1519	ch1,2 200 mV/div, ch3 2.0 V/div
+	0.100	500	175.9	174.6	1897
+	0.100	600	210.9	209.6	2274
+	0.100	700	245.9	244.6	2652
+	0.100	800	281.7	279.0	3026	ch1,2 500 mV/div, ch3 5.0 V/div
+	0.100	900	317.2	314.4	3413
+	0.100	1000	352.7	349.9	3792
+
+Oscilloscope Measurement Offset:
+    The oscilloscope seems to show a noticeable DC offset on all 3 channels.
+    Whereas the DC multimeter shows only a 2 mV offset.
+	Freq	Vset	Vin	Vs	Vo
+	0.100	1000	352.7	349.9	3792
+
+	Stop acquisition.  Measure peaks with cursors:
+			Y1	Y2	delta	mean
+	Ch1 Vin:  mV	-456.25	525.00	987.50	34.4	500 mV/div
+	Ch2 Vs:   mV	-450.00	518.75	968.75	34.4	500 mV/div
+	Ch3 Vo:   V	-5.688	4.875	10.562	 0.406	5.00 V/div
+
+	These are quite large offsets, clearly visible on the scope trace.
+	I suspect this may be an artifact of the oscilloscope (i.e. bug),
+	since nothing else indicates that there should be an offset.
+	I am pretty sure the wavegen offset was set to zero.
+	Not sure of the root cause.
+
+AC Square wave:
+    Rload = 10.0 ohm
+	Freq	Vset	Vin	Vs	Vo
+	1.000	100	-	-	-	ch1,2 100 mV/div, ch3 1 V/div
+
+	Rise time of Vs about 5 us.
+	Delay about 0.3 us before Vs begins to rise.
+	Auto Measured rise time:  3.817 us  (probably 10% to 90%?)
+	Vs response looks very clean, no overshoot, smooth RC transition.
+
+    Rload = 1.0 ohm
+    	Freq = 1.000 kHz
+	Vset = 300 mVpp
+	Observe Vs
+	Rising edge looks good, some gentle overshoot.
+	Falling edge has more overshoot and a big crossover glitch, ~30 mV high.
+	About 0.3 us delay until Vs begins to fall.
+
+    Overall seems pretty acceptable for driving exciters at 100 Hz.
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Running R:
+After fiddling with plots, here is a clean analysis.
+
+View mVrms converted to mVpp:
+
+    df <- read.table( "ac_10R0.tab", header=TRUE )
+    dg <- read.table( "ac_1R0.tab", header=TRUE )
+
+    df$Vin_mVpp = 2 * sqrt(2) * df$Vin_mVrms
+    df$Vs_mVpp = 2 * sqrt(2) * df$Vs_mVrms
+    df$Vo_mVpp = 2 * sqrt(2) * df$Vo_mVrms
+
+    % df[c(2,3,4,5,7,8,9)]
+       Vset_mVpp Vin_mVrms Vs_mVrms Vo_mVrms  Vin_mVpp   Vs_mVpp    Vo_mVpp
+    1         50     17.70    17.38    190.5  50.06316  49.15806   538.8154
+    2        100     35.33    35.04    381.6  99.92833  99.10809  1079.3278
+    3        200     70.20    69.60    759.0 198.55558 196.85853  2146.7762
+    4        300    105.60   105.30   1144.0 298.68190 297.83338  3235.7206
+    5        400    140.90   139.50   1519.0 398.52538 394.56558  4296.3808
+    6        500    175.90   174.60   1897.0 497.52033 493.84338  5365.5263
+    7        600    210.90   209.60   2274.0 596.51528 592.83833  6431.8433
+    8        700    245.90   244.60   2652.0 695.51023 691.83327  7500.9887
+    9        800    281.70   279.00   3026.0 796.76792 789.13117  8558.8205
+    10       900    317.20   314.40   3413.0 897.17708 889.25749  9653.4218
+    11      1000    352.70   349.90   3792.0 997.58625 989.66665 10725.3957
+
+The peak-to-peak values 
+
+	The RMS readings agree very well with the Vset mVpp values.
+
+    df$Kd = (df$Vo_mV / df$Vs_mV) - 1
+    dg$Kd = (dg$Vo_mV / dg$Vs_mV) - 1
+	# load scale factor,  Rd == Kd * Rs
+
+    plot( df$Vin_mVrms, df$Vo_mVrms )
+    plot( df$Vin_mVrms, df$Vs_mVrms )
+
+Rload = 10.0 ohm
+
+    df <- read.table( "ac_10R0.tab", header=TRUE )
+    plot( df$Vin_mVrms, df$Vs_mVrms )
+
+    df$Kd = (df$Vo_mV / df$Vs_mV) - 1
+	# load scale factor,  Rd == Kd * Rs
+
+    df$Vin_mVpp = 2 * sqrt(2) * df$Vin_mVrms
+	The RMS readings agree very well with the Vset mVpp values.
+
+    lm( Vs_mVrms ~ Vin_mVrms, data=df )
+	(Intercept)    Vin_mVrms
+	    0.07001      0.99187
+
+    abline( 0.07001, 0.99187 )
+
+    plot( df$Vin_mVrms, df$Vo_mVrms )
+
+    lm( Vo_mVrms ~ Vin_mVrms, data=df )
+	(Intercept)    Vin_mVrms
+	      4.485       10.746
+
+    abline( 4.485, 10.746 )
+
+    points( df$Vin_mVrms, df$Vs_mVrms )
+
+
+    dg <- read.table( "ac_1R0.tab", header=TRUE )
+    plot( df$Vin_mVrms, df$Vs_mVrms )
+    points( dg$Vin_mVrms, dg$Vs_mVrms, col='red' )
+	Both Rload results match very well.
+
+    dg$Kd = (dg$Vo_mV / dg$Vs_mV) - 1
+	# load scale factor,  Rd == Kd * Rs
+
+    lm( Vs_mVrms ~ Vin_mVrms, data=dg )
+	(Intercept)    Vin_mVrms
+	    -0.1925       0.9955
+
+    abline( -0.1925, 0.9955, col='red' )
+
+    lm( Vo_mVrms ~ Vin_mVrms, data=dg )
+	(Intercept)    Vin_mVrms
+	    -0.7969       2.0419
+
+    dg$Vin_mVpp = 2 * sqrt(2) * dg$Vin_mVrms
+
+    plot( df$Vin_mVrms, df$Kd )
+    plot( dg$Vin_mVrms, dg$Kd, col='red' )
+
+
+In general, the current buffer is working very well.
+Certainly within 1% measurement resolution.
+AC RMS measurements converted to mVpp agree well with DC mV measurements.
+Try to show it.
+
+    plot( df$Vin_mVrms, residuals(fmod), ylim=c(-10,10) )
+    
+----------------------------------------------------------------------------
+## Explore Linear Model lm():  2023-05-05
+----------------------------------------------------------------------------
+
+Verify what the fitted() and residuals() functions on a linear model return.
+
+    % df <- read.table( "ac_10R0.tab", header=TRUE )
+
+    % fmod <- lm( Vs_mVrms ~ Vin_mVrms, data=df )
+	# Construct the linear model, heading names in dataframe dg
+	# lm( Y ~ X, ... )
+	# where  Y ~ X  is the formula, i.e. Y as a function of X.
+
+    % print( fmod )
+	Call:
+	lm(formula = Vs_mVrms ~ Vin_mVrms, data = df)
+
+	Coefficients:
+	(Intercept)    Vin_mVrms
+	    0.07001      0.99187
+	# Shows the intercept and slope, i.e. y = 0.07001 + (0.99187 * x)
+	# Note precision is less than given by coefficients().
+
+    % coefficients( fmod )
+	(Intercept)   Vin_mVrms
+	 0.07001462  0.99187312
+
+    # Compare fitted function with liner model attributes:
+
+    % df$Yf <- 0.07001462 + (0.99187312 * df$Vin_mVrms)
+    	Fitted function
+
+    % df$Dyf <- df$Vs_mVrms - df$Yf
+	Differences
+
+    % df$fit = fitted( fmod )
+	Fitted function from lm, i.e. Yf above
+
+    % df$res = residuals( fmod )
+	Residuals from lm, i.e. differences Dyf above
+
+% df
+   Freq_Hz Vset_mVpp Vin_mVrms Vs_mVrms Vo_mVrms mV_div        Yf          Dyf
+1      100        50     17.70    17.38    190.5     50  17.62617 -0.246168844
+2      100       100     35.33    35.04    381.6     50  35.11289 -0.072891950
+3      100       200     70.20    69.60    759.0    100  69.69951 -0.099507644
+4      100       300    105.60   105.30   1144.0    100 104.81182  0.488183908
+5      100       400    140.90   139.50   1519.0    200 139.82494 -0.324937228
+6      100       500    175.90   174.60   1897.0    200 174.54050  0.059503572
+7      100       600    210.90   209.60   2274.0    200 209.25606  0.343944372
+8      100       700    245.90   244.60   2652.0    200 243.97161  0.628385172
+9      100       800    281.70   279.00   3026.0    500 279.48067 -0.480672524
+10     100       900    317.20   314.40   3413.0    500 314.69217 -0.292168284
+11     100      1000    352.70   349.90   3792.0    500 349.90366 -0.003664044
+         fit          res
+1   17.62617 -0.246168904
+2   35.11289 -0.072892068
+3   69.69951 -0.099507879
+4  104.81182  0.488183556
+5  139.82494 -0.324937697
+6  174.54050  0.059502986
+7  209.25606  0.343943670
+8  243.97162  0.628384354
+9  279.48067 -0.480673461
+10 314.69217 -0.292169339
+11 349.90367 -0.003665217
+
+    Precision:  Note that the original measurements have only 4 significant
+    digits and precision to only one decimal place (two at most),
+    i.e. 0.1 mVrms.
+    In the oscilloscope auto measurement, the last digit (4th significant
+    figure) typically was bobbling around and I mostly guessed at a mean
+    value to use for that last digit.
+
+    Thus the fitted function (Yf and fit) really only has precision to 4
+    significant digits.  They match identically to 7 digits, confirming that
+
+	fitted( fmod ) = offset + (slope * X)
+
+    Residuals:  Are the deviation of the measured value from the fitted
+    function.  The residuals() function matches the computed Dyf differences
+    to 5 decimal places, suggesting the calculations are the same.
+    Note the residuals only have precision to at most 2 decimal places, since
+    that is the precision of the measured Y value (i.e. Vs_mVrms).
+
+	residuals( fmod ) = Y - fitted()
+
+    To get higher precision values of offset and slope use:
+
+	coefficients( fmod )
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
