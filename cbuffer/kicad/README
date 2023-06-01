@@ -10,5 +10,6 @@ Files:
 ------
 README
 cbuffer_v2/	Single OPA548 Current Buffer
+dual_cbuffer/	Dual channel current buffer instrument
 lib/		Library
 
