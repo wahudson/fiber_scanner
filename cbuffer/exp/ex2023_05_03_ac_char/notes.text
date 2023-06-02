@@ -14,6 +14,8 @@ Files:
     ac_1R0.tab		original data, Rload = 1.0 ohm
     ac_10R0.tab		original data, Rload = 10.0 ohm
 
+    Io_Vin_load.pdf	Transfer function, 100 Hz
+
 	The "_1R0" is the load resistor value, Rload = 1.0 ohm.
 
 ----------------------------------------------------------------------------
@@ -295,8 +297,103 @@ Certainly within 1% measurement resolution.
 AC RMS measurements converted to mVpp agree well with DC mV measurements.
 Try to show it.
 
+----------------------------------------------------------------------------
+## Analysis (2023-05-31)
+----------------------------------------------------------------------------
+
+Use Vs_mVrms as an analog of the output current.
+Assess the transfer function at the two different load resistances (10.0 ohm
+and 1.0 ohm).
+
+    fmod <- lm( Vs_mVrms ~ Vin_mVrms, data=df )
     plot( df$Vin_mVrms, residuals(fmod), ylim=c(-10,10) )
-    
+
+    gmod <- lm( Vs_mVrms ~ Vin_mVrms, data=dg )
+    points( dg$Vin_mVrms, residuals(gmod), col='red' )
+
+	Residuals are the deviation of the measured value, i.e. Vs_mVrms, from
+	the fitted function.
+	In this case, the residuals are all less than +-1 mVrms, which is about
+	the accuracy/resolution of the oscilloscope measurement.
+
+Compare the linear models for df (10.0 ohm) and dg (1.0 ohm):
+
+    coefficients( fmod )
+	(Intercept)   Vin_mVrms
+	 0.07001462  0.99187312
+
+    coefficients( gmod )
+	(Intercept)   Vin_mVrms
+	-0.1924552   0.9954706
+
+    Vsf(x) =  0.0700 mV + 0.9919 * x		# Vs for Rd = 10.0 ohm
+    Vsg(x) = -0.1925 mV + 0.9955 * x		# Vs for Rd =  1.0 ohm
+
+	These coefficients are very close for a 10x change in load resistance.
+
+Deviation of output Vs from the ideal transfer function:  i.e.  Vs = Vin
+    Simple deviation:
+
+    df$Dvs <- df$Vs_mVrms - df$Vin_mVrms
+    dg$Dvs <- dg$Vs_mVrms - dg$Vin_mVrms
+
+    Deviation as a percentage of Vin:
+
+    df$Dvs_pct <- ((df$Vs_mVrms / df$Vin_mVrms) - 1) * 100
+    dg$Dvs_pct <- ((dg$Vs_mVrms / dg$Vin_mVrms) - 1) * 100
+
+    plot( df$Vin_mVrms, df$Dvs_pct, ylim=c(-5,5) )
+    points( dg$Vin_mVrms, dg$Dvs_pct, col='red' )
+
+    % print( df[c(2,3,4,5,7,8,9)] )
+       Vset_mVpp Vin_mVrms Vs_mVrms Vo_mVrms       Kd   Dvs    Dvs_pct
+    1         50     17.70    17.38    190.5 9.960875 -0.32 -1.8079096
+    2        100     35.33    35.04    381.6 9.890411 -0.29 -0.8208322
+    3        200     70.20    69.60    759.0 9.905172 -0.60 -0.8547009
+    4        300    105.60   105.30   1144.0 9.864198 -0.30 -0.2840909
+    5        400    140.90   139.50   1519.0 9.888889 -1.40 -0.9936125
+    6        500    175.90   174.60   1897.0 9.864834 -1.30 -0.7390563
+    7        600    210.90   209.60   2274.0 9.849237 -1.30 -0.6164059
+    8        700    245.90   244.60   2652.0 9.842191 -1.30 -0.5286702
+    9        800    281.70   279.00   3026.0 9.845878 -2.70 -0.9584665
+    10       900    317.20   314.40   3413.0 9.855598 -2.80 -0.8827238
+    11      1000    352.70   349.90   3792.0 9.837382 -2.80 -0.7938758
+
+    % print( dg[c(2,3,4,5,7,8,9)] )
+      Vset_mVpp Vin_mVrms Vs_mVrms Vo_mVrms       Kd  Dvs    Dvs_pct
+    1       100      35.3     35.0     71.5 1.042857 -0.3 -0.8498584
+    2       200      70.2     69.6    142.6 1.048851 -0.6 -0.8547009
+    3       300     105.7    105.3    215.1 1.042735 -0.4 -0.3784295
+    4       400     140.6    140.4    286.2 1.038462 -0.2 -0.1422475
+    5       400     140.8    139.4    286.5 1.055237 -1.4 -0.9943182
+    6       500     175.9    174.6    358.6 1.053837 -1.3 -0.7390563
+    7       600     210.9    209.5    429.0 1.047733 -1.4 -0.6638217
+    8       700     246.0    244.7    501.4 1.049040 -1.3 -0.5284553
+    9       800     280.5    279.3    572.6 1.050125 -1.2 -0.4278075
+
+	The deviation Dvs is less than 1% for all but the Vset= 50 mVpp point.
+	This looks really good, and within oscilloscope  measurement
+	uncertainty.
+
+Plot the transfer function measurements:
+
+    plot( df$Vin_mVrms, df$Vs_mVrms, xlab='Vin (mVrms)',
+	ylab='Vs (mVrms) -- analog for Io (mArms)' )
+    points( dg$Vin_mVrms, dg$Vs_mVrms, col='red' )
+
+    abline( 0.07001, 0.99187 )
+    abline( -0.1925, 0.9955, col='red' )
+
+    text( 20,300, "Io = (0.994 mA/mV) * Vin", pos=4 )
+
+    title( main='Transfer Function, Freq = 100 Hz' )
+
+    legend( 200,100,
+	title="Load Resistor", c( "Rd= 10.0 ohm", "Rd= 1.0 ohm" ),
+	pch=c(1,1), col=c("black", "red") )
+
+ >  dev.copy2pdf( file="Io_Vin_load.pdf" )
+
 ----------------------------------------------------------------------------
 ## Explore Linear Model lm():  2023-05-05
 ----------------------------------------------------------------------------
@@ -391,4 +488,38 @@ Verify what the fitted() and residuals() functions on a linear model return.
 ----------------------------------------------------------------------------
 ## Conclusions
 ----------------------------------------------------------------------------
+
+Characterized with a 100 Hz AC sine wave input:
+    Measuring voltage Vs across the sense resistor Rs (1.0 ohm) as an analog
+    for the output current  Io = Vs / Rs.
+
+    The transfer functions showed very little change with a 10x change in
+    load resistance Rd:  (data fit with a linear model)
+
+	Vsf(x) =  0.0700 mV + 0.9919 * x	# Vs for Rd = 10.0 ohm
+	Vsg(x) = -0.1925 mV + 0.9955 * x	# Vs for Rd =  1.0 ohm
+
+    Averaging this we estimate:  (but 5% tolerance on sense resistor Rs)
+	Io = (0.994 mA/mV) * Vin
+
+    See plot:
+	Io_Vin_load.pdf		Transfer function, 100 Hz
+
+    Measurements were only to 500 mVpeak (350 mVrms), half of the +-1000 mV
+    full scale range.
+
+    The measured points were all within 1% for currents from 0 to 800 mVpp.
+    Current source is looking good!
+
+Output distortion:
+    A step distortion was observed on the negative half cycle at higher
+    frequencies.  For example, at
+    Vin = 50.0 mVpp, 10 kHz sine wave, the output current (analog of Vs)
+    had a sharp distortion step at -7 mV to -17 mV (10 mV step).
+    This step was not apparent at 100 Hz.
+    Conjecture that it is related to crossover distortion?
+
+Square wave response:
+    Looks reasonable, gentle overshoot, distortion step on negative edge.
+    See "AC Square wave:" above.
 
