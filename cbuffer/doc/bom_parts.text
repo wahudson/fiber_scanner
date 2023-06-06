@@ -95,6 +95,9 @@ Circuit Board, Current Buffer, per channel
     Resistors, 1/2 W, Carbon, 10%
  1	470 ohm  R6  LED current limit
 
+ +  Wire 26 AWG solid, PVC, 300V, Jacket dia 0.036 inch, Alpha Wire
+    1	$15.16  DigiKey  A422601L-100-ND  100ft Blue    (special value)
+
 Front Panel:
 ------------
 
@@ -107,6 +110,9 @@ Front Panel:
  2  Terminal Block Header - output current connector
 	Terminal Block Header, Panel Mount, Male pins, 0.200 inch pitch
     0	$3.12  DigiKey  Phoenix 0707248  2-pos, Front flange, solder, grn
+
+ 2  BNC Jack, Female Socket, Isolated, 50 Ohm, Nylon
+    2	$2.87  DigiKey  ARFX1905-ND, Amphenol 031-10-RFXG1
 
  2  SPST toggle Switch - Output Shunt/Short
     4	$1.87 DigiKey  100SP1T1B1M1QEH  SPDT, On-On, Round 10.41 mm, Solder lug
@@ -126,6 +132,14 @@ Front Panel:
  1  Resistor 1/4 W - power-on LED
     0	470 ohm  R6 -- 402 ohm
 
+ +  Wire, 20 AWG stranded 21/33, XLPVC, 300 V - Power and output wiring
+    1	$12.51  DigiKey  CNC Tech 1430-20-1-0500-001-1-TS, 50 ft, Black
+    1	$12.51  DigiKey  CNC Tech 1430-20-1-0500-004-1-TS, 50 ft, Red
+    1	$12.51  DigiKey  CNC Tech 1430-20-1-0500-003-1-TS, 50 ft, Yellow
+
+ +  Wire, 24 AWG stranded 7/32, XLPVC - Signal wiring
+    1	$18.73  DigiKey  Daburn 2200/24BK-100, 100 ft, Black XLPVC
+    1	$18.73  DigiKey  Daburn 2200/24RD-100, 100 ft, Red   XLPVC
 
 Output Cable:
 -------------
@@ -182,8 +196,14 @@ Hardware:
  1  Screw, #4 sheet metal, 5/8 inch long
 	Back panel retainer, screw into edge of 1/4 inch thick baseplate.
 
+ 4  Screw, #4 sheet metal, 5/8 inch long
+	Power Supply mounting.
+
  2  Screw, #6-32 Button Head, 3/8 inch long
 	Base plate mount to enclosure - front end
+
+ 2  Screw, #6-32 Button Head, 3/8 inch long, w Nut and Washer
+	Heatsink mount.
 
  2  Screw, #4 Sheet Metal, 3/8 inch long
 	Base plate mount to enclosure - rear end (under PCB)
@@ -193,4 +213,7 @@ Hardware:
 
  2  Nut, M3.5?
 	Power entry module mounting.
+
+ 4  Screw, #4-40, 3/8 inch long, with Nut and Lock Washer
+	Terminal Block Header - output current connector mounting.
 

@@ -23,6 +23,304 @@ Enclosure Box:
     I placed my order and it was better to get started with the best form
     and function, sacrificing color.
 
+Two Channels:
+    The instrument is designed for two channels, since it is intended for
+    for X-Y drive applications.
+
+    Only the first channel is built/installed first to verify the design.
+    The second channel could be made identical, or made with improvements,
+    and added later.  (2023-06-05)
+
+----------------------------------------------------------------------------
+## Front Panel Layout
+----------------------------------------------------------------------------
+    Design choices.
+
+Right-handed layout:
+    Place connectors on the left, and switches on the right, making for
+    natural operation with the right hand.
+    Of course, the whole layout could be mirrored.
+
+Two channels:
+    Each channel has 4 or 5 controls, so they are distributed horizontally to
+    match the aspect ratio of the front panel.
+    Thus place Ch1 above Ch2.
+
+Output terminal block header:
+    Each block (channel) has two output pins oriented vertically.  This gives
+    clear access to all 4 output pins from the left side (or right) without
+    the terminals interfering with each other.
+
+    The mating plugs have two styles:
+    Wires at 180 degrees (normal to the panel) have screws on the left.
+    Wires at 90 degrees (on the left parallel to panel) have screws on the
+    face.
+    Thus both styles need access on the left side, and ideally they would
+    be placed on the left edge of the panel.
+
+    An alternative is orienting the output pins horizontally, which also
+    would look nice.  There would be enough space for wire exit between
+    the two terminal blocks.  Screw access on the 180 degree plug would be
+    a little worse - either at an angle to avoid the other block, or require
+    removing the plug.
+
+Enable Switch:
+    Each channel has an enable switch that connects the E/S (enable/shutdown)
+    pin of the OPA548 to VNN (negative supply) and thus disabling the op-amp
+    output, i.e. changing to a high-impedance.  This could be two switches,
+    or a single switch with two poles, one for each channel.
+
+    Uses would be to disable the output while leaving power ON so new output
+    connections could be made, or to reduce power dissipation (temperature
+    rise) while the output is not used.
+
+    Two switches would allow individual channels to be disabled, but requires
+    flipping both switches to disable both outputs.
+    A single double-pole switch would conveniently disable both outputs, which
+    seems like a common operation when both channels are used together.
+    We do not expect a two-channel instrument would be used in two completely
+    independent applications.
+
+    When only one channel is used, the unused input is pulled to ground (zero
+    output current), so is naturally "off" when there is no input signal.
+    Thus there is no need to independently disable the unused channel.
+
+ >  Currently (2023-05-17) I favor using a single double-pole switch.
+    As a fall-back, the front panel could have a second unused hole where
+    a second switch could easily be installed.
+ >  Decided (2023-05-20) to omit the unused hole, as it looks nicer without.
+
+Shutdown LED:
+    Each channel has an LED to indicate the op-amp is in thermal shutdown
+    when illuminated.  It also illuminates when the Enable Switch is in
+    the "shutdown" position.  Since thermal shutdown could lead to puzzling
+    behavior (i.e. no output response) it seems really important to have
+    this indicator.
+
+Output Shunt Switch:
+    This switch simply shorts the output terminals together, shunting the
+    output current around the load.  This prevents the output voltage
+    from going to the rails (max voltage) when the load is disconnected.
+    Essentially the op-amp has no feedback and the output voltage would
+    toggle between the rails for even a small AC input voltage.
+    This high voltage output (i.e. 9 V) would probably not be expected or
+    desired when connecting a new load.
+
+    A current source with no load or a high resistance load would produce
+    the maximum voltage in an attempt to force the specified current, so
+    this is expected behavior.
+
+    The shunt switch is essentially a zero ohm load for the current source
+    and results in the maximum voltage drop and power dissipation in the
+    op-amp.  To avoid the associated temperature rise, it would be best
+    to also set the input voltage for a reasonably low output current.
+
+Ground binding posts:
+    Want the chassis ground post below the circuit ground post.
+    Chassis ground is an all metal (non-insulated) binding post to make
+    it obvious that it is the equipment ground.
+    Circuit ground (star ground) is an insulated black binding post.
+    Both are placed to the left of the output connectors, where any shield
+    wires could be connected [not that a shield is needed].
+
+Power indicator LED:
+    Placed in upper left corner above the ground binding posts, since that
+    space is open.
+
+Input BNC connectors:
+    BNC connectors were chosen as a common instrumentation signal interface.
+    Isolated connectors (the shell is not connected to the front panel)
+    allows operator selection of the equipment ground point to help
+    control ground loops.
+    In general, the signal ground should be connected to the equipment
+    ground at some point in the whole instrumentation system as a safety
+    measure.
+
+----------------------------------------------------------------------------
+## Component Dimensions
+----------------------------------------------------------------------------
+
+    Terminal Block Header, Panel Mount, Male pins, 0.200 inch pitch
+	https://www.phoenixcontact.com/us/products/0707248
+	    See  Downloads -> technical drawing ->
+		pxc_0707248_01_DFK-MSTB-2-5-2-G-5-08_FAM.pdf
+	$3.12  DigiKey  Phoenix 0707248       2-pos, Front flange, solder, grn
+	Overall width:   30.48 mm
+	Overall length:  17.5  mm, in direction of pin row, 2 position
+	Cutout width:    12.0  mm, offset 2.0 mm from non-latch side
+	Cutout length:   13.18 mm, centered
+	Hole dia:         3.20 mm [0.126 inch]
+	Hole spacing:    20.32 mm [0.800 inch], centered in length,
+				    offset 11.0 mm from cutout non-latch side
+
+    BNC Jack, Female Socket, Isolated, 50 Ohm, Nylon
+	Isolated ground solder lug, with Nut and Lockwasher.
+	Insulation:  Polyamide (PA), Nylon
+	https://s3-us-west-2.amazonaws.com/catsy.582/C031-10-RFXG1.pdf
+	$2.87  DigiKey  ARFX1905-ND, Amphenol 031-10-RFXG1
+	Panel Hole: 9.7 mm [0.382 inch] full dia, 8.85 mm [0.348 inch] flat dia.
+	Panel Drill:  0.375 (3/8 inch) full dia, 0.344 (11/32) inch flat dia
+			offset 0.4 mm [0.016 inch]
+
+    Binding Post - Banana Jack, insulated
+	3750- Gold on brass, 3760- Bright Tin, 3770- Gold on Tellurium Copper
+	Metal binding plate in knob (Cal Test is plastic).
+	Solder turret, all colors
+	https://www.pomonaelectronics.com/file/17329/download?token=JnxIsd1L
+	$5.49  DigiKey  Pomona 3760-0, Black
+	Nut:  #8-32
+	Panel Hole:   0.375 (3/8 inch) full dia, 0.350 inch flat dia.
+	Panel Drill:  0.375 (3/8 inch) full dia, 0.344 (11/32) inch flat dia
+			offset 0.4 mm [0.016 inch]
+
+    Switches, E-Switch Series 100
+	Voltage:  120 Vac, 5 A;  28 Vdc, 5 A
+	Contacts:  Silver or gold plated copper alloy, Q = Silver, R = Gold
+	    These are Silver, low-level circuit only in clean environment.
+	https://sten-eswitch-13110800-production.s3.amazonaws.com/system/asset/product_line/data_sheet/129/100.pdf
+	$1.87 DigiKey  100SP1T1B1M1QEH  SPDT, On-On, Round 10.41 mm, Solder lug
+	$2.39 DigiKey  100DP1T1B1M1QEH  DPDT, On-On, Round 10.41 mm, Solder lug
+	Bushing thread:  1/4-40, hole dia 1/4 inch
+	Lock Ring (HDW15):  11.89 mm dia, 5.94 mm radius
+	Lock Tab:  2.0 mm wide, tab outside dia:  [0.493 inch] 12.5 mm
+	Lock Tab hole:  drill 5/64 (2.0 mm) at radius 6.1 mm
+	Panel hole:  drill 1/4 inch
+
+    LED Clip/Ring Mount for 5mm LED (T1-3/4)
+	Black plastic clip thru panel, grooved retaining ring on back side.
+	Front face to LED rim:  ~4.0 mm
+	https://docs.broadcom.com/docs/5989-0046EN
+	$0.35 *10  DigiKey  Broadcom HLMP-0103,  5mm LED
+	Panel hole:  0.254 to 0.261 inch dia (drill 17/64 0.266 inch)
+
+    Binding Post - Banana Jack, grounded
+	$7.56  DigiKey  Cinch 111-2223-001, Grounding, metal knurled knob
+	Thread:  1/4-32
+	Panel Hole:  0.250 inch
+
+----------------------------------------------------------------------------
+## Front Panel Fabrication
+----------------------------------------------------------------------------
+
+Aluminum panel, 1/16 inch thick, from the Hammond enclosure.
+    Front side is protected by a plastic film that came with the panel.
+
+Layout lines:
+    Scribe (scratch) on aluminum back side with a sharp awl.  The scribe
+    lines are much finer than a pencil and can be placed within roughly
+    +-0.2 mm.
+    Generally do all layout (scribing) first, since holes and drilling burrs
+    make precision measuring much harder.
+
+General hole drilling:
+    Start with a 5/64 inch drill, which can precisely find the center punch
+    mark.  Hold the panel loosely and let the drill move the panel toward
+    center, then press the panel firmly to hold it in place.
+
+    Drilling a large hole all-at-once tends to chatter and create a polygonal
+    hole.  Instead drill successively larger holes to the final diameter.
+    I used 5/64 to start, then 13/64, then 1/4 inch or 21/64 inch final
+    diameter.
+
+Switches:
+    Fit nicely in 1/4 inch drilled hole.
+    Locking tab hole drill 5/64 (2.0 mm) at radius 6.0 mm worked great.
+
+LED holes:
+    Drill 17/64 (0.266) inch.
+    The plastic LED clips really did not go into a 1/4 inch hole.
+    The LED clip itself is a bit loose in the hole, but the press-on
+    retaining clip holds it quite snugly with no movement.
+
+BNC D-shaped holes:
+    Layout center scribe lines.  Pencil mark a 3/8 inch circle, which is
+    the full diameter.  Pencil mark the flat position at 0.5 mm offset.
+    Scribe and center punch an offset of about 0.5 mm, which is then drilled
+    21/64 inch hole just under the flat diameter.
+    Now file the flat with a 1/4 inch square file, and round out the hole
+    to the 3/8 inch pencil circle with a 1/4 inch round file.
+    Test fit connectors as you go.
+
+Terminal Block Headers:
+    Layout the screw hole positions first, and use these scribe lines as the
+    reference for the rectangular cutout.
+
+    Layout (scribe) the rectangular cutout about 0.5 mm oversize so the
+    scribe lines will always be visible while filing out to the final
+    dimension.  (Pencil would probably work as well.)
+
+    Drill the 7/64 screw holes.  This is a snug fit on a #4-40 machine
+    screw, but the terminal block has generous 1/8 inch holes giving plenty
+    of tolerance.
+
+    Layout, center punch, and drill two 1/4 inch holes in opposite corners
+    of each rectangular cutout.  These will be used as starting points for
+    a narrow metal saw to cut the four sides of each cutout.  Saw about
+    0.5 mm undersize, since the saw cut is very rough and inaccurate.
+    File the four sides to final dimension, test fitting to achieve a snug
+    fit that helps hold the Terminal Block in position.
+
+Deburr both sides while plastic protection is in place.
+
+----------------------------------------------------------------------------
+## Front Panel Labeling
+----------------------------------------------------------------------------
+
+    Labeling was lettered by hand as a simple way to get it done.
+
+Paint Pen:  uni POSCA PC-1MR, Black, 0.7 mm line
+    Water based acrylic paint.
+    www.posca.com
+
+Plastic Clear Coat:  Rust-Oleum "Painter's Touch 2X Ultra Cover" Gloss Clear
+    Dries to touch in 20 minutes, to handle in 1 hour, fully dry in 24 hours.
+    Aerosol spray paint (clear).
+
+Process:
+    Lettering size and position was trialed on paper, and on the protective
+    plastic film on the aluminum panel.
+
+    Layout lines ruled in pencil on the aluminum.  Light, thin lines that
+    will be left on, as there is no practical way to remove them after
+    lettering.  [They are visible after the final clear coat, but that is
+    reality.  Accept it.]
+
+    The paint pen worked great with slow controlled strokes.  There was no
+    tendency for ink blobbing or line widening.  No need to hurry.
+
+    Be sure the panel is clean - oil or finger prints on the aluminum repels
+    the acrylic paint distorting the lettered line.
+
+    The paint dries a solid matte black, very opaque, but is very fragile.
+    A finger nail can easily scrape off the paint.  Even blowing on the panel
+    to remove dust caused some of the paint to flake off.
+    Thicker paint areas tended to crack slightly and be more susceptible to
+    flaking off, especially in finger oil areas.
+
+    Paint pen was applied directly on the aluminum panel.  It may be better
+    to coat the panel with a clear plastic spray first to help adhesion.
+
+    The Plastic Clear Coat was sprayed on over the lettering and the whole
+    panel.  The paint lettering remained clear and sharp, with no sign of
+    bleeding or smearing.  Too light of a spray coat tended to ripple and
+    not lay smooth in places, while a slightly thicker coat seemed to smooth
+    out while still wet.  One coat seemed to work pretty well.
+
+    Touch up of the paint pen lettering is best done after the clear coat is
+    sprayed on (and dried).  Re-touching a dried paint pen line tends to
+    flake and push around the dried paint flakes.
+
+    Like any artwork, bold decisive strokes are best.
+
+    On my panel I applied a second clear coat after minor touch-up of some
+    lettering.  The second coat was a bit thicker, and it looked very ripply
+    when wet, but smoothed out some as it dried.  Some dust got in the the
+    clear coat, but not too bad.  The lettering looks great and is well
+    protected.  Overall good enough to get the job done.
+
+    Ironically my little 30 mm test panel came out perfectly smooth on
+    both coats.  Not sure what made it different.
+
 ----------------------------------------------------------------------------
 ## Assembly/Disassembly Order
 ----------------------------------------------------------------------------

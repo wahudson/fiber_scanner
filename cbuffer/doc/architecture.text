@@ -620,3 +620,18 @@ J2, J3  Screw Terminal connectors.
 J1, J4, J5, J6  Header Pins, 0.1 inch pitch.
     For low current connections.
 
+----------------------------------------------------------------------------
+## Progress Log:
+----------------------------------------------------------------------------
+    Tracking a few milestones in design and construction.
+
+First PCB assembly:  cbuffer_v2/  v2.1.0  2023-04-22
+
+2023-04-19  Protoboard soldering/assembly complete.
+2023_04_25  Ch1 assmbly in enclosure with power supplies, power on.
+		No front panel.
+2023_04_29  First DC measurements  ex2023_04_29_cal/
+2023_05_03  First AC measurements  ex2023_05_03_ac_char/
+2023_05_20  Front panel drilling complete.
+2023-06-05  Assembly complete Ch1 and full front panel.
+

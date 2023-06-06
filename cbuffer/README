@@ -4,23 +4,27 @@
 		-------------------------------------
 
 Current buffer for driving exciters.
-Schematics, design, and construction of Current Source.
+Schematics, design, and construction of a Current Source (transconductance
+amplifier).
 
-Files:  (2022-12-07)
+Files:  (2023-06-05)
 ------
 README		this file
 
 doc/		Documentation
     architecture.text       Overall design
     bom_parts.text          Bill of Material for a 2-Channel Current Buffer
+    enclosure_design.text   Enclosure design, fabrication, assembly, labeling.
     panel_printing.text     Ideas for Labeling an Instrument Panel
 
 kicad/		Schematic design
     README
-    cbuffer_v2/		initial design
+    cbuffer_v2/		Current Buffer circuit
+    dual_cbuffer/	Current Buffer instrument, 2 channel
     lib/		local library
 
 exp/		Experiments and Results
+    README
 
 ngspice/	Spice simulations
 
