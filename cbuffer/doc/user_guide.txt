@@ -1,0 +1,321 @@
+2023-06-05
+		Current Buffer v1.0.0 - User Guide
+		----------------------------------
+
+https://github.com/wahudson/fiber_scanner/cbuffer/
+
+This is a Current Source instrument, providing a current output proportional
+to a voltage input.  Essentially it is a transconductance amplifier.
+
+Front panel title:  "Current Buffer  1.0 mA/mV"
+
+Schematics:
+    kicad/dual_cbuffer/ki.pro	v1.0.0  2023-05-30  2-channel instrument
+    kicad/cbuffer_v2/ki.pro	v2.1.0  2023-04-22  circuit
+
+Documentation:  doc/
+    user_guide.txt		this file
+    architecture.text		general circuit design
+    enclosure_design.text	instrument enclosure design
+    bom_parts.text		parts list
+
+Datasheets:
+    http://www.ti.com/lit/ds/symlink/opa548.pdf  power op-amp
+    http://www.ti.com/lit/ds/symlink/tl051a.pdf  input op-amp
+
+----------------------------------------------------------------------------
+## Summary Specification
+----------------------------------------------------------------------------
+
+Two Channels:  Ch1, Ch2
+    Specification is for each channel.
+
+Input Signal:  (voltage)
+    Voltage Range:  -1.0 V to +1.0 V
+    Input offset voltage:  +-3 mV typ, +-13 mV max  (estimated)
+    Frequency:  DC to 1 kHz
+    Input impedance:  10 kohm
+    Single-ended input, ground referenced.
+    Input protection:  to +-10 V, even with power OFF.
+
+Output Signal:  (current)
+    Current Range:  -1.0 A to +1.0 A
+    Voltage Compliance:  +-5.0 V min
+    Current Limit:  1.1 A nominal, with Rlim= 51.0 kohm
+	Set by a replaceable internal resistor.
+
+    Unbalanced differential output, cannot be grounded.
+	The "Lo" side is a 1.0 ohm sense resistor to ground.
+	The "Hi" side is the power op-amp output.
+	The load must be isolated, e.g. a voice coil exciter.
+
+	Caution:  Do not attempt to connect anything other than an isolated
+	passive load.
+	No ground connections.
+	No voltage sources.
+	No parallel current sources.
+
+    Output Protection:  Schottky diodes to power supply rails.
+	Help to protect op-amp against back EMF when driving inductive loads.
+
+    Power op-amp OPA548 has internal current limit and over-temperature
+    shutdown.
+
+Low-pass filter:
+    The input has a single-pole low-pass filter, with a single configurable
+    capacitor.
+    Rp3 = 10 kohm, fixed
+    Cp3 = 12 nF typ, changeable in sockets
+    F0  = 1.3 kHz typ
+    F0 = 1 / (2*Pi * Rp3 * Cp3)  corner frequency
+    With no capacitor bandwidth is limited by the OPA548 op-amp.
+    Intended to provide a simple filter for use with a DAC (digital to analog
+    converter).
+
+AC Line power:
+    Voltage:  120 Vac typ
+    Current:  1.0 A max
+    Fuse:  5mm x 20mm, 3.15 A, glass cartridge, slow blow, High Surge-proof
+	BelFuse 5ST 3.15-R
+
+Heat Sinks:  on power op-amps
+    The OPA548 op-amp has internal over-temperature shutdown.
+    Heat sink temperature rise should be less than 50 degC at 1.0 A output.
+
+Operating principle:
+    Power OpAmp (OPA548) adjusts output voltage such that the voltage across
+    the sense resistor in series with the load matches the input voltage.
+    See schematic.
+
+This specification is intended to identify a safe operating region for driving
+voice coil exciters up to +-1.0 A peak.
+
+----------------------------------------------------------------------------
+## Controls and Connectors
+----------------------------------------------------------------------------
+
+Rear Panel:
+-----------
+
+AC Line power entry module:
+    Switch
+    Fuse
+    Line cord connector
+
+Front Panel:
+------------
+
+Input BNC:  "Input"
+    Standard BNC connector.
+
+Output connector:  "Ho/Lo"
+    Terminal Block Header, Panel Mount, Male pins, 0.200 inch pitch
+	Phoenix 0707248
+	https://www.phoenixcontact.com/us/products/0707248
+	Contacts rated:  300 V, 15 A
+	Typically rated for ~150 connect/disconnect cycles.
+    Mating connectors:
+	Terminal Block Plug, Female Sockets, 0.200 inch pitch
+	$2.51  DigiKey  Phoenix 1757019       2-pos, 180 deg, 12-30 AWG
+	$2.91  DigiKey  Phoenix 1792249       2-pos,  90 deg, 12-30 AWG
+	These have screw terminals for attaching wires.
+
+    This is where the load is connected.
+    Positive current flows out "Ho" and returns thru "Lo".
+
+Output switch:  "Output  Run/Shunt"
+    Toggle Switch.
+    Up   "Run"   position:  Switch is open for normal operation.
+    Down "Shunt" position:  Connects the output terminals together, shunting
+	all current around the load.
+	Use this position whenever no load is connected.
+
+Shutdown indicator:  "Shutdown"
+    Red LED.
+    When illuminated, indicates the op-amp is in shutdown, a high-impedance
+    state.
+    This could be from an over-temperature condition.
+    It also illuminates when the Enable switch is in the "Off" position.
+
+Enable switch:  "Enable  Run/Off"
+    Toggle Switch.
+    Up   "Run" position:  Normal operation.
+    Down "Off" position:  Shutdown the op-amp into a high impedance state.
+	The Shutdown indicator will be illuminated.
+
+    Note in the Off (shutdown) condition, the output voltage is unspecified,
+    and with no load it may be at the power supply rails.
+
+Chassis ground:  "Chassis"
+    Binding Post/Banana Jack.
+    Is bonded to the front panel and the power entry equipment ground wire.
+
+Circuit ground:  "Gnd"
+    Binding Post/Banana Jack.
+    Is connected to the power distribution star ground point.
+
+    Internally the circuit ground is isolated from chassis ground.
+
+Power indicator:  "Power"
+    Red LED.
+    Indicates the AC power is ON.
+
+Internal Configuration:  (on each channel PCB)
+-----------------------
+
+Current Limit:  Resistor Rlim on header J4
+    Ilim =  15000 * (4.75 V) / (13750 ohm + Rlim)	limit current
+    Rlim = (15000 * (4.75 V) / Ilim) - (13750 ohm)	resistor value
+
+	Rlim    Ilim
+	-----   -----
+	open    0.00 A
+	129k    0.50 A
+	66.5k   0.89 A
+	57.6k   1.00 A
+	51.0k   1.10 A   * nominal limit to ensure 1.0 A full scale
+	30.0k   1.63 A
+	20.0k   2.11 A   * power supply capacity
+	14.7k   2.50 A
+
+    This can be used as a protection mechanism when the load has limited
+    current handling capacity.
+
+    Output current limit is provided by the OPA548 op-amp.  Stability could
+    be affected when driven into current limit.
+
+Lowpass Filter:  Capacitor Cp3 on sockets
+    A simple single-pole low-pass filter.
+
+    F0 = 1 / (2*Pi * Rp3 * Cp3)		corner frequency
+
+    If a lowpass filter is desired, this capacitor can be installed.
+    Intended to use Cp3= 12 nF for a F0= 1.3 kHz corner frequency.
+
+Output Compensation:  Capacitor Cf4 on sockets
+    The OPA548 op-amp should be stable under most load impedances, especially
+    with the series sense resistor Rs= 1.0 ohm.
+    If additional compensation is needed, a 47 nF capacitor can be installed.
+
+----------------------------------------------------------------------------
+## Operation Guide
+----------------------------------------------------------------------------
+
+Introduction:
+
+    This instrument is a transconductance amplifier, providing a current output
+    proportional to a voltage input.  It is also called a Current Source or
+    a Current Buffer.
+
+    We are familiar with voltage source devices, commonly as power supplies
+    or batteries.
+    A current source is different, needing a little more thought for
+    safe operation.  Think about a DC current source:
+
+    An ideal current source delivers as much voltage as necessary to cause
+    the specified current to flow in the load.
+    + When no load is connected, it will drive an arbitrarily high voltage,
+	which could be hazardous or damaging to the load.
+    + Shorting the output, i.e. connecting a zero ohm load, is perfectly fine
+	and the current source delivers the specified current at zero volts.
+
+    Thus special care and sequencing is required when operating a current
+    source.
+    In particular, this instrument has an "Output Run/Shunt" switch to
+    provide a safe path for the current to flow whenever the load is
+    being connected, or you just want to turn OFF the load.
+
+    A real current source has a "compliance voltage", the maximum voltage
+    that it can deliver across the load.  When the compliance voltage
+    is reached, the output current will be less than specified.  When this
+    occurs, the op-amp output voltage is clipped, limited by the
+    power supply voltage.  Generally it is not good to operate in this
+    condition.
+
+Transfer function:
+
+    Io = (1 / Rs) * Vin		output current
+
+	Rs  = 1.0 ohm  internal sense resistor
+	Vin = input voltage
+
+    Io = (1.0 mA/mV) * Vin	output current
+
+    Accuracy is limited by the accuracy of the Rs sense resistor, which
+    is 5%.
+
+    In addition there is an input offset voltage (from the op-amps) that
+    contributes a corresponding output offset current.
+
+Output operation:
+
+    Typically the output of a current source should not be left open-circuit,
+    as the output will go to the supply rails and will toggle if the input
+    is alternating around zero volts.
+
+    Whenever the output terminals are unconnected, set the "Output" switch
+    to "Shunt", which provides a zero ohm load.
+    In addition, set the "Enable" switch to "Off", which puts the op-amp
+    output in a high impedance state.
+    In addition, set the input to zero volts or disconnect it.
+
+Thermal shutdown:
+    The OPA548 power op-amp output will shutdown when the die temperature
+    reaches approximately 160 degC, resetting when the die has cooled
+    to 140 degC.
+
+    The internal protection circuitry of the OPA548 was designed to protect
+    against overload conditions.  Continuously running into thermal shutdown
+    will degrade reliability.
+
+???
+Connecting output:
+Sequence:
+Shutdown indicator:
+Safe operating region:
+Crossover Distortion:
+Input protection:
+Output protection:
+
+Limitations:
+
+    Power supplies are +-9.0 V at 2.1 A DC.
+    Thus expect maximum output voltage could be this voltage.
+    Limit total output current accordingly.
+
+    The OPA548 op-amp is rated for 3.0 A continuous output current.
+
+    The heat sink can handle 9 W power at a 35 K temperature rise.
+    This is sufficient for worst case 1.0 A output current.
+
+    The heatsink datasheet shows a graph of nominal temperature rise vs
+    power, for natural convection:
+	  Power (W)  Trise (K)
+	     3         13
+	     6         25
+	     9         35
+	    12         45
+	    15         54
+	    18         63
+
+    Worst case power dissipation in the op-amp is a zero ohm load at maximum
+    current:
+
+	P = Io * (VPP - (Io * Rs))		op-amp power
+
+	    VPP = 9.0 V		power supply voltage
+	    Rs  = 1.0 ohm	series sense resistor
+
+	Io = 1.0 A,  P =  8.0 W,  Trise ~= 35 K
+	Io = 2.0 A,  P = 14.0 W,  Trise ~= 55 K
+
+    In general a 50 degree C rise is acceptable and should be met under
+    all load conditions.
+
+Extended operation:
+    A single channel could be operated to +-2.0 A full scale output,
+    with the other channel set to Vin= 0 V.
+    The heatsink temperature rise should be around 55 deg C, but check
+    for any over temperature condition.
+    See Limitations above.
+
