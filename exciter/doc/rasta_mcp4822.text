@@ -1,0 +1,407 @@
+2023-01-03  William A. Hudson
+
+		Raster Scan dual-DAC Program - rasta_mcp4822
+		--------------------------------------------
+
+Generate slow-scan waveforms for orthogonal exciters.
+A program to operate an MCP4822 DAC on RPi rgUniSpi.
+
+See also:
+    sine_mcp4822.text
+    nc_oscillator.text
+
+Program derived from:  src/sine_mcp4822.cpp
+
+----------------------------------------------------------------------------
+## Purpose
+----------------------------------------------------------------------------
+
+    Generate drive signals for orthogonal exciters positioning a fiber optic
+    in the XY plane.
+    Intended for slow-scan, i.e. <10 Hz, in a raster scan pattern.
+
+    This could be a 10 Hz sinusoid in the fast direction, and a 0.01 Hz
+    triangle wave in the slow direction.
+
+Assume:
+    MCP4822 DAC driven by rgUniSpi Spi1 interface.
+
+    Using  dual_dac_v1/  circuit.
+
+----------------------------------------------------------------------------
+## Discussion
+----------------------------------------------------------------------------
+
+Shared resources:
+    The program cannot know what the actual external configuration is.
+    Thus it should not reconfigure the Gpio pins, leave that to the user.
+
+Initial Ideas:
+
+usage:  rasta_mcp4822  [options]
+
+  output forms:  (on stdout)
+    --wave              show wave table
+    --raw               show raw output data
+
+  duration:  (one of)
+    --nsamp=N           number of SPI (Fifo) samples to issue
+    --ncyc=N            number of fast line cycles to issue
+    --nframe=N          number of frames to issue
+
+  options:
+    --freq_Hz=8.0	fast axis (X-axis) frequency
+    --nline=200		number of bi-directional lines in a frame
+
+    --xgain=N           X gain (N/2048) of full scale
+    --ygain=N           Y gain (N/2048) of full scale
+
+    --warm=N            warmup count, default 5000000
+    --help              show this usage
+    --debug             debug output
+
+Essential operation:
+
+    Fast direction is a sine wave, since we will be pushing the limits of
+    moving a fiber ferrule connected to two exciters.
+
+    Slow direction is a triangle wave.  For a really slow scan reversing
+    direction at the ends is not really a problem.
+    Could allow for a sine wave also.
+    Or apply a sine wave at the turn-around ends.
+
+    The two waveforms need to be synchronized in some way.
+    Implied relationship.
+    Want a whole number of fast cycles in each slow cycle.
+    Possibly specify the fast cycle count.
+
+    Need sync marks for each axis.  Probably an edge on each zero crossing
+    (i.e. a square wave).
+
+    Duration control - How many samples/cycles/frames should be issued?
+
+    Amplitude on each axis.
+
+    No need for ramping amplitude?  Movement is slow enough, as long as
+    we start from zero (exciter at rest).  Although a ramp would help if
+    not starting from zero.
+
+    Specify fast axis frequency (line frequency) as an independent parameter.
+    The slow axis frequency is then a number of lines in a frame.
+    Count bi-directional lines, i.e. complete cycles.
+
+    Need terminology to describe behavior features.
+
+    The fast axis should start at zero, with the exciter at rest.
+    Possibly burn (waste) some lines to stabilize.
+
+    Slow axis also starts at zero, which would be the center of the image
+    frame.
+    Possibly ramp the slow axis quickly to the corner of the frame.
+    Or just start with an initial half frame of scan.
+    Sync marks identify frame center, or edges.
+
+    Note slow scan could be 100 seconds to cover the frame.
+    Probably will want some kind of faster slew to the edge of a frame.
+
+    Think about classic image raster scan:  (this program is different)
+    X-axis is fast scan.
+    Y-axis is slow scan.
+    Classic raster used a slow trace in one direction, then a fast retrace
+    back to the start for uni-directional scan lines.
+    Asymmetric traces like this are more complex.
+    Start with symmetric bi-directional traces.
+
+    Triangle wave can be computed, no need to store as a wave table.
+    Possibly a triangle wave class to hold the state, including sync marks.
+
+    Frequency is less important.  We are not doing resonant frequency sweeps,
+    so do not need fine resolution on frequency.
+
+----------------------------------------------------------------------------
+## Design
+----------------------------------------------------------------------------
+
+Code derived from  sine_mcp4822.cpp  (2023-01-03)
+
+Main program outline:
+
+    Generate wave table for sine wave.
+
+    Add sync marks in LSB of wave table.
+
+    while ( notdone )
+    {
+	if ( FIFO not full ) {
+
+	    Write previous sample.
+
+	    Compute next sample.
+
+	    Increment sample/line/frame count.
+	    Last if duration is reached.
+	}
+    }
+
+    The DAC requires two SPI transactions to write both channels.
+    Issue each channel alternately.
+
+    Define a GetNextSpi() function to compute the next sample and return
+    SPI data for alternate channels.
+    A new class can hold the state of both channels.
+
+Triangle wave generation:
+    Idea is to add an increment on each sample step.
+    The increment dx should have more precision than the DAC resolution.
+
+	xv	= value at current time step
+	dx	= incremental change on each sample step
+
+    next_step():
+	xv = xv + dx
+	if ( xv > xmax ) { dx = -dx }	reverse direction
+	if ( xv < xmin ) { dx = -dx }	reverse direction
+
+Wave Sample Relationships:
+
+    Want integer relationship between the fast sine waves and slow triangle
+    wave.  High resolution frequency control is not necessary.
+
+	Npoints = number of sample points in the fast sine wave
+
+	Nlines  = number of lines in a frame, i.e. 2 * number of fast cycles.
+
+Idea for essential design:
+
+    Use dNcWave to hold a sine wave.
+    Use new dNcTriangle to generate triangle wave samples.
+    Use integer counting to walk exactly Npoints per sine wave cycle.
+    At the sine wave peaks (extreme positions on fast scan), which can
+    be identified by index number, advance the triangle wave to the next
+    sample.
+
+    Thus the triangle wave advances one step on each scan line (half sine wave).
+    We want the number of lines to be large, e.g. Nlines = 1000, which
+    gives a plenty small sample step in the triangle wave.
+
+    A 12-bit DAC has 4096 steps full scale.  At Nlines=1000, we have about
+    4 DAC steps advancing the triangle wave.  Finer resolution is not really
+    needed.
+
+    An effect of advancing triangle only at ends of fast scan lines is that
+    the slow direction does not change during the scan line.  Thus scan
+    lines would be parallel in both directions, in the ideal case.
+
+    Using integer relations like this looks fairly simple.  No need for the
+    more sophisticated dNcOsc class.
+
+----------------------------------------------------------------------------
+## dNcTriangle Class
+----------------------------------------------------------------------------
+
+    Here we make a class similar to dNcOsc, but use a computed triangle
+    waveform instead of a stored table.
+
+    Using Qm.k fixed point value computation allows interpolation without
+    expense of floating point.  [But how fast is floating point on RPi?]
+
+Triangle Wave generation:
+    A triangle wave has constant slope on both rise and fall, i.e. linear.
+    Assume constant time interval between samples.
+    Thus can model the next sample value (y) as being a constant increment dy.
+
+	y = y + dy
+
+    One could use a linear equation, i.e. y = a*x + b  to define the ramp.
+    But in this application it is more natural to define the peak values,
+    yMax and yMin instead.  The algorithm becomes:
+
+    Initialize:
+	y  = initial value,  yMin <= y <= yMax
+	dy = initial slope, (dyUp > 0) or (dyDown < 0)
+
+    Next step:
+	y = y + dy
+
+	if ( y > yMax ) {
+	    y  = yMax		approximation
+	    dy = dyDown
+	}
+
+	if ( y < yMin ) {
+	    y  = yMin		approximation
+	    dy = dyUp
+	}
+
+    Probably should interpolate the actual new y position so that roll-over
+    into the next half cycle is correct.  This allows a non-integral
+    number of samples across each slope.  Much like Stride in dNcOsc class.
+
+    Generally assume many samples (steps) across each slope, so that
+    end-effects at turnaround are less important?
+
+Normalize Range:
+
+    A) Scale to user values  yMin to yMax
+	+ Less computation, good for fastest generation.
+	- More configuration.
+
+ >  B) Normalize range -1.0 to +1.0
+	+ Normalized wave, less configuration.
+	- Needs external scaling.
+	+ This is how dNcWave was used in sine_mcp4822.cpp .
+
+Internal Values:
+    A) floating point
+	+ Easier for user specification.
+	- Slower computation (but only uses addition).
+
+    B) fixed point Qm.k
+	+ Closer to the DAC values.
+	+ Could represent user values without scaling.
+	- Needs more configuration for scaling.
+
+ >  C) normalized fixed point Q2.30 {-1.0 to +1.0}
+	+ Better for a normalized range.
+	+ Works with dNcScaler class.
+	- Needs integer multiplication scaling, except in special cases.
+	+ Less internal configuration (because it's normalized).
+
+    Overall seems better to use normalized fixed point internally, and let
+    user scale externally, similar to sine_mcp4822.cpp program.
+
+Step size specification:
+    Need two values, one for each slope.
+
+    A) Specify normalized increment.
+	+ The actual step size is a little more obvious.
+	+ Need not be an even divisor of the range.
+
+    B) Specify number of steps in each slope.
+	+ Better relates to the number of samples in a wave cycle.
+	+ Could allow fractional step.
+
+    Probably want both ways?
+
+    The step size must not be zero, or the wave will never progress.
+    Although this could be useful to hold (freeze) the wave state.
+
+    Changing the step size on-the-fly is OK, not a problem with this
+    incremental algorithm.
+
+
+class dNcTriangle {
+  private:
+
+    const int		Kbits = 12;	// Number of bits in fractional part.
+
+				// signed Qm.k fixed point values, k= Kbits
+    int32_t		yVal;		// current value, point on wave
+    int32_t		dyVal;		// current slope (step size)
+    int32_t		dyUp;		// slope up   (> 0)
+    int32_t		dyDown;		// slope down (< 0)
+
+    int32_t		yMin;
+    int32_t		yMax;
+
+  public:
+    dNcRaster(			// constructor
+	float		dy_up;
+	float		dy_down;
+    );
+
+    void		set_step_size( float dy_up, float dy_down );
+ ?  void		set_slope_numbers( int n_up, int n_down );
+
+    void		init_point( float y, int direction );
+
+    int32_t		next_sample();
+
+    bool		is_atmax();
+    bool		is_atmin();
+    bool		is_atzero();
+};
+
+----------------------------------------------------------------------------
+## dNcRaster Class
+----------------------------------------------------------------------------
+
+A class to manage state for raster scan.
+    Keeping the same name prefix as related classes.
+
+Essential Configuration:  dNcWave, dNcOsc, dNcTriangle
+
+    A) Contained within the class.
+	+ Single purpose is simpler to understand.
+	- Less flexibility.
+	- Pass more parameters to make configurable.
+	+ A lot less stuff in main program.
+
+ >> B) Passed in at construction.
+ 	Follows the dNcOsc class model that passes in a dNcWave wave table.
+	+ Clearly uses the given dNcWave, dNcOsc, dNcTriangle.
+	+ Configuration mostly by the passed-in classes.
+	- Setup is more complex.
+	+ dNcWave, dNcOsc, dNcTriangle is available for alternate output forms.
+
+Outline use:
+
+    Construct oscillator object
+	int32_t			Wtab[ TabSize ];	// wave table
+	dNcWave			Wx  ( TabSize, Wtab );	// constructor
+	dNcOsc			Nox  ( &Wx, 2, 0 );	// stride int, frac
+
+    Initialize wave table and oscillator Nox.
+	Wx.init_sine(...)
+
+	Nox.set_stride( stride );
+	Nox.set_phase(  0.0 );
+
+    Construct raster object
+	dNcRaster		Rox  ( &Nox, ... );
+
+    Show configuration.
+    Optional show wave table.
+
+    Main Loop
+	...
+	while ( notdone )
+	{
+	    if ( FIFO not full ) {
+
+		Write previous sample.
+		    Uspix.Fifo.write( vdac );
+
+		Compute next sample.  Increment sample/line/frame count.
+		    vdac = Rox.next_sample();
+
+		Last if duration is reached.
+	    }
+	}
+
+Class attributes:
+
+    Want to provide raw values to be written to the SPI FIFO.
+    Manage dNcOsc state.
+    Manage triangle wave state.
+    Apply amplitude for both.
+
+class dNcRaster {
+  private:
+    dNcOsc*		NcOsc;		// Pointer to oscillator object.
+    dNcTriangle*	NcTri;		// Pointer to triangle object.
+
+  public:
+    dNcRaster(				// constructor
+	dNcOsc*		nox;
+	dNcTriangle*	trix;
+    );
+
+    bool		is_new_line();
+    bool		is_new_frame();
+
+    uint32_t		next_sample();	// advance to next sample
+    uint32_t		get_line_pos();		// current sample value
+    uint32_t		get_frame_pos();	// current sample value
+};
+
