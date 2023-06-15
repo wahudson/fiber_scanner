@@ -20,8 +20,8 @@ Documentation:  doc/
     bom_parts.text		parts list
 
 Datasheets:
-    http://www.ti.com/lit/ds/symlink/opa548.pdf  power op-amp
-    http://www.ti.com/lit/ds/symlink/tl051a.pdf  input op-amp
+    http://www.ti.com/lit/ds/symlink/opa548.pdf  power op-amp OPA548
+    http://www.ti.com/lit/ds/symlink/tl051a.pdf  input op-amp TL052
 
 ----------------------------------------------------------------------------
 ## Summary Specification
@@ -55,8 +55,8 @@ Output Signal:  (current)
 	No voltage sources.
 	No parallel current sources.
 
-    Output Protection:  Schottky diodes to power supply rails.
-	Help to protect op-amp against back EMF when driving inductive loads.
+    Output Protection:  Schottky diodes to power supply rails.  These help
+    to protect the op-amp against back-EMF when driving inductive loads.
 
     Power op-amp OPA548 has internal current limit and over-temperature
     shutdown.
@@ -84,11 +84,11 @@ Heat Sinks:  on power op-amps
 
 Operating principle:
     Power OpAmp (OPA548) adjusts output voltage such that the voltage across
-    the sense resistor in series with the load matches the input voltage.
+    the sense resistor Rs in series with the load matches the input voltage.
     See schematic.
 
 This specification is intended to identify a safe operating region for driving
-voice coil exciters up to +-1.0 A peak.
+voice coil exciters up to +-1.0 A peak current.
 
 ----------------------------------------------------------------------------
 ## Controls and Connectors
@@ -255,11 +255,11 @@ Output operation:
 
     Whenever the output terminals are unconnected, set the "Output" switch
     to "Shunt", which provides a zero ohm load.
-    In addition, set the "Enable" switch to "Off", which puts the op-amp
-    output in a high impedance state.
-    In addition, set the input to zero volts or disconnect it.
+    In addition, to reduce op-amp power, set the input to zero volts (or
+    disconnect it) or set the "Enable" switch to "Off".
 
 Thermal shutdown:
+
     The OPA548 power op-amp output will shutdown when the die temperature
     reaches approximately 160 degC, resetting when the die has cooled
     to 140 degC.
@@ -268,19 +268,126 @@ Thermal shutdown:
     against overload conditions.  Continuously running into thermal shutdown
     will degrade reliability.
 
-???
-Connecting output:
-Sequence:
-Shutdown indicator:
-Safe operating region:
-Crossover Distortion:
-Input protection:
-Output protection:
+    When in thermal shutdown, the "Shutdown" LED will be illuminated, even
+    when the "Enable" switch is in the "Run" position.
+
+    If thermal shutdown occurs, set the input voltage to zero (i.e. Io = 0 mA)
+    or set the "Enable" switch to "Off".  Setting only the "Output" switch
+    to "Shunt" does not reduce the op-amp power.
+    Check heatsink temperature and find the cause of over temperature.
+
+    Note that the "Enable" switch in the "Off" position will illuminate the
+    "Shutdown" LED regardless of the op-amp thermal shutdown state.
+
+    The worst case thermal load on the OPA548 op-amp is a zero ohm load at
+    maximum current (see Limitations below).
+    Thus when an output is not needed, it is best to set the input voltage
+    to zero (i.e. Io = 0 mA).
+
+Safe (valid) operating region:
+
+    For any load resistance Rd, the allowed output current Io is constrained
+    by the available compliance voltage.
+
+	Vd = Io * Rd		voltage across the load
+
+	Io = Vd / Rd		current thru the load
+
+	    |Vd| <= 5.0 V	compliance voltage requirement
+
+	|Io_max| = 5.0 V / Rd	maximum current, positive or negative
+
+    The current limit also constrains:  |Io_max| <= 1.0 A
+
+	Rd (ohm)     |Io_max| (A)
+	--------     ------------
+	  0		1.0	<
+	  1		1.0	<
+	  2		1.0	<
+	  5		1.0	< Current Limit
+	  8		0.625
+	 10		0.50
+	 20		0.25
+	 50		0.10
+	100		0.050
+	200		0.025
+	500		0.010
+
+Output protection:  Inductive Loads
+
+    When the current is changed in an inductive load, a back-EMF
+    (electromotive force) is generated.  This generated voltage can be
+    damaging to the power op-amp if it forces the output beyond the power
+    supply rails.  To avoid this, Schottky diodes shunt this voltage (charge)
+    onto the power supply rails.  Typically the power supplies cannot sink
+    current (i.e. on the positive supply) so the power supply voltage will
+    also rise to the extent the charge is absorbed by the bypass capacitors.
+    This protects the op-amp, but may damage the power supplies.
+
+    In general, use caution when applying a large inductive load.
+
+Recommended operation sequence:
+
+    There are many ways to achieve any particular operation, so a strict
+    cookbook approach does not really work.  Instead we present some simple
+    sub-operation snippets.  Modify to suit the needs of your load.
+    The instrument will not be damaged regardless of operation sequence.
+
+    Load considerations:
+	Considering the effective resistance Rd of the load:
+	    Will the load be damaged by 9.0 V across it?
+	    Will the load be damaged by 1.0 A thru it?
+	    What power dissipation can the load handle?
+	    How do transients affect the load?  (e.g. a speaker)
+	Will the input voltage need to be carefully controlled to avoid damage?
+
+	Consider lowering the internal current limit by changing the value of
+	resistor Rlim.  [Requires opening the instrument case and replacing
+	the Header socket and resistor.]
+
+    Programmed current:
+	The programmed current (i.e. Vin) should always be managed to avoid
+	exceeding the specified compliance voltage.  Require:
+	    Vd <= Vcv
+
+	    Vcv = 5.0 V		max compliance voltage
+	    Vd  = Rd * Io	voltage across the load
+		Rd = effective load resistance
+		Io = programmed output current
+
+    Power ON/OFF:
+	Set the "Enable" switch to "Off" before turning on power.
+	Not strictly required, but this allows the power supplies to settle
+	before beginning operation.
+
+    Connecting the input:
+	This can be done anytime, even while load is energized.
+	When the input is disconnected, the R1 pull-down resistor will
+	set the input to Vin = 0.0 mV, and corresponding 0.0 mA output current.
+
+    Connecting load:
+	Set input voltage to zero volts.
+	Set "Output" switch to "Shunt".
+	Connect the load.
+	Set "Output" switch to "Run".
+
+	Controlling the input voltage gives the smoothest transition.
+	If transients are tolerated, using only the "Output" switch is
+	sufficient.
+
+    Energizing the load:
+	Set "Output" switch to "Run".
+	Set "Enable" switch to "Run".
+	These can be done in either order.
+
+	To minimize transients, set the input voltage to zero first
+	(i.e. Io = 0 mA), enable outputs, and then ramp the input voltage to
+	desired operation.
 
 Limitations:
 
     Power supplies are +-9.0 V at 2.1 A DC.
-    Thus expect maximum output voltage could be this voltage.
+    Thus expect the maximum output voltage could be this voltage.
     Limit total output current accordingly.
 
     The OPA548 op-amp is rated for 3.0 A continuous output current.
@@ -310,11 +417,17 @@ Limitations:
 	Io = 2.0 A,  P = 14.0 W,  Trise ~= 55 K
 
     In general a 50 degree C rise is acceptable and should be met under
-    all load conditions.
+    all load conditions in this design.
+
+Distortion:
+    At higher frequencies (e.g. 10 kHz) a spurious transient step has
+    been observed in the negative half of a sinusoid waveform.  The
+    transient seems negligible at lower frequencies (e.g 100 Hz).
+    Cause is unknown, and has not been characterized.
 
 Extended operation:
     A single channel could be operated to +-2.0 A full scale output,
-    with the other channel set to Vin= 0 V.
+    with the other channel set to Vin= 0 V (i.e. Io = 0 mA).
     The heatsink temperature rise should be around 55 deg C, but check
     for any over temperature condition.
     See Limitations above.
