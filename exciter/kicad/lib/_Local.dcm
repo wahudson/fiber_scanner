@@ -16,6 +16,11 @@ D 8-bit Binary Counter with 3-State Output Register
 K counter
 $ENDCMP
 #
+$CMP 74x594
+D 8-bit Shift Register with Output Register
+K shift_register
+$ENDCMP
+#
 $CMP 74x74
 D Dual D Flip-flop, Set & Reset
 K TTL DFF

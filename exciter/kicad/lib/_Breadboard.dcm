@@ -10,6 +10,11 @@ D Quad 2in NOR
 K NOR
 $ENDCMP
 #
+$CMP 74x07
+D Hex Buffer/Driver with Open-Collector Output
+K NOR
+$ENDCMP
+#
 $CMP 74x166
 D Shift Register, Parallel In, Serial Out, Sync  Load
 $ENDCMP
@@ -19,9 +24,19 @@ D 8-bit Binary Counter with 3-State Output Register
 K counter
 $ENDCMP
 #
+$CMP 74x594
+D 8-Bit Shift Register With Output Register
+K shift
+$ENDCMP
+#
 $CMP 74x74
 D D Flip-Flop, Dual, Positive Edge Trigger, with Clear and Preset
 K flip-flop
+$ENDCMP
+#
+$CMP MCP4802
+D 2-Channel 8-Bit D/A Converter, SPI Interface, Internal Reference (2.048V)
+K 8-Bit DAC SPI Reference 2ch
 $ENDCMP
 #
 #End Doc Library

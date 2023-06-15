@@ -1,0 +1,71 @@
+2023-01-23  William A. Hudson
+
+		2-Channel Voltage Output DAC - kicad/dual_dac_v1/
+		----------------------------
+
+Dual 12-bit DAC, 8 Digital Out, 1.3 kHz LP Fileter, Full Scale +-1.024 V
+
+Derived from:
+    kicad/avolt_dac_v1/  v1.1
+
+----------------------------------------------------------------------------
+## Revision Log
+----------------------------------------------------------------------------
+kicad/dual_dac_v1/
+
+v1.0  2023-01-02  First version
+
+----------------------------------------------------------------------------
+## Design
+----------------------------------------------------------------------------
+
+DAC:  Microchip MCP4822
+
+    MCP4802/4812/4822  8/10/12-Bit Dual Voltage Output DAC, SPI Interface,
+	Internal Vref
+	Supply 2.7V to 5.5V  750uA max, single Vdd
+	Serial:  SCK, SDI, nCS.  20 MHz
+	    Command word is 16-bits.  Each DAC written seperately.
+	    bit15= A/B select, bit13= gain select, bit12= shutdown
+	Internal Ref:  2.048V.  Has only internal Vref.
+	Vout= 2.048 V FS or 4.096 V FS.  Gain selectable 1x or 2x Vref.
+	INL= +-12 LSB max.
+	DNL= +-0.75 LSB max.
+	Settling time 4.5 us typ to +-0.5 LSB for 1/4 to 3/4 scale step.
+	Slew Rate = 0.55 V/us typ
+	http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en547855
+	$3.15 DigiKey  MCP4822-E/P  8-PDIP  12-bit
+
+    Choose this one because it is simple, not too high speed, and low cost in
+    an 8-PDIP package.
+
+Op-amp output buffers:  TL052
+
+Shift Register:  8-bit digital outputs  74HC594
+
+    Choose 74HC type for slower edge rates and thus less digital noise coupling
+    to DAC and analog outputs.
+
+Power Source:
+    VDD = +3.3 V  Digital logic, from RPi
+
+    VPP = +6 V to +12 V  Analog
+    VNN = -6 V to -12 V  Analog
+	From bench power supply.
+	Generally the same one as for the Current Buffer.
+
+Power bypass caps:
+    DAC datasheet recommends 0.1 uF ceramic and 10 uF tantalum.
+
+Low Pass Filter:
+
+Hi-Z DAC pullup:
+    Power Up State:  (from analysis)
+    The  MCP4822  comes up in the "shutdown" state with outputs at high
+    impedance.
+
+----------------------------------------------------------------------------
+## First turn-on  2023-01-23
+----------------------------------------------------------------------------
+See:  avolt_dac_v1.text
+
