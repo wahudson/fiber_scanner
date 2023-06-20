@@ -118,6 +118,66 @@ Essential operation:
     Frequency is less important.  We are not doing resonant frequency sweeps,
     so do not need fine resolution on frequency.
 
+Raster Configuration:
+
+    An initial idea was to abstract the raster pattern as number of points
+    (samples) on a scan line, and number of lines in a frame.  But this
+    is removed from what actually happens.
+
+	raster config:
+	  --npoints=N         N sample points on a line
+	  --nlines=N          N lines in a frame (even)
+	  --nframes=N         N frames to issue, default 1
+
+    The actual process has a full sinusoid cycle as the fundamental
+    fast axis scan, so counting full cycles is more natural.  A full cycle
+    is essentially two scan lines, one line in each direction.
+
+    The triangle wave advances at the turn-around points of the fast
+    sine wave, i.e. it advances twice per fast cycle.
+    We want full cycles in a frame (i.e. no half cycles).
+    Thus counting cycles is more fundamental than counting lines and avoids
+    dividing the number of lines in half, with associated rounding confusion.
+
+	raster config:
+	  --npoints=N         N sample points in a cycle (bidirectional line)
+	  --nlines=N          N bidirectional lines (cycles) in a frame
+	  --nframes=N         N frames to issue, default 1
+
+    The challenge is finding the clearest way to convey what the option
+    values actually mean.
+    Decided to keep option names --npoints, --nlines and clarify their
+    meaning.
+
+Slow Scan:
+
+    Script:  speed12
+	Computes output frequencies for a range of rgUniSpi Speed_12 values.
+	Edit script parameters and for-loop as needed.
+
+    For rgUniSpi:
+
+    Tsclk_s   = 2 * (Speed_12 + 1) * Tsys_s	SCLK period (seconds)
+    Tcyc_s    = Npoints * Nsclk * Tsclk_s	Waveform period (seconds)
+    Nsclk     = ShiftLength_6 + 2.5		Number of SCLK cycles in sample
+
+    Tsys_s    = 2.000e-09	system clock period (seconds)
+    ShiftLength_6  = number of bits shifted in a SPI transaction
+    Npoints        = number of samples in a waveform cycle
+
+    In this case, the DAC has 16 bits plus 3 extra for scan marks and LED
+    gating.  Thus:
+	ShiftLength_6 = 19
+
+    For low frequency, make Speed_12 big and Npoints big:
+	Speed_12 = 4000,  max 4095
+	Npoints  = 1000
+
+	Tcyc_s = 0.344 s,  Fcyc_Hz = 2.91 Hz
+
+    Thus Npoints is the main knob for getting to low frequency.  Fortunately
+    this can be as large as necessary and only grows the wave table size.
+
 ----------------------------------------------------------------------------
 ## Design
 ----------------------------------------------------------------------------

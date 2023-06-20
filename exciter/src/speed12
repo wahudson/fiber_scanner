@@ -1,0 +1,36 @@
+#! /usr/bin/perl -w
+# 2022-05-18  William A. Hudson
+
+# Compute dNcOsc output frequencies for a range of rgUniSpi Speed_12 values.
+
+# usage:  ./speed12
+#    Edit parameters and for-loop as needed.
+
+# Tcyc      = NwaveSamp * Nsclk * 2 * (Speed_12 + 1) * Tsys_s
+# Nsclk     = ShiftLength_6 + 2.5
+# NwaveSamp = (Nsize / Stride)	# integer for zero jitter
+
+my $NwaveSamp     = 1000;	# samples per wave cycle
+my $ShiftLength_6 = 19;		# number of bits in SPI transaction
+my $Tsys_s        = 2.000e-09;	# system clock period (1/frequency)
+
+my $Nsclk = $ShiftLength_6 + 2.5;	# number of SCLK cycles
+
+print( "NwaveSamp     = ", $NwaveSamp,     "\n" );
+print( "ShiftLength_6 = ", $ShiftLength_6, "\n" );
+print( "Nsclk         = ", $Nsclk,         "\n" );
+print( "Tsys_s        = ", $Tsys_s,        "\n" );
+
+print( "Speed_12    Tcyc_ms    Fcyc_Hz\n" );
+
+for ( $Speed_12 = 100;  $Speed_12 <= 4095;  $Speed_12 +=100 )
+{
+    $Tcyc_ns = $NwaveSamp * $Nsclk * 2 * ($Speed_12 + 1) * $Tsys_s;
+
+    my $Tcyc_ms = 1000 * $Tcyc_ns;
+    my $Fcyc_Hz = 1 / $Tcyc_ns;
+
+    printf( "    %4d  %8.4f   %8.2f\n", $Speed_12, $Tcyc_ms, $Fcyc_Hz );
+}
+
+

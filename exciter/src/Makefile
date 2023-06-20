@@ -22,6 +22,7 @@ INCS       = \
 	$(IH)/dNcOsc.h \
 	$(IH)/dNcRamp.h \
 	$(IH)/dNcScaler.h \
+	$(IH)/dNcTriangle.h \
 	$(IH)/dNcWave.h
 
 		# objects not including main()
@@ -32,6 +33,7 @@ OBJS       = \
 	$(OJ)/dNcOsc.o \
 	$(OJ)/dNcRamp.o \
 	$(OJ)/dNcScaler.o \
+	$(OJ)/dNcTriangle.o \
 	$(OJ)/dNcWave.o \
 	$(OJ)/extShift.o \
 	$(OJ)/uspi_mcp4822x.o
@@ -45,16 +47,20 @@ CXXFLAGS   = -Wall  -std=c++11  -I $(IH)  -I $(INCDIR)
 
 
 run:	compile
+	$(BINDIR)/rasta_mcp4822 --TESTOP
 	$(BINDIR)/dac_mcp4822 --TESTOP -a 0,0
 
 compile:  $(OJ)  $(BINDIR) \
 	$(BINDIR)/dac_mcp4822 \
+	$(BINDIR)/rasta_mcp4822 \
 	$(BINDIR)/sine_mcp4822 \
 	$(BINDIR)/awave
+
 
 cap:
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/awave
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/dac_mcp4822
+	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/rasta_mcp4822
 	sudo  setcap 'CAP_DAC_OVERRIDE,CAP_SYS_RAWIO=p'  $(BINDIR)/sine_mcp4822
 
 mkdirs:   $(OJ)  $(BINDIR)
@@ -80,6 +86,10 @@ $(BINDIR)/dac_mcp4822:	 dac_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
 	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
 			 dac_mcp4822.cpp  $(OBJS)  $(LIBFLAGS)
 
+$(BINDIR)/rasta_mcp4822: rasta_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
+	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
+			 rasta_mcp4822.cpp  $(OBJS)  $(LIBFLAGS)
+
 $(BINDIR)/sine_mcp4822:	 sine_mcp4822.cpp  $(OBJS)  $(INCS)  $(LIBS)
 	g++ $(CXXFLAGS) -o $@ -L $(LIBDIR) \
 			 sine_mcp4822.cpp  $(OBJS)  $(LIBFLAGS)
@@ -93,6 +103,9 @@ $(OJ)/dNcRamp.o:	dNcRamp.cpp  dNcRamp.h
 
 $(OJ)/dNcScaler.o:	dNcScaler.cpp  dNcScaler.h
 	g++ $(CXXFLAGS) -o $@  -c dNcScaler.cpp
+
+$(OJ)/dNcTriangle.o:	dNcTriangle.cpp  dNcTriangle.h
+	g++ $(CXXFLAGS) -o $@  -c dNcTriangle.cpp
 
 $(OJ)/dNcWave.o:	dNcWave.cpp  dNcWave.h
 	g++ $(CXXFLAGS) -o $@  -c dNcWave.cpp
