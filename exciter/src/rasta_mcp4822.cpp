@@ -214,11 +214,11 @@ yOptLong::print_usage()
     "    --nrz               no return to zero at end of data\n"
     "    --shutdown          apply shutdown, send ExData=0 if needed\n"
     "  options:\n"
-    "#   --warm=N            warmup count, default 5000000\n"
+    "    --warm=N            warmup count, default 5000000\n"
     "    --sim               simulated voltages on stdout\n"
     "    --waveA             show sine wave table\n"
     "    --help              show this usage\n"
-    "    -v, --verbose       verbose output, show SPI words\n"
+    "    -v, --verbose       verbose output\n"
 //  "    --debug             debug output\n"
     "  (options with GNU= only)\n"
     ;
@@ -326,14 +326,17 @@ main( int	argc,
 	Trix.init_point(  0.0, +1 );	// start in center, rising
 //	Trix.init_point( -1.0, +1 );
 
-	cout.fill('0');
-	cout << "yMin_Qd30= 0x" <<hex <<setw(8) << Trix.get_yMin_Qd30() <<endl;
-	cout << "yMax_Qd30= 0x" <<hex <<setw(8) << Trix.get_yMax_Qd30() <<endl;
+	if ( Opx.verbose ) {
+	    cout.fill('0');
+	    cout <<hex;
+	    cout << "yMin_Qd30= 0x" <<setw(8) << Trix.get_yMin_Qd30() <<endl;
+	    cout << "yMax_Qd30= 0x" <<setw(8) << Trix.get_yMax_Qd30() <<endl;
 
-	cout << "dyUp_Qd30= 0x" <<hex <<setw(8) << Trix.get_dyUp_Qd30() <<endl;
-	cout << "dyDn_Qd30= 0x" <<hex <<setw(8) << Trix.get_dyDn_Qd30() <<endl;
-	cout <<dec;
-	cout.fill(' ');
+	    cout << "dyUp_Qd30= 0x" <<setw(8) << Trix.get_dyUp_Qd30() <<endl;
+	    cout << "dyDn_Qd30= 0x" <<setw(8) << Trix.get_dyDn_Qd30() <<endl;
+	    cout <<dec;
+	    cout.fill(' ');
+	}
 
 	// Configure DAC
 	ADax.set_Active();
@@ -355,7 +358,7 @@ main( int	argc,
 	    uint32_t		mark;
 	    uint32_t		vdac;
 
-	    cout << "# waveA table" <<endl;
+	    cout << "waveA table:" <<endl;
 	    cout << "     i  Entry       Mark   DAC   Float" <<endl;
 	    cout <<fixed;
 
@@ -389,20 +392,36 @@ main( int	argc,
 	// Initialize BDax
 	vtri  = Trix.get_y_Qd30();
 	bmark = Trix.is_rising();
-	amark = Wtab[0];			//#!! maybe
+	vsin  = Wtab[0];
+	amark = vsin & 0x1;			// sync mark
 	Esx.put_exdata( (bmark << 1) | amark );
 	bdac  = Bscx.scale_Qd30( vtri );
 	BDax.send_dac_12( bdac );
 
+	// Report initial conditions
 	cout << "gainA=   " << Ascx.get_Gain() <<endl;
 	cout << "gainB=   " << Bscx.get_Gain() <<endl;
 	cout << "Npoints= " << Npoints <<endl;
 	cout << "Ncycles= " << Ncycles <<endl;
 	cout << "Nframes= " << Nframes <<endl;
+
 	cout.precision(4);
 	cout <<fixed;
 
-	cout << "    j    i Mark  Anorm    Bnorm   Adac  Bdac" <<endl;
+	cout << "Anorm       = " << Trix.Qd30_2float( vsin ) <<endl;
+	cout << "Bnorm       = " << Trix.Qd30_2float( vtri ) <<endl;
+	cout << "deltaB_norm = " << Trix.Qd30_2float( Trix.get_dy_Qd30() )
+		<<endl;
+
+	// Warm up loop - allow OS shift to higher core clock frequency
+	for ( unsigned i=0;  i < Opx.warm.Val;  i++ )
+	{
+	    Uspix.Stat.grab();
+	}
+
+	if ( Opx.sim ) {
+	    cout << "    j    i Mark  Anorm    Bnorm   Adac  Bdac" <<endl;
+	}
 
 	for ( kk = 1;  kk <= Nframes;  kk++ )		// frames
 	{

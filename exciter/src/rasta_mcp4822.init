@@ -12,3 +12,5 @@ set -x
 
     rgpio uspi -1 --OutMsbFirst_1=1  --ChipSelects_3=0
 
+#    rgpio fsel --mode=Alt4  16 17 18 19 20 21
+
