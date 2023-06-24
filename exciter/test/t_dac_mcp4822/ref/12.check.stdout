@@ -1,0 +1,21 @@
+    Operate MCP4822 dual DAC on Spi1
+usage:  dac_mcp4822 [options] [-a|-b [vdac,ExData]..]
+    vdac                DAC value {0..4095}
+    ExData              16-bit extended shift value, left justified
+  channel select:  (one or both)
+    -a                  channel A
+    -b                  channel B
+  gain select:  (choose one)
+    --gain1x            gain setting 1x (default)
+    --gain2x            gain setting 2x
+  stream mode:  (read stdin), applied after argv data
+    --csv               stream CSV of 'channel,vdac,ExData', e.g.
+                            a,4095,0xf000
+    --raw               write raw 32-bit words to rgUniSpi
+  apply shutdown after all data:
+    --shutdown          apply shutdown, send ExData=0 if needed
+  options:
+    --warm=N            warmup count, default 5000000
+    --help              show this usage
+    -v, --verbose       verbose output, show SPI words
+  (options with GNU= only)
