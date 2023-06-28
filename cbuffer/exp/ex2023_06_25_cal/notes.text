@@ -1,0 +1,277 @@
+2023-06-24  William A. Hudson
+
+	    Current Buffer Calibration -- ex2023_06_25_cal
+	    --------------------------
+
+Purpose:
+    Calibration measurements of Dual Current Buffer instrument
+    dual_cbuffer/ v1.0.0  Channel 1 only.
+
+    DC measurement of transfer function (Io, for Vin) and current limit
+    at Rload = 1 ohm.  Sweep Vset beyond the 1100 mA current limit.
+
+Files:
+    notes.text		this file
+    cal_1R0.tab		sorted measurements
+    cal_1R0.pdf		Output current Io vs input voltage Vin
+
+	The "_1R0" is the load resistor value, Rload = 1.0 ohm.
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Schematic:
+    kicad/dual_cbuffer/	v1.0.0  Instrument, Channel 1 only.
+    kicad/cbuffer_v2/	v2.1.0	Circuit schematic.
+
+    This is the Channel 1 only complete instrument, Ch 2 is not built.
+    Complete internal wiring and front panel.
+
+Sense resistor in protoboard:
+    Rs = 1.0 ohm, 5%, 5 W, Vishay AC05000001008JAC00
+
+Current limit:  (of OPA548 op-amp)
+    Ilim = 15000 * (4.75 V) / (13750 ohm + Rlim)
+
+    Rlim = 66.5 kohm,  Ilim =  888 mA
+ >  Rlim = 51.0 kohm,  Ilim = 1100 mA,  measured 50.1 kohm
+    Rlim = 20.0 kohm,  Ilim = 2111 mA
+
+Lowpass Filter:  Cp3 none
+Compensation:  Cf4 none
+
+Load Leads:
+    20 AWG stranded wire on alligator clips, ~14 inch long.
+    Attached to front panel connector.
+
+Resistor Loads:
+    Rload = resistor nominal value
+    Pr   = resistor power rating
+    Imax = sqrt( Pr / R )
+    Vmax = sqrt( Pr * R )
+	Rload	Pr	Imax	Vmax	Description
+	(ohm)	(W)	(A)	(V)
+	0.1	3	5.5	0.55	Dale  RS-2B, 1%
+ >	1.0	5	2.2	2.2	Vishay AC05, 5%
+	2.0     3	1.2	2.4	Vishay AC03, 5%
+	4.0     6	1.2	4.9	Vishay AC03, 5%, two in series
+	10	159	4.0	40.0	Ohmite RW38V100
+
+Meter:  Fluke model 23 Multimeter
+
+Input voltage source:  Keysight DSOX12046 oscilloscope, wavegen output.
+
+----------------------------------------------------------------------------
+## Measurements
+----------------------------------------------------------------------------
+
+Procedure:
+    1. Install selected current limit resistor Rlim.
+    2. Sweep Vset, measure Vin, Vs, Vo.
+
+Voltage measurements (DC) probe points:
+    Vset = wavegen voltage setting
+
+    Meter ground lead attached to "Gnd" binding post.
+    Vin  = probe input BNC inside front panel.
+    Vs   = probe "Lo" terminal of panel terminal block
+    Vo   = probe "Ho" terminal of panel terminal block
+
+Derived values:
+    Io = Vs / Rs		output current thru both Rload and Rs
+    Vd = Vo - Vs		voltage across the load
+
+    Rd = Vd / Io		effective load resistance
+    Rd = (Vo - Vs) / Io
+
+    Rd = (Vo/Vs - 1) * Rs
+    Kd =  Vo/Vs - 1		load scale factor,  Rd == Kd * Rs
+
+Measurements (DC):
+    Rload = 1.0 ohm, 5%, 5 W
+    Rlim = 51.0 kohm,  Ilim = 1100 mA,  measured 50.1 kohm
+    VPP = +9.07 V
+    VNN = -9.07 V
+
+	Vset	Vin	Vs	 Vo
+	(mV)	(mV)	(mV)	 (V)
+	-----	-----	-----	-----
+	 open	    0	    2	    4
+	    0	    0	    2	    4
+	  100	   98	  101	  206
+	  200	  197	  201	  408
+	  400	  395	  401	  812
+	  600	  593	  601	 1216
+	  800	  791	  800	 1620
+	  900	  890	  900	 1823
+	 1000	  989	 1000	 2024
+	 1100	 1088	 1100	 2226
+	 1200	 1187	 1194	 2420
+	 1300	 1286	 1195	 2414
+	 1300	    -	 1190	 2405	cooler
+	 1400	 1385	 1188	 2407	cooler
+	 1400	 1385	 1196	 2420	hot
+	  100	   98	  101	  205
+
+	 -100	  -98	  -97	 -197
+	 -200	 -197	 -197	 -399
+	 -400	 -395	 -397	 -803
+	 -600	 -594	 -597	-1209
+	 -800	 -792	 -797	-1612
+	 -900	 -890	 -896	-1813
+	-1000	 -990	 -996	-2016
+	-1100	 -1088	 -1095	-2218
+	-1200	 -1188	 -1159	-2349	hot
+	-1200	 -1188	 -1148	-2323	cool
+
+	-1300	 -1286	 -1149	-2325	hot
+	-1400	 -1386	 -1144	-2316	hot
+
+	-1000	 -990	 -996	-2017	hot
+	 1000	  989	 1000	 2023	hot
+	 1000	  989	 1000	 2023	cool
+
+	    0	    0	    2	    3	warm
+	   -1.5    -1	    0	    1	adjust to Vs=0 mV
+
+    At 1.0 A, Rs gets quite warm.  Heatsink quite warm.
+
+    In current limit, the current varies as the temperature varies.
+    Probably as Op-amp temperature varies.
+
+    Not in current limit, the current is constant with temperature.
+    This is expected, as the feedback loop is working.
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Data Files:
+    cal_1R0_orig.tab		above raw data, in measurement order
+
+  Vset_mV  Vin_mV   Vs_mV   Vo_mV
+        0       0       2       4
+      100      98     101     206
+      200     197     201     408
+    ...
+    -1300   -1286   -1149   -2325
+    -1400   -1386   -1144   -2316
+
+    cal_1R0.tab		sort by Vset_mV
+
+Running R:
+
+    Using Vs as an analog for output current Io, i.e. Io = Vs / Rs
+    Since Rs = 1.0 ohm, there is no point in computing Io (same as Vs).
+
+    df <- read.table( "cal_1R0.tab", header=TRUE )
+    plot( df$Vin_mV, df$Vs_mV, ylab="Vs_mV   Sense voltage",
+	xlab="Vin_mV   Input voltage" )
+
+    dg <- df[5:27,]
+    points( dg$Vin_mV, dg$Vs_mV, col='red' )
+	# Overlay linear region with red points.
+
+    abline( h=1100 )
+    text( 0, 1150, pos=4, "1100 mV" )
+
+    abline( h=-1100 )
+    text( 0, -1150, pos=4, "-1100 mV" )
+
+    gmod <- lm( Vs_mV ~ Vin_mV, data=dg )
+    coefficients( gmod )
+    (Intercept)      Vin_mV
+       2.149599    1.008835
+
+    abline( 2.149599, 1.008835 )
+	Clearly Io <= 1100 mV is linear, while the +-1200 point is off.
+
+    residuals( gmod )
+	Residuals are the deviation of the measured value, i.e. Vs_mV, from
+	the fitted function.
+	Virtually all are < 0.6 mV deviation, less than the 1 mV resolution of
+	measurement.
+
+    cor( dg$Vs_mV, dg$Vin_mV )
+    [1] 0.9999998
+	Very strongly correlated.
+
+
+    title( main='Output Current   Io = 1.0 mA/mV * Vs', sub='Rload = 1.0 ohm' )
+    text( 20, -400, pos=4, "slope= 1.009, intercept Vs= 2.15 mV" )
+
+ >> dev.copy2pdf( file="cal_1R0.pdf" )
+
+    print( df )
+       Vset_mV Vin_mV Vs_mV Vo_mV
+    1  -1400.0  -1386 -1144 -2316	<
+    2  -1300.0  -1286 -1149 -2325	<
+    3  -1200.0  -1188 -1148 -2323	<
+    4  -1200.0  -1188 -1159 -2349	< current limit
+    5  -1100.0  -1088 -1095 -2218
+    6  -1000.0   -990  -996 -2016
+    7  -1000.0   -990  -996 -2017
+    8   -900.0   -890  -896 -1813
+    9   -800.0   -792  -797 -1612
+    10  -600.0   -594  -597 -1209
+    11  -400.0   -395  -397  -803
+    12  -200.0   -197  -197  -399
+    13  -100.0    -98   -97  -197
+    14    -1.5     -1     0     1
+    15     0.0      0     2     3
+    16     0.0      0     2     4
+    17   100.0     98   101   205
+    18   100.0     98   101   206
+    19   200.0    197   201   408
+    20   400.0    395   401   812
+    21   600.0    593   601  1216
+    22   800.0    791   800  1620
+    23   900.0    890   900  1823
+    24  1000.0    989  1000  2023
+    25  1000.0    989  1000  2023
+    26  1000.0    989  1000  2024
+    27  1100.0   1088  1100  2226
+    28  1200.0   1187  1194  2420	< current limit
+    29  1300.0   1286  1190  2405	<
+    30  1300.0   1286  1195  2414	<
+    31  1400.0   1385  1188  2407	<
+    32  1400.0   1385  1196  2420	<
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+Ch 1 calibration:
+
+    The current buffer DC transfer function is:  (assuming Rs = 1.000 ohm)
+
+	Io = (1.009 mA/mV) * Vin + 2.15 mA
+
+    Not sure why the conductance factor (slope) is not exactly 1.000?
+    Perhaps some op-amp gain effect?
+	Seems unlikely.
+    Perhaps output lead wire resistance?
+	The 20 AWG output lead is ~20 cm long.  At around 33 mohm/meter,
+	this is about 7 mohm, and at 1000 mA is about 7 mV, which is roughly
+	near the conductance factor deviation.  Maybe.  Need more analysis.
+
+    The output current appears very stable and not affected by op-amp
+    temperature.
+
+Current Limit:
+    Op-amp current limit occurs about 5% above the Rlim set point.
+    The limiting current is not stable and varies with op-amp temperature.
+
+    At Rlim = 51.0 kohm, the spec current limit is Ilim = 1100 mA, which
+    appears to be a safe operating point, with about 5% margin.
+    Certainly keeping Io < 1000 mA looks safe.
+
+Controls worked great:
+    Enable switch was useful to disable op-amp to cool.
+
+    Shunt switch makes a zero ohm load, works great to control a disconnected
+    output.
+
+    Shutdown indicator illuminated when op-amp is disabled.
+
