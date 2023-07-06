@@ -6,10 +6,10 @@ $Descr B 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "dual_dac_v1/   2-Channel Voltage DAC"
-Date "2023-01-02"
-Rev "v1.0"
+Date "2023-07-05"
+Rev "v1.0.1"
 Comp "William A. Hudson"
-Comment1 ""
+Comment1 "v1.0.1  Sync mark corrections"
 Comment2 ""
 Comment3 ""
 Comment4 ""
@@ -451,8 +451,6 @@ Text Notes 850  9100 0    50   ~ 0
 Analog GND thru \ncurrent buffer Cignd
 Text Notes 12300 9200 0    70   ~ 0
 Dual 12-bit DAC, 8 Digital out, 1.3 kHz LP Filter, Full Scale +-1.024 V
-Text GLabel 4800 4000 2    50   Input ~ 0
-GATE
 Text Notes 6000 5050 0    50   ~ 0
 GND  p20  brown
 Text GLabel 5400 6000 2    50   Input ~ 0
@@ -475,9 +473,9 @@ Wire Wire Line
 Text Notes 7600 7000 0    50   ~ 0
 DAC update on CSn rising
 Text Notes 3800 9150 0    50   ~ 0
-Current Buffer - input
+Inputs
 Text Notes 3800 9750 0    50   ~ 0
-Current Buffer - output
+Outputs
 Wire Notes Line
 	3400 8900 3400 9900
 Wire Notes Line
@@ -669,12 +667,12 @@ Wire Wire Line
 	8800 2900 8800 3000
 Wire Wire Line
 	9200 2900 9400 2900
-Text GLabel 9600 3300 2    50   Input ~ 0
-LEDgate
-Text GLabel 9600 3400 2    50   Input ~ 0
-Xmark
 Text GLabel 9600 3500 2    50   Input ~ 0
-Ymark
+LEDgate
+Text GLabel 9600 3300 2    50   Input ~ 0
+Amark
+Text GLabel 9600 3400 2    50   Input ~ 0
+Bmark
 Wire Wire Line
 	11500 6900 11900 6900
 Wire Wire Line
@@ -1100,4 +1098,14 @@ Text GLabel 4800 8200 2    50   Input ~ 0
 Vob
 Text Notes 12300 8900 0    50   ~ 0
 Inverting output:  Vo = (0.0005 V) * (2048 - Code)\n    Code = {0..4095}
+Text GLabel 2600 3800 0    50   Input ~ 0
+Bmark
+Text GLabel 4800 4000 2    50   Input ~ 0
+Amark
+Text GLabel 2600 4000 0    50   Input ~ 0
+LEDgate
+Text Notes 4050 9500 0    50   ~ 0
+Fluxgate Current Driver\nv1.2  2020-06-26
+Text Notes 7200 8000 0    50   ~ 0
+GND = ground, analog and digital
 $EndSCHEMATC

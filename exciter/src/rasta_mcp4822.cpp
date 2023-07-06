@@ -15,6 +15,14 @@
 //    A 12-bit DAC, LSB is 0.0005 V
 //        Vout = -0.0005 V * (Code - 2048)	Inverting output
 //        Code = -(Vout / 0.0005 V) + 2048
+// ExtShift configuration:
+//    The DAC and shift register both recieve MOSI in parallel, with MSB first.
+//    The DAC latches the first 16 bits shifted and ignores the rest.  The
+//    shift register retains the last 8-bits shifted.  Shift Q0 toward Q7.
+//    Sync marks rise when waveform Code is rising (inverted output falling).
+//      Q0 = A sync mark (fast scan)
+//      Q1 = B sync mark (slow scan)
+//      Q2 = LED gate (no data provided)
 // Provide external configuration:  e.g.
 //   rgpio fsel --mode=Alt4  16 17 18 19 20 21
 //   rgpio uspi -1 --SpiEnable_1=1
@@ -278,7 +286,7 @@ main( int	argc,
 
 	rgUniSpi		Uspix  ( &Amx, 1 );	// constructor
 
-	extShift		Esx  ( 4 );		// extended shift bits
+	extShift		Esx  ( 3 );		// extended shift bits
 	uspi_mcp4822x		ADax  ( 0, &Uspix, &Esx );
 	uspi_mcp4822x		BDax  ( 1, &Uspix, &Esx );
 
