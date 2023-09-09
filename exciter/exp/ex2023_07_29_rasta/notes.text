@@ -1,0 +1,961 @@
+2023-07-29  William A. Hudson
+
+		First Raster Exciter images
+		---------------------------
+
+Related:
+    camera/exp/ex2022_11_30_exciter/	Exciter Displacement PUI Audio
+
+Purpose:
+    Initial runs of slow-scan raster exciters in full system.
+    Camera images of response.
+    Measure exciter displacement as a function of current.
+
+Files:
+    notes.text			this file
+
+		Cropped grayscale, LED 1.25 mA, rasta_mcp4822, Npoints= 1000
+    cc2_sw6.grop.jpg	Ncycles=10, gainA=200 gainB=200
+    cc4_x40.grop.jpg	Ncycles=40, gainA=200 gainB=400
+
+Git:  5fefd88540a9  Thu Jul 6 14:17:21 2023 -0600
+    https://github.com/wahudson/fiber_scanner.git
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+System:
+    Dual axis exciters move a fiber optic ferrule laterally in the XY plane.
+    The ferrule holds a cleaved fiber viewed end-on by a monocular microscope
+    lens on a Raspberry HQ camera.  No fiber cantilever.
+    A LED illuminates the connector end of fiber optic cable.
+    The exciters are driven by current buffers and controlled by a dual DAC
+    on a RPi4 running custom program rasta_mcp4822.
+
+    Horizontal optical axis (camera axis):  +X horizontal right,
+    +Y vertical up, and +Z out of the page (toward camera); but note
+    image pixel number has +Y down.
+
+    Initial idea is fast scan in the Y (vertical) direction, symmetric
+    with gravity, and slow scan in the X (horizontal) direction.
+
+Components:
+ >	Right-angle bracket character highlights configurable elements.
+
+    Exciter platform:  Dual axis raster scan.
+	Y Vertical:    PUI ASX04008-R  Exciter, 40 mm, 8 ohm
+	X Horizontal:  BDNC  BGC-D40-22-4-002  Speaker, 40 mm, 4.0 ohm
+	First version, built on a hardboard frame formed as a box corner.
+	Balsawood spider holds a 2.5 mm diameter fiber ferrule (ThorLabs
+	CF128-10 ?), each leg ~25 mm long.
+	Mounted on a Micrometer Stage by four M4-5.5 screws 40 mm long with
+	nuts for adjustable height.
+
+    rpiTouch:  (Raspberry Pi 3B) with official LCD 7 inch screen and HQ camera.
+	Bullseye operating system
+	% uname -a
+	Linux rpiTouch 6.1.21-v7+ #1642 SMP Mon Apr  3 17:20:52 BST 2023 \
+		armv7l GNU/Linux
+	Access via ssh as user wah.
+	% ssh rpiTouch.local
+
+    rpiFour:  (Raspberry Pi 4)
+	Buster operating system
+	% uname -a
+	Linux rpiFour 5.4.83-v7l+ #1379 SMP Mon Dec 14 13:11:54 GMT 2020 \
+		armv7l GNU/Linux
+	Running the DAC via my librgpio and custom code.
+	Access via ssh as user wah.
+	% ssh rpiFour.local
+
+    Camera:  Raspberry Pi HQ Camera, C-mount
+	Sony IMX477R stacked, back-illuminated sensor, 12.3 megapixels,
+	7.9 mm sensor diagonal, 1.55 um x 1.55 um pixel size.
+	See:  ~/pro/raspberryPi/hq_camera/notes.text
+
+    Microscope lens:  Hayear Monocular 0.7-4.5x zoom, 1.0x adapter.
+	Spacing:  8.5 mm from HQ camera metal face to Microscope face.
+	Nominal 1x magnification setting, with one 5mm macro ring.
+	Distance objective to object:  ~100 mm
+	Cardboard box light cover.
+
+    Micrometer Stage:  Supports the dual axis exciter frame for focus.
+	SFT Technology SEMX80-AC Single Axis Crossed Roller Bearing Stage
+	Body 80 mm square, +-12.5 mm range, detent in center.
+
+    Exciter Y:  PUI Audio ASX04008-R
+	Rated:  8 ohm, 3 W, 40 mm overall diameter.
+	Wider surround for lower frequency range.
+	Resonant Frequency:  450 Hz +-20%
+	Input power:  3 W rated, 5 W max
+	AC Impedance:  8 +-15% ohm
+	Overall dia:  40 mm (1.575), Base dia:  24 mm (0.945)
+	Mounting ring:  18.6 mm OD, 15 mm ID (the moving coil)
+	Height:  16 mm
+	http://www.puiaudio.com/pdf/ASX04008-R.pdf
+	$10.85  DigiKey  PUI ASX04008-R  1.575 dia
+
+    Exciter X:  BDNC  BGC-D40-22-4-002  Speaker
+	Rated:  4 ohm, 5 W continuous, 40 mm overall diameter.
+	3D Glass cone diaphragm in 0.23mm thickness
+	Excursion:  5 mm peak-to-peak
+	Size:  40 mm dia, 21.7 mm high
+	Input power:  5 W continuous, 15 W transient
+	DC resistance:  4 ohm typ
+	Perfect pistonic motion in low frequency due to high Young Modulus of
+	    ion-toughened glass.
+	Central area is clear glass, slightly concave.
+	Similar structure to BFC-D40-22-1-002
+	http://www.newbdnc.com/wp-content/uploads/datasheets/BGC-D40-22-4-002.pdf
+	$18.28 DigiKey  BDNC  BGC-D40-22-4-002
+
+    Dual DAC:  exciter/kicad/dual_dac_v1/
+	2-Channel Voltage DAC v1.0.1 2023-07-05
+	Dual 12-bit DAC, 8 digital out, 1.3 kHz LP filter, +-1.024 V full scale
+	MCP4822 datasheet:
+	http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en547855
+	Built on solderless breadboard.
+ >	Cfa= no load, no filter
+ >	Cfb= 12 nF, 1.3 kHz LP filter
+
+    Current Buffer Y:  Fluxgate - Current Driver
+	~/pro/fluxgate/kicad/v1/v1.sch  v1.2  2020-06-26  (not in Git)
+	Built on soldered breadboard.
+	Transfer gain  1.0 mA/mV.
+
+    Current Buffer X:  Dual Current Buffer Instrument
+	cbuffer/kicad/dual_cbuffer/  v1.0.0  2023-05-30 -- instrument
+	    Current Buffer 1.0 mA/mV, Dual Channel
+	    Custom Instrument (only Ch1 is implemented).
+	cbuffer/kicad/cbuffer_v2/  v2.1.0  2023-04-22  -- Ch1 circuit
+	    Current Buffer 1.0 mA/mV, 1.0 A full scale.
+ >	    No filter (no Cp3).  No compensation (no Cf4).
+
+    LED Fiber Light circuit:  led_light/kicad/led_fiber_v1/
+	Breadboard v1.0 2021-12-31
+ >	sw6 - 1.25 mA  LED current (nominal)
+
+    LED:  Vishay VLCS5830
+	Wavelength spec:  620 nm min, 624 nm typ, 630 nm max at If= 50 mA.
+	From graph spectral width at 0.2% peak is about 620 nm to 640 nm.
+	Thus spectral width is about 20 nm.
+	This is broad compared to lasers which seem to be around 1 nm or 0.1 nm
+	spectral width.  [Searching laser line width on the web.]
+
+    Fiber:  Single mode, 9 um core, 125 um cladding.
+	FiberTronics PC-HH9S3YV02M Fiber Patch Cable, Single-mode OS2,
+	FC/UPC - FC/UPC Simplex, SMF-9/125, Yellow 3 mm PVC, 2 m long.
+	(Single mode for 1550 nm light, I think.)
+	Cut in half, FC/UPC connector on LED end, other end cleaved.
+	Jacket printing:  "3.0 SM G652D-9/125 um - PVC - 07/18 00575M"
+	Not glued in ferrule.
+ >	Positioned roughly flush with ferrule face.
+
+    HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Powers Fluxgate - Current Driver and Dual DAC circuit.
+ >	Vout = +-9.0 V
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+
+    Fluke 23 Multimeter:  measure DC and AC voltage.
+
+Exciter DAC code:  exciter/src/
+    rasta_mcp4822.cpp
+    dac_mcp4822.cpp
+
+    Git:  5fefd88540a9  Thu Jul 6 14:17:21 2023 -0600
+
+Software commands:
+    libcamera-still	Raspberry Pi camera
+    jpegtran	Lossless JPEG file crop and grayscale conversion
+    djpeg	decompress a JPEG file to Netpbm format
+    display	Image Magick display image files
+    R		for plotting
+
+Image code:  camera/src/
+    pgm_box	Bounding box of an elliptical image
+    pgm_stats	Compute image stats - min, max, mean, standard deviation, CG
+    pgm_swatch	Extract a swatch of pixels in table format
+    pgm_width	Width (FWHM) of a spot (circular) image
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+    Notes on setting up, with a view toward later simplification.
+    Connections and verification.  Configuration is under Components (above),
+    or in experiment details.
+
+Verify subsystems before connecting them together.
+    LED Light
+    Camera on rpiTouch
+    Power Supply
+    Dual DAC on rpiFour
+    Current buffer - Fluxgate
+    Current buffer instrument
+
+    View documentation/schematics on what it all is.
+    Power sequence is not critical, can do in any order.
+
+LED Light schematic:  Breadboard v1.0 2021-12-31
+    % kicad  led_light/kicad/led_fiber_v1/ki.pro &
+    Solderless breadboard.
+
+    Ground GATEn input to enable light.
+    Adjust switches for desired light intensity in fiber, viewed by camera.
+    Set sw4=1, 5 mA current.
+
+    GATEn input is routed from digital output of dual_dac_v1 DAC breadboard.
+
+Camera rpiTouch:
+    Power up.
+    Connect by ssh:
+	% ssh pi@rpiTouch.local
+
+    Run camera in preview mode:
+	% DISPLAY=:0.0 libcamera-still -t 0
+	Preview is on local display only.
+	Touch touchscreen or move mouse to wakeup display.
+
+    Set microscope lens to 1x.
+    Adjust microscope lens position to focus on fiber tip, near ferrule face.
+    Use another target (e.g. pencil tip) placed close to fiber to help find it.
+    A millimeter ruler helps see scale of FOV - about 4.5 mm vertical.
+    Apply box cover (keep room light out).
+    Adjust focus for smallest bright spot in fiber core.
+
+Dual DAC and Current Buffers, on rpiFour:
+    Composed of six subsystems:
+
+    HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Set for +-9.0 V
+	Power both the DAC op-amps and Current Buffer.
+
+    rpiFour - Spi1 (rgUniSpi) controls and powers (3.3 V) the DAC.
+
+    Dual DAC:  exciter/kicad/dual_dac_v1/
+	2-Channel Voltage DAC, v1.0.1  2023-07-05
+	Dual 12-bit DAC, 8 digital out, 1.3 kHz LP filter, +-1.024 V full scale
+	Built on solderless breadboard.
+
+    Current Buffer Y:  Fluxgate - Current Driver
+	Output Voa drives the Exciter Y.
+	~/pro/fluxgate/kicad/v1/v1.sch  v1.2  2020-06-26  (not in Git)
+	Built on soldered breadboard.
+	Transfer gain  1.0 mA/mV.
+
+    Current Buffer X:  Dual Current Buffer Instrument
+	Output Vob drives the Exciter X.
+	cbuffer/kicad/dual_cbuffer/  v1.0.0  2023-05-30 -- instrument
+	    Current Buffer 1.0 mA/mV, Dual Channel, 1.0 A full scale.
+	    Custom Instrument (only Ch1 is implemented).
+	cbuffer/kicad/cbuffer_v2/  v2.1.0  2023-04-22  -- Ch1 circuit
+
+    Software:
+	~/work/
+	    rgpio/
+	    fiber_scanner/exciter/
+		doc/rasta_mcp4822.text	- design, operation
+		src/rasta_mcp4822.cpp	- main program
+		src/rasta_mcp4822.init	- initialize rgUniSpi Spi1
+
+Verify code is up-to-date and compiled:  rpiFour
+    Can compile/test/run on either laptop or RPi.
+	rgpio
+	dac_mcp4822
+	rasta_mcp4822
+
+    Symlinks in ~/bin/
+	dac_mcp4822   -> /home/wah/work/fiber_scanner/exciter/bin/dac_mcp4822
+	rasta_mcp4822 -> /home/wah/work/fiber_scanner/exciter/bin/rasta_mcp4822
+	rgpio         -> /home/wah/work/rgpio/rgpio/bin/rgpio
+
+Verify rasta_mcp4822 - raster slow scan
+
+    % bin/rasta_mcp4822 --help
+	Raster Scan MCP4822 dual DAC on Spi1
+    usage:  rasta_mcp4822 [options]
+      raster config:
+	--npoints=N         N sample points in a cycle (bidirectional line)
+	--nlines=N          N bidirectional lines (cycles) in a frame
+	--nframes=N         N frames to issue, default 1
+	--gainA=N           gain (N/2048) of full scale
+	--gainB=N           gain (N/2048) of full scale
+      at end of data:
+	--nrz               no return to zero at end of data
+	--shutdown          apply shutdown, send ExData=0 if needed
+      options:
+	--warm=N            warmup count, default 5000000
+	--sim               simulated voltages on stdout
+	--waveA             show sine wave table
+	--help              show this usage
+	-v, --verbose       verbose output
+      (options with GNU= only)
+
+    % bin/rasta_mcp4822 --sim  2>&1 | less
+
+Verify dac_mcp4822 - direct DAC control
+
+    % bin/dac_mcp4822 --help
+	Operate MCP4822 dual DAC on Spi1
+    usage:  dac_mcp4822 [options] [-a|-b [vdac,ExData]..]
+	vdac                DAC value {0..4095}
+	ExData              16-bit extended shift value, left justified
+      channel select:  (one or both)
+	-a                  channel A
+	-b                  channel B
+      gain select:  (choose one)
+	--gain1x            gain setting 1x (default)
+	--gain2x            gain setting 2x
+      stream mode:  (read stdin), applied after argv data
+	--csv               stream CSV of 'channel,vdac,ExData', e.g.
+				a,4095,0xf000
+	--raw               write raw 32-bit words to rgUniSpi
+      apply shutdown after all data:
+	--shutdown          apply shutdown, send ExData=0 if needed
+      options:
+	--warm=N            warmup count, default 5000000
+	--help              show this usage
+	-v, --verbose       verbose output, show SPI words
+      (options with GNU= only)
+
+Powering up previously built system:
+    Verify connections OK, nothing shorted or loose.
+    Exciters disconnected.
+    Current buffers - output shunt to disable.
+    Oscilloscope to observe:
+	Ch1 - Vob   DAC output to X current buffer input.  (slow scan)
+	Ch2 - Voa   DAC output to Y current buffer input.  (fast scan)
+	Ch3 - trigger on Amark, Bmark, or LEDgate.
+
+    Power up HP power supply for Dual Dac and Fluxgate current buffer.
+	Verify Vout = +-9 Vdc
+	Verify currents are low < 20 mA.
+
+    DAC output voltage:
+	On power up, the MCP4822 should have high-Z outputs until the first
+	valid write command.  The op-amp circuit has high-Z offset control
+	such that the outputs should be zero volts.  
+
+    Verify trim offset Vref= 0.512 V, (adjust RV5 trim pot).
+	
+Configure Spi1 (rgUniSpi) to run rasta_mcp4822:  rpiFour
+    See comments in:  rasta_mcp4822.cpp  for output frequency.
+
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+    Bit  Mode  Function
+     16  Alt4  spi1_CE2_n
+     17  Alt4  spi1_CE1_n
+     18  Alt4  spi1_CE0_n
+     19  Alt4  spi1_MISO
+     20  Alt4  spi1_MOSI
+     21  Alt4  spi1_SCLK
+
+    % src/rasta_mcp4822.init
+    + rgpio uspi -1 --SpiEnable_1=1
+    + rgpio uspi -1 --Speed_12=3999 --EnableSerial_1=1 --ShiftLength_6=19
+    + rgpio uspi -1 --OutMsbFirst_1=1 --ChipSelects_3=0
+    ...
+
+    Output frequency:
+	Tcyc_s  = Npoints * Nsclk * Tsclk_s     Waveform period (seconds)
+	Tsclk_s = 2 * (Speed_12 + 1) * Tsys_s   SCLK period (seconds)
+	Nsclk   = ShiftLength_6 + 2.5           Number of SCLK cycles in sample
+	Tsys_s  = 2.000e-09  system clock period (seconds)
+	Npoints = number of samples in a waveform cycle (--npoints)
+	ShiftLength_6 = 19  number of bits shifted in a SPI transaction
+
+	Tcyc_s = 1000 * (19 + 2.5) * (2 * (3999 + 1) * 2.000e-09 s)
+	    = 0.344 s  (2.91 Hz)  for Npoints=1000
+
+Set DAC outputs to zero:
+    % dac_mcp4822 -v  -a -b  2048,0
+    + 0x38000000
+    + 0xb8000000
+
+Run DAC from rpiFour:
+    Disable outputs, --sim mode still sends data to the DAC.
+
+    Sim mode to see data on stdout.  Default is a short waveform, low gain.
+    % rasta_mcp4822 --sim
+    gainA=   204
+    gainB=   204
+    Npoints= 10
+    Ncycles= 10
+    Nframes= 1
+    Anorm       = 0.0000
+    Bnorm       = 0.0000
+    deltaB_norm = 0.2000
+	j    i Mark  Anorm    Bnorm   Adac  Bdac
+	1    0  11   0.0000   0.0000  2048  2048
+	1    1  11   0.5878   0.0000  2167  2048
+    ...
+
+    Be careful:
+	Running at high frequency could shake apart the spider on the exciters.
+	Fast < 3 Hz should be OK.  Start with small amplitude.
+
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000
+	Fa = 2.90 Hz  ChA output frequency.
+	ChA is the fast sine wave, ChB is the slow ramp.
+
+    Connect exciters, remove shunt.
+    Run exciter experiments.
+
+----------------------------------------------------------------------------
+## Maximum Power for Exciters
+----------------------------------------------------------------------------
+
+    Exciter X:  BDNC  BGC-D40-22-4-002, 4 ohm, rated 5 W continuous.
+    Exciter Y:  PUI Audio ASX04008-R,   8 ohm, rated 3 W
+
+    We are driving essentially at DC, thus use peak current.
+
+Power in a resistive load R:
+    P = I^2 * R
+
+    I = sqrt( P / R )	current for that power
+
+	Note the square of current has a big effect on power.
+
+Max current:  R= 4 ohm
+    Imax = sqrt( (5 W) / (4 ohm) )  = 1.12 A
+    Imax = sqrt( (3 W) / (4 ohm) )  = 0.87 A
+    Imax = sqrt( (2 W) / (4 ohm) )  = 0.71 A
+
+Max current:  R= 8 ohm
+    Imax = sqrt( (3 W) / (8 ohm) )  = 0.61 A
+    Imax = sqrt( (2 W) / (8 ohm) )  = 0.50 A
+
+    Note the HP6236B Power Supply current is limited to 0.5 A.
+
+    Normal exciter operation, and thus its rating, is for music where
+    the voice coil is moving and thus gets some air exchange for cooling.
+    Operating the voice coil at DC, there would be virtually no movement
+    and thus worst case heat dissipation.  Probably need to derate power
+    for continuous DC operation.
+
+    For comparison, a 5 W power resistor at 3 W gets fairly warm.
+
+----------------------------------------------------------------------------
+## libcamera commands
+----------------------------------------------------------------------------
+    Some initial exploration.  Not sure this is helpful.
+
+    % libcamera-still -o ferrule.jpg
+	A bit dark, not enough light.
+
+    % ssh rpiTouch.local  libcamera-still -o - > ferr.jpg
+	No preview window is shown (no DISPLAY?).
+	But stderr does show 141 lines of preview status.
+	Added more ambient light.
+
+    % ssh rpiTouch.local  libcamera-still -o -  --immediate > /dev/null
+
+    % DISPLAY=:0.0 libcamera-still -o ferrule.jpg  -t 0  --keypress
+
+    % DISPLAY=:0.0 libcamera-still -o xy%d.jpg  -t 0  --keypress
+	Capture successive file names with %d.  [File naming not used.]
+
+    % DISPLAY=:0.0 libcamera-still -t 0
+
+Direct control of settings.
+
+    % DISPLAY=:0.0 libcamera-still --shutter=64000  --gain=40  -t 1  -v 2
+
+    % DISPLAY=:0.0 libcamera-still --gain=40  -t 0
+
+----------------------------------------------------------------------------
+## Initial Run  2023-08-01
+----------------------------------------------------------------------------
+
+Default Setup and configuration as above.
+Capture actual step-by-step operations and results here.
+
+First run:
+    This system was initially run on 2023-07-03, capturing images using
+    raspistill on rpiTouch running Buster.  There seemed to be problems
+    capturing long exposures, so I decided to upgrade to using libcamera
+    on Bullseye.  Unfortunately it took two weeks to get the touch display
+    problems worked out.
+
+Configure Spi1 for rasta_mcp4822:
+
+    % rgpio fsel --mode=Alt4  16 17 18 19 20 21
+
+    % exciter/src/rasta_mcp4822.init
+    + rgpio uspi -1 --SpiEnable_1=1
+    + rgpio uspi -1 --Speed_12=3999 --EnableSerial_1=1 --ShiftLength_6=19
+    + rgpio uspi -1 --OutMsbFirst_1=1 --ChipSelects_3=0
+    Spi1:
+       1.AuxEn    = 0x00000002
+       1.Cntl0    = 0xf9f00853
+       1.Cntl1    = 0x00000000
+       1.Stat     = 0x00000280
+       1.Peek     = 0x00000000
+       1.SpiEnable_1    = 1
+       1.SpiIrq_1       = 0
+     Cntl0
+       1.Speed_12       = 3999
+       1.ChipSelects_3  = 0
+       1.PostInMode_1   = 0
+       1.VariableCs_1   = 0
+       1.VariableWidth_1= 0
+       1.DoutHoldTime_2 = 0
+       1.EnableSerial_1 = 1
+       1.InRising_1     = 0
+       1.ClearFifos_1   = 0
+       1.OutRising_1    = 0
+       1.InvertClk_1    = 0
+       1.OutMsbFirst_1  = 1
+       1.ShiftLength_6  = 19
+     Cntl1
+       1.CsHighTime_3   = 0
+       1.TxEmptyIrq_1   = 0
+       1.DoneIrq_1      = 0
+       1.InMsbFirst_1   = 0
+       1.KeepInput_1    = 0
+     Status
+       1.TxLevel_3      = 0
+       1.RxLevel_3      = 0
+       1.TxFull_1       = 0
+       1.TxEmpty_1      = 1
+       1.RxFull_1       = 0
+       1.RxEmpty_1      = 1
+       1.Busy_1         = 0
+       1.BitCount_6     = 0
+
+Power up HP power supply for Dual Dac and Fluxgate current buffer.
+    Verify Vout = +-9 Vdc
+
+Current buffer inputs disconnected.
+
+Verify rasta_mcp4822 with oscilloscope:
+
+    Exciters disconnected.
+    Current buffers - output shunt to disable.
+
+    Oscilloscope to observe:
+	Ch1 - Vob   DAC output to X current buffer input.  (slow scan)
+	Ch2 - Voa   DAC output to Y current buffer input.  (fast scan)
+	Ch3 - trigger on Amark, Bmark, or LEDgate.
+
+    Default is short waveform, low gain.
+    % rasta_mcp4822 --sim
+    gainA=   204
+    gainB=   204
+    Npoints= 10
+    Ncycles= 10
+    Nframes= 1
+    Anorm       = 0.0000
+    Bnorm       = 0.0000
+    deltaB_norm = 0.2000
+	j    i Mark  Anorm    Bnorm   Adac  Bdac
+	1    0  11   0.0000   0.0000  2048  2048
+	1    1  11   0.5878   0.0000  2167  2048
+    ...
+
+    % rasta_mcp4822 --help
+	Raster Scan MCP4822 dual DAC on Spi1
+    usage:  rasta_mcp4822 [options]
+      raster config:
+	--npoints=N         N sample points in a cycle (bidirectional line)
+	--nlines=N          N bidirectional lines (cycles) in a frame
+	--nframes=N         N frames to issue, default 1
+	--gainA=N           gain (N/2048) of full scale
+	--gainB=N           gain (N/2048) of full scale
+      at end of data:
+	--nrz               no return to zero at end of data
+	--shutdown          apply shutdown, send ExData=0 if needed
+      options:
+	--warm=N            warmup count, default 5000000
+	--sim               simulated voltages on stdout
+	--waveA             show sine wave table
+	--help              show this usage
+	-v, --verbose       verbose output
+      (options with GNU= only)
+
+
+    Add sample points in a cycle to lower frequency.  (measured)
+    % rasta_mcp4822 --gainA=1000 --gainB=1000 --npoints=100
+	Fa = 29.07 Hz
+
+    % rasta_mcp4822 --gainA=1000 --gainB=1000 --npoints=1000
+	Fa = 2.90 Hz
+
+	Scope shows:
+	    Ch1 Vob - stair step triangle wave, one cycle, start at 0.0 V
+	    (midpoint), ramp down to -0.5 V, ramp up to +0.5 V in 1.72 s,
+	    ramp down to 0 V.
+	    Stair step changes at peaks of Voa (Ch2).
+	    Ramp rise time is 1.72 s measured on Bmark.
+
+	    Ch2 Voa - 10 cycles of sine wave, starting at 0 V and going
+	    negative first.
+	    Sine wave half cycle is 172 ms, measured on Amark.
+
+	    Ch3 Bmark - digital, normally high 3.3 V, drops to 0 V when
+	    Vob begins rising, and returns high when Vob begins falling.
+
+	    Ch3 Amark - digital, normally high 3.3 V, drops to 0 V when
+	    Voa begins rising, and returns high when Voa begins falling.
+
+	This is working exactly as I envisioned it!
+
+	The sync marks are low when the analog signal is rising.  This works
+	out well to enable the LED only during the full-range ramp rise.
+	This would then capture 10 Y scan lines (5 in each direction) during
+	the 10 stair steps of X ramp rising (Vob).
+
+	Note:  Only Amark and Bmark have extShift data, the
+	LEDgate is always zero.
+
+Be careful:
+    Running at high frequency could shake apart the spider on the exciters.
+
+    Fast < 3 Hz should be OK.
+    Start with small amplitude.
+
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000
+    gainA=   200
+    gainB=   200
+    Npoints= 1000
+    Ncycles= 10
+    Nframes= 1
+    Anorm       = 0.0000
+    Bnorm       = 0.0000
+    deltaB_norm = 0.2000
+    Zero output
+
+LED light:
+    Power up.  Connect GND and input to Dual DAC Bmark.
+    LED is normally OFF, is ON during Bmark low (Vob rising).
+
+Current Buffer instrument - Power LED seems flaky, tends to blink out
+    for no reason.
+
+Camera on rpiTouch:
+
+    % DISPLAY=:0.0 libcamera-still -t 0
+	Preview mode, no timeout.
+
+	Adjust micrometer for smallest spot when fiber ferrule is stationary.
+
+Both current buffers enabled on exciters.
+
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000
+	See spot dance in a rectangle.
+
+	Shunt (disable) one of the current buffers, and see straight line
+	movement.
+	Horizontal (Vob) stair step seems quite jerky, with possible overshoot.
+
+	Connect LED gate input to Dual DAC Bmark.
+	See spot move in a single sweep across frame.
+
+    DISPLAY=:0.0 libcamera-still -k -t 0  --shutter=1000000  --gain=40
+
+    DISPLAY=:0.0 libcamera-still -k -t 0 -v  --shutter=5000000  --gain=10 \
+	-o foo1.jpg
+
+----------------------------------------
+2023-08-02  Exploring long exposure.
+
+    LED sw6  1.25 mA
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000
+
+    % DISPLAY=:0.0 libcamera-still -k -t 0  --shutter=5000000  --gain=1 \
+	-o scan2.jpg
+	Image quite saturated.
+
+    LED sw4  5 mA
+    % DISPLAY=:0.0 libcamera-still -k -t 0  --shutter=5000000  --gain=1 \
+	-o scan3.jpg
+	Image better, but still saturated.
+
+    LED sw2  20 mA
+    % DISPLAY=:0.0 libcamera-still -k -t 0  --shutter=5000000  --gain=1 \
+	-o scan4_led2.jpg
+
+Above images by:
+	Run libcamera-still, wait for one preview display.  Then <enter> and
+	launch rasta_mcp4822, wait for capture message, then <x><enter> to
+	exit.
+
+	Image scan4_led2.jpg seems brighter, as if two traces.
+
+    Seems libcamera-still is very much like raspistill, and very hard to
+    know when shutter is open.
+
+    See scan4_led2.err:  Seems like it switches between sensor modes
+    for preview and capture.  One cycle is:
+
+    [0:36:10.136145480] [1838]  INFO Camera camera.cpp:1033 \
+	configuring streams: \
+	(0) 4056x3040-YUV420 \
+	(1) 4056x3040-SBGGR12_CSI2P
+    [0:36:10.141088633] [1839]  INFO RPI vc4.cpp:565 Sensor: \
+	/base/soc/i2c0mux/i2c@1/imx477@1a \
+	- Selected sensor format: 4056x3040-SBGGR12_1X12 \
+	- Selected unicam format: 4056x3040-pBCC
+    Still capture image received
+    [0:36:17.087564698] [1838]  INFO Camera camera.cpp:1033 \
+	configuring streams: (0) 2028x1520-YUV420
+    [0:36:17.089130730] [1839]  INFO RPI vc4.cpp:565 Sensor: \
+	/base/soc/i2c0mux/i2c@1/imx477@1a \
+	- Selected sensor format: 2028x1520-SBGGR12_1X12 \
+	- Selected unicam format: 2028x1520-pBCC
+
+	Time stamps show total time of each cycle is about 7 seconds.
+	Shutter time is 5 seconds.
+
+Try nopreview.
+
+    % DISPLAY=:0.0 libcamera-still -k -t 0 --nopreview  --shutter=5000000 \
+	--gain=1  -o scan5_led2.jpg
+
+	Similar result, about 7 seconds per cycle.  Still fiddles camera modes
+	but simply does not display the preview.  Ugh!
+
+Try --mode=3
+
+    % DISPLAY=:0.0 libcamera-still -k -t 0 --mode=3  --shutter=5000000 \
+	--gain=1  -o scan6_led2.jpg
+    ERROR: *** Invalid mode ***
+
+Try --rawfull=1
+
+    % DISPLAY=:0.0 libcamera-still -k -t 0 --rawfull=1  --shutter=5000000 \
+	--gain=1  -o scan6_led2.jpg
+
+	Same diddling.
+
+    % export DISPLAY=:0.0
+
+Try single shot capture.
+
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 -o bb.jpg
+
+	The verbose message has a place when shutter may be open.
+
+    After:
+	[2:16:27.708975643] [2172]  INFO RPI vc4.cpp:565 Sensor: \
+		/base/soc/i2c0mux/i2c@1/imx477@1a \
+		- Selected sensor format: 4056x3040-SBGGR12_1X12 \
+		- Selected unicam format: 4056x3040-pBCC
+
+    Then this indicates shutter is closed:
+	Still capture image received
+
+	Note preview window does NOT show the actual acquired image.
+	This worked the best.
+
+    LED sw1  10+ mA
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 -o bb2.jpg
+
+    The camera is very good at suppressing the dark level.
+    It is very sensitive to even the lowest LED current.
+
+Try low gain:
+
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=0.1 -o bb3.jpg
+
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=0.01 -o bb4.jpg
+
+    % libcamera-still -v 2 --rawfull=1 --shutter=5000000 --gain=0.001 \
+	-o bb5.jpg 2> bb5.err
+
+	Note AnalogueGain range: [1.000000 .. 22.260870]
+	Gains < 1.0  don't do anything.
+
+Try full long exposure recommendation:
+
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 --awbgains 1,1 \
+	--immediate  -o bb6.jpg
+
+	The --immediate jumps immediately to the full sensor resolution.
+	No preview resolution configured.
+	Much faster!
+
+    % libcamera-still -v 2 --rawfull=1 --shutter=5000000 --gain=1 \
+	--awbgains 1,1 --immediate  -o bb7.jpg
+
+    % vi bb7.err
+    	Capture verbose output.
+
+    Now --verbose=2 does not have the 100 lines of preview frames.  It also
+    shows "Camera started!" when shutter is open, and "Camera stopped!" when
+    closed.
+
+    Note:  On LED switches, I was confused and trying to lower current, but
+    got the switch numbers backward and increased current instead (2023-08-04).
+
+----------------------------------------
+2023-08-03  Useful Images.
+
+Try low LED current:
+
+    LED sw4  5 mA
+    % DISPLAY=:0.0 libcamera-still -t 0
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000
+	Verify scan in preview window.
+
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc1.jpg
+
+    LED sw8  0.31 mA
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc2_sw8.jpg
+	This image is definitely not saturated.
+
+    LED sw6  1.25 mA
+    % libcamera-still --rawfull=1 --shutter=5000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc2_sw6.jpg
+
+Try more scan lines:
+
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000  --nlines=20
+
+    % libcamera-still --rawfull=1 --shutter=9000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc3_x20.jpg
+
+    % rasta_mcp4822 --gainA=200 --gainB=200 --npoints=1000  --nlines=40
+
+    % libcamera-still --rawfull=1 --shutter=20000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc3_x40.jpg
+
+Try higher exciter current:
+
+    % rasta_mcp4822 --gainA=200 --gainB=400 --npoints=1000  --nlines=40
+
+    % libcamera-still --rawfull=1 --shutter=20000000 --gain=1 --awbgains=1,1 \
+	--immediate  -o cc4_x40.jpg
+
+Summary:
+--------
+
+    Very low LED current is sufficient for slow scan.
+
+    Normal camera preview is good for focus and to see scan pattern.
+
+	% DISPLAY=:0.0 libcamera-still -t 0
+
+    Recommended long exposure works well.  Wait for
+    "INFO RPI .. Selected sensor format: 4056x3040 ..",
+    then launch rasta_mcp4822.
+
+	% libcamera-still --rawfull=1 --shutter=5000000 --gain=1 --awbgains=1,1 --immediate  -o XXX.jpg
+
+    Gains < 1.0  have no further effect.
+    The --immediate immediate skips the entire preview phase.
+    The --keypress mode does not really help.
+
+----------------------------------------------------------------------------
+## Analyze scan images
+----------------------------------------------------------------------------
+
+Find crop boundaries of scan pattern:
+
+    jpegtran
+	-crop WxH+X+Y
+
+    % display cc2_sw6.jpg &
+	Image Edit -> Draw
+
+    Hand pick center:	2125, 2111
+
+    Box enclosing image:  (hand pick)
+	UpperRight:	1900, 2079
+	LowerLeft:	2321, 1943
+	delta		 421,  136
+	mean		2110, 2011
+
+	X:  1800 .. 2450   dx= 650
+	y:  1800 .. 2200   dy= 400
+
+    % jpegtran -grayscale  cc2_sw6.jpg  > cc2_sw6.gray.jpg
+
+    % djpeg cc2_sw6.gray.jpg | pgm_stats
+    Ncol   = 4056
+    Nrow   = 3040
+    Npix   = 12330240
+    MaxVal = 255
+    Max    = 210
+    Min    = 0
+    Sum    = 2267967
+    Mean   = 0.183935
+    SD     = 4.15856
+    CGxy   = 2123, 2009
+
+	This CGxy is very close to the hand picked center.
+	CG is valid since pattern is symmetric.
+	Max pixel is 210, not saturated.
+
+    % djpeg cc2_sw6.gray.jpg | pgm_box
+    Ncol   = 4056
+    Nrow   = 3040
+    Npix   = 12330240
+    MaxVal = 255
+    Max    = 210
+    Min    = 0
+    Mean   = 0.183935
+    SD     = 4.15856
+    CGxy   = 2123, 2009
+      Bounding Box Y:
+    YmaxMean = 61
+    YminMean = 0
+    YhalfMax = 30
+    Ytop     = 1949
+    Ybot     = 2072
+    Yfwhm    = 123
+      Bounding Box X:
+    XmaxMean = 118
+    XminMean = 0
+    XhalfMax = 59
+    Xleft    = 1936
+    Xright   = 2312
+    Xfwhm    = 376
+
+	This bounding box is based on FWHM intensity.  Gives a good bounding
+	of FWHM pixels.  Add margin, and it could be good for cropping.
+
+Choose crop:
+    CGxy   = 2123, 2009
+
+    % jpegtran -grayscale  -crop 1024x512+1600+1750  cc2_sw6.jpg \
+	> cc2_sw6.grop.jpg
+
+    % display cc2_sw6.grop.jpg &
+
+	We see quite a bit of ringing on the X-axis stair step scan.
+
+Examine a swatch of pixels:
+
+    % djpeg cc2_sw6.grop.jpg | pgm_swatch --geo=30x156+400+200 | less
+
+	View 3rd vertical trace from the left.
+
+Extract one row across the vertical scan lines:
+
+    % djpeg cc2_sw6.grop.jpg | pgmslice -row 260 | less
+
+Similarly process cc4_x40.jpg into cc4_x40.grop.jpg
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+want LED ON override.
+
+Try very low LED current.
+
+LED illuminate only uni-directional scan in Y axis.
+
+Stair step oscillation.
+
+Identify exciter directions.  +X with +Vob ?
+
+Verify microscope magnification and pixel pitch.  Is it really 1x?
+
