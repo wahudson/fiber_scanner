@@ -1,0 +1,96 @@
+2022-11-18  William A. Hudson
+
+	Optical System Overview - Fiber Scanner
+	---------------------------------------
+
+Optical subsystems:
+    Laser
+    Fiber Splitter
+    Fiber cantilever - emitter to free space
+    Lens path to sample
+    Lens path to PSD
+
+Try to capture general overview thoughts here, and develop more details
+in other files.
+
+----------------------------------------------------------------------------
+## PSD Optical Path (Position Sensitive Detector)
+----------------------------------------------------------------------------
+
+The purpose of the PSD is to measure the actual fiber optic tip position.
+The fiber tip moves in two ways:  by bending fiber, or by lateral displacement.
+
+    The fiber core diameter is 5 um.
+    The PSD works best with a spot size > 200 um.
+    Fiber tip displacement is +-1 mm.
+    Fiber NA is 0.13, i.e. beam radius expands by 1.3 mm in 10 mm.
+
+    Fiber bending points the emitted light beam away from the axis by
+    more than the ratio h/L, where h= tip displacement, L= length of fiber
+    cantilever.  For a 10 mm fiber cantilever, a 1 mm displacement adds
+    more than 0.1 effective NA.
+
+    If we simply focus an image of the fiber tip on the PSD, it will produce
+    a 5 um spot size at 1x magnification, which is too small.
+
+    To reach a 200 um spot size, it would take 40x magnification, which is
+    impractical.  It would also magnify the displacement by 40x, giving
+    a 40 mm image displacement, way too large to fit on PSD.
+
+    We want to magnify the fiber core by 40x, but magnify displacement of
+    the tip by only 2x.
+
+    Ways to create an effectively larger spot size:
+    A) Use an out-of-focus spot.
+	Focus the spot with a typical lens for say 1x magnification.
+	Place the PSD before or after the focused spot.
+	After the spot gives a bit more spot displacement, which may better
+	fill the PSD range of displacement.
+
+    B) Collimate the beam at a small diameter, say 2 mm.
+	Essentially place the fiber tip at the focus of a short focal length
+	lens.  The NA then gives the beam radius at that focal length.
+	e.g. a 10 mm focal length with 0.13 NA gives a 1.3 mm radius beam.
+
+Aperture Stop - Clipping of the beam on the PSD
+    Thinking about clipping on one side of the beam, as when the fiber tip
+    is at maximum displacement.
+
+    If the spot is an image of the fiber tip, then clipping changes the
+    overall intensity of the image, but not the intensity distribution.
+
+    If the spot is out-of-focus, then clipping will change the intensity
+    distribution, and thus the PSD position output.
+
+    #!! [Hmmm... not sure about this.]
+
+PSD Spot Intensity:
+
+    The PSD saturates when Vsum > 4.0 V.
+
+    In the system so for (2022-11-18), the PSD is saturated.
+
+PSD Position Errors:
+
+    What are the consequences?
+    A systematic position error is essentially distortion in the rendered
+    image.  Distortion is generally undesirable, especially from an
+    analytic view.  From a qualitative view, i.e. to the human eye, it
+    probably does not hurt too much.  We live with what we get, then try
+    to make it better.
+
+    Systematic error could be calibrated out.
+
+Lens Principal Points and Principal Planes
+    https://www.rp-photonics.com/principal_points_and_principal_planes.html
+
+    ThorLabs
+	Parallel light on curved surface.
+	Focal length is distance from the principal plane within the lens,
+	    to either focal point.
+	Font focal length is distance from spherical surface.
+	Back focal length is distance from flat surface.
+
+	Plano-convex lenses give Focal length to principal plane, Back focal
+	length, and Center Thickness (on the axis).
+

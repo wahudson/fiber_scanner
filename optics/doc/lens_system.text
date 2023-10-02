@@ -1,0 +1,213 @@
+2023-09-26  William A. Hudson
+
+		Microscope Objective Lens
+		-------------------------
+
+Thinking about applying a common microscope objective lens.
+Initial investigation to improve existing lens system.
+
+----------------------------------------------------------------------------
+## Initial Ideas
+----------------------------------------------------------------------------
+
+Aberrations include:
+    Spherical aberration
+    Chromatic aberration
+    Coma
+    Reflections, AR coating
+
+Measuring Lens focus quality methods include:
+
+    Rayleigh Range and beam waist diameter.
+    Point spread function
+    Knife edge method
+    Scan spot across a slot
+    Resolution target
+    Airy disk
+    Camera imaging
+    Scanner imaging
+
+Sensor methods at the sample focus:
+
+    A) Knife edge with a wide area photosensor behind.
+
+ >  B) Fiber scanning across a 100 um slit.
+	Large area photodetector behind the slit.
+	Use the linear part of fiber scan, assume constant velocity.
+	Measure actual average velocity as it crosses the slit edge-to-edge.
+	Essentially a double knife edge method.
+	This could give sub-micron resolution.
+
+ >  C) Digital camera sensor.
+	Camera sensor pixel size is ~1.55 um RPi HQ camera.
+	Not small enough to characterize a small beam waist, but maybe
+	good enough to confirm a 2 um spot size.
+
+ x  D) Beam profile instrument.
+	ThorLabs BC207VIS $4950 CMOS Camera Beam Profiler, 350 - 1100 nm.
+	Typ 3.45 um pixel size.
+	Suited for beam diameters 20 um to 7.0 mm
+	Not really usable for profiling a beam waist (focus).
+
+ >  E) Large area photodetector behind a test pattern illuminated by the
+	fiber and laser.
+	The fiber spot scans over the test pattern and the photodetector
+	measures the masked light intensity as a function of spot position.
+	Is a way to form an image using the fiber only as a light source.
+	Test pattern resolution would indicate the lens/focus resolution.
+
+Sensor methods at the fiber tip:
+
+ >  A) Digital camera sensor placed at position of fiber tip.
+	Measures just the lens system.
+	Camera sensor pixel size is ~1.55 um RPi HQ camera.
+	Form image of Test Pattern or Airy Disc.
+
+ >  B) Use fiber scanner as a photodetector only, no laser splitter.
+	The fiber acts as a one-pixel sensor that is scanned.
+	The fiber tip is essentially the sensor size, ~5 um MFD.
+	Form image of Test Pattern or Airy Disc.
+	Need bright illumination to get enough light into the fiber.
+
+    C) Use photosensor and fiber splitter of the fiber scanning RCM
+	Measures the whole RCM system.
+	The fiber tip is essentially the sensor size, ~5 um MFD.
+	Form image of Test Pattern.
+	Imaging the Airy Disc might not be possible, since the fiber
+	spot is the light source and it would illuminate the micro-sphere
+	in only one position as it scans.
+
+Sub-micron aperture:
+
+    For use as a point source for Airy Disc resolution measurement.
+
+    Idea is to use a single aperture hole in a mounted frame.  Should be much
+    more convenient to handle than micro-spheres.
+    Illuminate the back side of aperture with most any light source should
+    produce widely spreading point source light.  The aperture stop blocks
+    the surrounding light, so you don't have to apply Dark Field microscopy
+    techniques.
+
+    Typical apertures are >= 1 um.
+
+	ThorLabs P1K Mounted pinhole 1 um +0.25/-0.10 um, 1 inch dia, $142,
+	Stainless Steel.  Larger diameters, e.g. 20 um are $77.
+
+    A 1 um aperture is not a point source for 780 nm light, and could not
+    produce an Airy disc smaller than that.
+    However it would produce a larger Airy disc when the lens system resolution
+    is larger.  It may be good enough for our purposes, i.e. if the Airy disc
+    is 1 um, then we know the resolution is better than that.
+
+    Sub-micron Aperture (SMA) Fiber:
+    "The SMA fiber taper surface is coated with Cr film and the exit aperture
+    is formed from the polished tip, with the aperture size about 0.5 um."
+    Essentially the fiber tip is drawn into a cone.
+
+	https://doi.org/10.1364/OE.24.007079
+	High-precision method for submicron-aperture fiber point-diffraction
+	wavefront measurement 
+
+    We want it as small as possible.
+    Probably do not care about accuracy or symmetry.
+
+    I think of silicon fabrication, where features are easily smaller than
+    100 nm.
+
+    Perhaps etch a set of 0.5 um holes in a chromium film on glass substrate?
+    Maybe somebody has done this?
+
+Cameron's Piezo Fiber Scanner:  (2023-10-01)
+
+    Reference paper:
+	"Fast Iterative Fourier Filtering Reconstruction and Optimizing a
+	    Lissajous-scanning Reflectance Confocal Microscope"
+
+    Objective:  F= 15 mm, dia= 12.5 mm  (SM05 lens tube)
+    Tube Lens:  F= 30 mm, dia= 24.5 mm  (SM1 lens tube)
+    Lenses in a 4F configuration, magnification = 2x.
+
+    Knife edge measurements:
+	W0   = 1.92 um  beam waist radius
+	MFD  = 3.84 um  Mode Field diameter, beam waist diameter
+	FWHM = 2.59 um  lateral resolution
+
+	Zr = 80.61 um  Rayleigh range
+	161.2 um  axial resolution (i.e. 2*Zr)
+
+	We see spherical aberration in the axial point spread function (PSF) as
+	multiple peaks.  (Figure 6)
+
+    The expected MFD is the lens de-magnification (2x) of the fiber MFD
+    (fiber is 5 um).  Thus expected 2.5 um for MFD, which is smaller than the
+    measured 3.8 um.
+
+    Thus it seems a better lens system could provide improved spot resolution
+    and less spherical aberration.
+
+    If objective aperture is filled, then NA is:
+	Theta = arctan( (12.5 mm / 2) / 15 mm ) = 22.6 degrees
+	NA = sin( Theta ) = 0.38
+
+	Resolution = 0.5 * Lambda / NA  = 0.5 * 780 nm / 0.38  = 1.03 um
+	(theoretical best optical resolution)
+	Much better than what we measure.
+	It is likely the objective aperture is NOT filled.
+
+Practical experiments might include:
+
+    A) Digital camera sensor on Lens System in place of fiber tip.
+	Now it is a simple digital camera microscope.
+	Image Test Pattern illuminated from behind by wide area light source.
+	Image Airy disc from a micro-sphere or a 1 um aperture.
+
+	Reduce NA of objective by stopping down the parallel light between
+	lenses.  Possibly at the Fourier Plane in 4F lens system.
+	Compare change of resolution with change in NA.
+
+	This seems like an easy way to verify just the lens system, independent
+	of any fiber issues.
+
+    B) Use fiber scanner as a photodetector only, no laser splitter.
+	Repeat images of the camera in (A).
+	Is the fiber acting as a photodetector sensitive enough?
+
+    C) Use full fiber scanning RCM.
+	Image the Test Target to see minimum resolution.
+	Move Z position to see depth of focus.
+	Tests the entire system.
+	Not so good to see just the quality of the lens system.
+
+    D) Digital camera sensor placed at sample focal plane.
+	The fiber is only used as a light source, lens produces focused spot.
+	Reduce laser light intensity to not saturate the sensitive camera.
+	Or substitute an LED light source.
+	Image the fiber spot at various places in the field-of-view.
+	Get direct observation of spot characteristics, but at low resolution.
+	Move Z position to see axial Rayleigh range.
+
+	Possibly reverse the lens assembly so sample spot is made larger, not
+	smaller.  This may be useful to see spot distortions.
+	i.e. light path reversed?  Kind of?
+	This could be the same as (A) used to image the fiber tip.
+
+    E) Fiber scanning across a 100 um slit.
+	Large area photodetector behind the slit.
+	Use the linear part of fiber scan, assume constant velocity.
+	Measure actual average velocity as it crosses the slit edge-to-edge.
+	This could give sub-micron resolution.
+	Essentially measure the point spread function.
+	Check for lens aberrations with slit off-axis and on-axis.
+	Move Z position to see axial point spread function.
+
+----------------------------------------------------------------------------
+## Choosing an Objective Lens:
+----------------------------------------------------------------------------
+
+Microscope principles.
+Infinite Conjugate
+Objective corrections.
+We want all corrections in objective.
+Tube Lens
+    Long focal length, less aberration.
+

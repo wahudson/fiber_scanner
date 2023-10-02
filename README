@@ -18,6 +18,7 @@ Files:
     led_light/	LED fiber light source
     lissajous/	Lissajous pattern, ellipse, and lockin theory
     niDAQ/	Matlab language and NI DAQ use
+    optics/	optical system, lenses, fiber
     photo/	photographs
     piezo/	piezo tube scanner design
 	notes.text	main notes
