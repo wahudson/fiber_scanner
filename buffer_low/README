@@ -1,0 +1,28 @@
+2023-10-05  William A. Hudson
+
+		Low-Current Buffer Design - Fiber Scanner
+		-----------------------------------------
+
+Current buffer for driving exciters at ~100 mA.
+Schematics, design, and construction of a Current Source (transconductance
+amplifier).
+
+See also:  cbuffer/
+
+Files:  (2023-11-11)
+------
+README		this file
+
+doc/		Documentation
+    architecture.text       Overall design
+    bom_parts.text          #!! Bill of Material
+    plan.text               planning outline
+
+kicad/		Schematic design
+    README
+    buffer_low_v1/	Current Buffer circuit
+    lib/		local library
+
+exp/		Experiments and Results
+    README
+

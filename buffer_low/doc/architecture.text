@@ -1,0 +1,106 @@
+2023-10-05  William A. Hudson
+
+		Low-Current Buffer
+		------------------
+
+See also:
+    cbuffer/
+
+----------------------------------------------------------------------------
+## Discussion
+----------------------------------------------------------------------------
+
+Goal:
+    Want a low current buffer, on order of 100 mA to 200 mA for driving a
+    small exciter used to resonate a fiber optic cantilever.
+    The 1.0 A cbuffer/ design is a bit of over-kill for this.
+
+    Keep it simple to make something fairly quick.  We have a uni-axial
+    fiber exciter from the fall 2021 BME senior design team, and we need
+    a driver for it.
+
+    Battery powered to simplify power supply.
+
+    Rail-to-rail op-amp needs very little power supply headroom.
+    The TLV4110 can drive 300 mA in an 8-PDIP package.
+
+    The exciter need only drive resonance of the fiber optic cantilever, and
+    thus requires very little displacement.  Driving a typical exciter at
+    20 mA to 40 mA is probably sufficient.
+
+----------------------------------------------------------------------------
+## Overview Initial Design - v1
+----------------------------------------------------------------------------
+
+Attributes:  (basic capabilities/constraints)
+
+    1 channel, for a single exciter.
+
+    200 mA max current
+    2 V compliance
+	i.e. able to drive an 8 ohm exciter at 200 mA (1.6 V).
+
+    0.1 mA/mV  transconductance  (seems good)
+
+    Load must be isolated, e.g. an exciter.
+    Input is 2 Vpp max.
+
+    Battery powered:  2x or 4x AA cells.
+    Power switch for convenience.
+    No power-ON indicator (save battery power).
+
+    BNC input connector.
+    Header pins output connector.
+
+    Maybe open frame enclosure, suitable to sit on metal optical bench.
+
+    This is a guide about what we want, NOT rigid requirements.
+
+Battery Power:
+    AA battery cell seems about right.
+
+    Duracell Coppertop AA - MN1500
+    https://www.duracell.com/wp-content/uploads/2016/03/MN15USCT0122-A.pdf
+    Alkaline-Manganese Dioxide Battery
+
+    Nominal voltage:  1.5 V
+    New, at no load:  1.56 V to 1.58 V
+    A reasonable end point voltage is knee at 1.2 V, but could go to 1.1 V.
+
+    Discharge at constant current to 1.2 V:  (around 60% discharged)
+	I (mA) T (hr)  E (mA*Hr)
+	   5   430     2150
+	 100    15.8   1580
+	 200     5.5   1100
+	 500     1.2    600
+	1000     0.4    400
+
+    A battery life of 5 to 16 hours seems acceptable.
+    Try it and see.
+
+Input provided by NiDAQ USB-6211:  (National Instruments)
+
+    NI USB-621x Specifications (Aug 2006) -- USB-6211.pdf
+
+    2 channels DAC, 16-bit resolution.
+    Sample rate 250 kSPS max per channel.
+    Output range:  +-10 V, DC coupled
+    Output impedance:  0.2 ohm
+    Output current drive:  +-2 mA max
+    Power-on state:  +-20 mV
+    Power-on glitch:  +-1 V for 200 ms
+
+    Thus resolution is:  0.3052 mV/step  ((20 V) / (2**16 steps))
+
+    If we made the current buffer 100 mA full scale at 1.0 V input,
+    i.e. 0.1 mA/mV, we would have a resolution of 0.03052 mA/step.
+    And 100 mA full scale would have 6554 steps of resolution.
+
+    This is plenty of resolution, no need to scale the current buffer
+    to 10 V full scale input.
+
+    The DAC output range is fixed at +-10 V, thus the circuit should
+    tolerate that even in power-OFF state.
+
+    The 2 mA DAC output is not enough to drive an exciter.
+

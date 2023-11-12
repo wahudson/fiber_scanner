@@ -1,0 +1,680 @@
+EESchema Schematic File Version 4
+LIBS:ki-cache
+EELAYER 26 0
+EELAYER END
+$Descr B 17000 11000
+encoding utf-8
+Sheet 1 1
+Title "Low-Current Buffer - buffer_low_v1/"
+Date "2023-11-11"
+Rev "v1.0.0"
+Comp "William A. Hudson"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Device:C_Small C11
+U 1 1 5EB4CA54
+P 12600 4800
+F 0 "C11" V 12600 4300 50  0000 C CNN
+F 1 "0.1uF" V 12600 4550 50  0000 C CNN
+F 2 "" H 12600 4800 50  0001 C CNN
+F 3 "~" H 12600 4800 50  0001 C CNN
+	1    12600 4800
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:C_Small C14
+U 1 1 5EB4CC2F
+P 12600 5900
+F 0 "C14" V 12600 5400 50  0000 C CNN
+F 1 "0.1uF" V 12600 5650 50  0000 C CNN
+F 2 "" H 12600 5900 50  0001 C CNN
+F 3 "~" H 12600 5900 50  0001 C CNN
+	1    12600 5900
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:CP1_Small C13
+U 1 1 5EB4CD7E
+P 12600 4400
+F 0 "C13" V 12600 3900 50  0000 C CNN
+F 1 "150uF" V 12600 4150 50  0000 C CNN
+F 2 "" H 12600 4400 50  0001 C CNN
+F 3 "~" H 12600 4400 50  0001 C CNN
+	1    12600 4400
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:CP1_Small C16
+U 1 1 5EB4CEE1
+P 12600 6300
+F 0 "C16" V 12600 6800 50  0000 C CNN
+F 1 "150uF" V 12600 6550 50  0000 C CNN
+F 2 "" H 12600 6300 50  0001 C CNN
+F 3 "~" H 12600 6300 50  0001 C CNN
+	1    12600 6300
+	0    -1   1    0   
+$EndComp
+$Comp
+L Device:C_Small C10
+U 1 1 5EB4D004
+P 12400 5150
+F 0 "C10" H 12150 5200 50  0000 L CNN
+F 1 "0.01uF" H 12050 5100 50  0000 L CNN
+F 2 "" H 12400 5150 50  0001 C CNN
+F 3 "~" H 12400 5150 50  0001 C CNN
+	1    12400 5150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US Rs
+U 1 1 5EB4E054
+P 13400 7150
+F 0 "Rs" H 13332 7104 50  0000 R CNN
+F 1 "2.0R  1/4 W, 5%" H 13332 7195 50  0000 R CNN
+F 2 "" V 13440 7140 50  0001 C CNN
+F 3 "~" H 13400 7150 50  0001 C CNN
+	1    13400 7150
+	-1   0    0    1   
+$EndComp
+$Comp
+L _Local:GND #PWR0101
+U 1 1 5EB4E65B
+P 12500 6400
+F 0 "#PWR0101" H 12500 6150 50  0001 C CNN
+F 1 "GND" H 12500 6227 50  0000 C CNN
+F 2 "" H 12400 6050 50  0001 C CNN
+F 3 "" H 12500 6150 50  0001 C CNN
+	1    12500 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:VNN #PWR0102
+U 1 1 5EB4E9E4
+P 12700 6400
+F 0 "#PWR0102" H 12700 6150 50  0001 C CNN
+F 1 "VNN" H 12717 6227 50  0000 C CNN
+F 2 "" H 12700 6400 50  0001 C CNN
+F 3 "" H 12700 6400 50  0001 C CNN
+	1    12700 6400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12500 5500 11900 5500
+Wire Wire Line
+	13200 5400 13800 5400
+Connection ~ 12700 5900
+Wire Wire Line
+	12700 5900 12700 6100
+Connection ~ 12700 6100
+Wire Wire Line
+	12500 6400 12500 6300
+Connection ~ 12500 6100
+Wire Wire Line
+	12500 6100 12500 5900
+Wire Wire Line
+	12400 5750 12700 5750
+Connection ~ 12700 5750
+Wire Wire Line
+	12700 5750 12700 5900
+Wire Wire Line
+	12400 5050 12700 5050
+Connection ~ 12700 5050
+$Comp
+L _Local:GND #PWR0104
+U 1 1 5EB51758
+P 12500 4900
+F 0 "#PWR0104" H 12500 4650 50  0001 C CNN
+F 1 "GND" H 12350 4850 50  0000 C CNN
+F 2 "" H 12400 4550 50  0001 C CNN
+F 3 "" H 12500 4650 50  0001 C CNN
+	1    12500 4900
+	1    0    0    -1  
+$EndComp
+Connection ~ 12700 4800
+Wire Wire Line
+	12700 4800 12700 5050
+Wire Wire Line
+	12500 4400 12500 4600
+Connection ~ 12500 4800
+Wire Wire Line
+	12500 4800 12500 4900
+$Comp
+L _Local:VPP #PWR0105
+U 1 1 5EB52F7C
+P 12700 4300
+F 0 "#PWR0105" H 12700 4550 50  0001 C CNN
+F 1 "VPP" H 12717 4473 50  0000 C CNN
+F 2 "" H 12700 4300 50  0001 C CNN
+F 3 "" H 12700 4300 50  0001 C CNN
+	1    12700 4300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12700 4300 12700 4400
+$Comp
+L _Local:GND #PWR0106
+U 1 1 5EB53793
+P 13400 7500
+F 0 "#PWR0106" H 13400 7250 50  0001 C CNN
+F 1 "GND" H 13400 7327 50  0000 C CNN
+F 2 "" H 13300 7150 50  0001 C CNN
+F 3 "" H 13400 7250 50  0001 C CNN
+	1    13400 7500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12400 5250 12400 5750
+Text Label 13350 5400 0    50   ~ 0
+Vo
+Text Label 13400 6900 0    50   ~ 0
+Vs
+Connection ~ 12700 4400
+Wire Wire Line
+	12700 4400 12700 4600
+$Comp
+L Device:C_Small C12
+U 1 1 5ED55534
+P 12600 4600
+F 0 "C12" V 12600 4100 50  0000 C CNN
+F 1 "1.0uF" V 12600 4350 50  0000 C CNN
+F 2 "" H 12600 4600 50  0001 C CNN
+F 3 "~" H 12600 4600 50  0001 C CNN
+	1    12600 4600
+	0    1    1    0   
+$EndComp
+Connection ~ 12700 4600
+Wire Wire Line
+	12700 4600 12700 4800
+Connection ~ 12500 4600
+Wire Wire Line
+	12500 4600 12500 4800
+Connection ~ 12500 6300
+Wire Wire Line
+	12500 6300 12500 6100
+$Comp
+L Device:C_Small C15
+U 1 1 5ED579CE
+P 12600 6100
+F 0 "C15" V 12600 5600 50  0000 C CNN
+F 1 "1.0uF" V 12600 5850 50  0000 C CNN
+F 2 "" H 12600 6100 50  0001 C CNN
+F 3 "~" H 12600 6100 50  0001 C CNN
+	1    12600 6100
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	12700 6400 12700 6300
+Connection ~ 12700 6300
+Wire Wire Line
+	13400 6900 13400 7000
+Text Notes 8450 6800 0    50   ~ 0
+Power:
+Text Notes 13950 5200 0    50   ~ 0
+Output:  Iout, Floating Load\n
+Text Notes 14450 5400 0    50   ~ 0
+Out
+Text Notes 14450 5500 0    50   ~ 0
+Low
+Text Notes 8450 7100 0    50   ~ 0
++V
+Text Notes 8450 7500 0    50   ~ 0
+-V
+Text Notes 8450 6900 0    50   ~ 0
+V = 1.5 V dc nom (3.0 V max)
+Wire Wire Line
+	13400 7300 13400 7500
+Wire Wire Line
+	12700 6100 12700 6300
+Text Notes 12850 5000 0    50   ~ 0
+Power op-amp 8-PDIP\n300 mA, 6 V supply
+Wire Wire Line
+	13400 6900 11900 6900
+Text Notes 13500 7450 0    50   ~ 0
+Current Sense\nResistor
+$Comp
+L Device:R_US R2
+U 1 1 63AAC02D
+P 10700 5550
+F 0 "R2" H 10632 5504 50  0000 R CNN
+F 1 "7.5k" H 10632 5595 50  0000 R CNN
+F 2 "" V 10740 5540 50  0001 C CNN
+F 3 "~" H 10700 5550 50  0001 C CNN
+	1    10700 5550
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R_US Rp1
+U 1 1 63AAC13C
+P 10350 5300
+F 0 "Rp1" V 10145 5300 50  0000 C CNN
+F 1 "30k" V 10236 5300 50  0000 C CNN
+F 2 "" V 10390 5290 50  0001 C CNN
+F 3 "~" H 10350 5300 50  0001 C CNN
+	1    10350 5300
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:C_Small Cp1
+U 1 1 63AAC386
+P 11200 5600
+F 0 "Cp1" H 11300 5650 50  0000 L CNN
+F 1 "1nF COG" H 11300 5550 50  0000 L CNN
+F 2 "" H 11200 5600 50  0001 C CNN
+F 3 "~" H 11200 5600 50  0001 C CNN
+	1    11200 5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:GND #PWR?
+U 1 1 63AAC48B
+P 10700 5800
+F 0 "#PWR?" H 10700 5550 50  0001 C CNN
+F 1 "GND" H 10700 5627 50  0000 C CNN
+F 2 "" H 10600 5450 50  0001 C CNN
+F 3 "" H 10700 5550 50  0001 C CNN
+	1    10700 5800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:GND #PWR?
+U 1 1 63AAC552
+P 11200 5900
+F 0 "#PWR?" H 11200 5650 50  0001 C CNN
+F 1 "GND" H 11200 5727 50  0000 C CNN
+F 2 "" H 11100 5550 50  0001 C CNN
+F 3 "" H 11200 5650 50  0001 C CNN
+	1    11200 5900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10700 5300 10700 5400
+Wire Wire Line
+	10500 5300 10700 5300
+Wire Wire Line
+	11200 5300 11200 5500
+Connection ~ 11200 5300
+$Comp
+L _Local:Socket1 J?
+U 1 1 63AC17B4
+P 11200 5750
+F 0 "J?" H 11258 5796 50  0001 L CNN
+F 1 "Socket1" H 11258 5705 50  0001 L CNN
+F 2 "" H 11200 5750 50  0001 C CNN
+F 3 "" H 11200 5750 50  0001 C CNN
+	1    11200 5750
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:Socket1 J?
+U 1 1 63AC77A2
+P 11200 5450
+F 0 "J?" H 11258 5496 50  0001 L CNN
+F 1 "Socket1" H 11258 5405 50  0001 L CNN
+F 2 "" H 11200 5450 50  0001 C CNN
+F 3 "" H 11200 5450 50  0001 C CNN
+	1    11200 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10700 5700 10700 5800
+Wire Wire Line
+	11200 5700 11200 5900
+$Comp
+L _Local:Screw_TermB_01x03 J2
+U 1 1 63C6313B
+P 8700 7100
+F 0 "J2" H 8650 6500 50  0000 L CNN
+F 1 "Screw_TermB_01x03" H 8779 6851 50  0001 L CNN
+F 2 "" H 8700 6900 50  0001 C CNN
+F 3 "" H 8700 6900 50  0001 C CNN
+	1    8700 7100
+	-1   0    0    -1  
+$EndComp
+Text Label 8900 7100 0    50   ~ 0
+VPP
+Text Label 8900 7500 0    50   ~ 0
+VNN
+Wire Wire Line
+	8900 7300 9300 7300
+Wire Wire Line
+	9300 7300 9300 7500
+Text Label 8900 7300 0    50   ~ 0
+GND
+$Comp
+L _Local:GND #PWR?
+U 1 1 63C6BF8A
+P 9300 7500
+F 0 "#PWR?" H 9300 7250 50  0001 C CNN
+F 1 "GND" H 9300 7327 50  0000 C CNN
+F 2 "" H 9200 7150 50  0001 C CNN
+F 3 "" H 9300 7250 50  0001 C CNN
+	1    9300 7500
+	1    0    0    -1  
+$EndComp
+Text Notes 8350 7300 0    50   ~ 0
+Comm
+Text Notes 9450 5150 0    50   ~ 0
+Input:
+Wire Wire Line
+	11200 5300 12500 5300
+$Comp
+L _Local:Header_M1x02 J1
+U 1 1 63CA61E0
+P 9600 5300
+F 0 "J1" H 9550 5100 50  0000 L CNN
+F 1 "Header_M1x02" H 9550 5000 50  0001 L CNN
+F 2 "" H 9600 5300 50  0001 C CNN
+F 3 "" H 9600 5300 50  0001 C CNN
+	1    9600 5300
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	9800 5400 9900 5400
+Wire Wire Line
+	9900 5400 9900 5800
+$Comp
+L _Local:GND #PWR?
+U 1 1 63CB24DC
+P 9900 5800
+F 0 "#PWR?" H 9900 5550 50  0001 C CNN
+F 1 "GND" H 9900 5627 50  0000 C CNN
+F 2 "" H 9800 5450 50  0001 C CNN
+F 3 "" H 9900 5550 50  0001 C CNN
+	1    9900 5800
+	1    0    0    -1  
+$EndComp
+Text Notes 10050 5000 0    50   ~ 0
+Input Attenuator\n   Gin = 0.2x
+Text Notes 11100 4950 0    50   ~ 0
+Lowpass Filter
+Text Notes 8400 9100 0    50   ~ 0
+Lowpass Filter:  
+Text Notes 8600 9200 0    50   ~ 0
+F0 = 1/(2*Pi * Rp1 * Cp1)
+Text Notes 11100 5050 0    50   ~ 0
+F0 = 5.3 kHz
+Text Notes 8400 8200 0    50   ~ 0
+Input:  Vin
+Text Notes 8600 8400 0    50   ~ 0
+Vi = 0 to +-1.0 V,  1 kHz max\nAbsolute max 10 V
+Text Notes 8400 8600 0    50   ~ 0
+Output:  Iout
+Text Notes 8600 8850 0    50   ~ 0
+Floating Load, 1.0 V compliance\nIout = Vin / (Rs * ((Rp1/R2) + 1) )\nIout = 0.1 mA/mV * Vin
+Text Label 9900 5300 0    50   ~ 0
+Vin
+Text Notes 12300 9100 0    70   ~ 0
+Current Buffer:  0.1 mA/mV, 100 mA Full Scale
+Text Notes 8400 10000 0    50   ~ 0
+Resistors:  1/4 W, 5% Carbon
+$Comp
+L Device:D_Schottky_Small_ALT D2
+U 1 1 64440762
+P 14800 4150
+F 0 "D2" V 14754 4218 50  0000 L CNN
+F 1 "SB240" V 14845 4218 50  0000 L CNN
+F 2 "" V 14800 4150 50  0001 C CNN
+F 3 "~" V 14800 4150 50  0001 C CNN
+	1    14800 4150
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:D_Schottky_Small_ALT D3
+U 1 1 6444404A
+P 14800 4350
+F 0 "D3" V 14754 4418 50  0000 L CNN
+F 1 "SB240" V 14845 4418 50  0000 L CNN
+F 2 "" V 14800 4350 50  0001 C CNN
+F 3 "~" V 14800 4350 50  0001 C CNN
+	1    14800 4350
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	14800 4250 15400 4250
+Connection ~ 14800 4250
+$Comp
+L _Local:VNN #PWR?
+U 1 1 6445544B
+P 14800 4450
+F 0 "#PWR?" H 14800 4200 50  0001 C CNN
+F 1 "VNN" H 14817 4277 50  0000 C CNN
+F 2 "" H 14800 4450 50  0001 C CNN
+F 3 "" H 14800 4450 50  0001 C CNN
+	1    14800 4450
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:VPP #PWR?
+U 1 1 644554D4
+P 14800 4050
+F 0 "#PWR?" H 14800 4300 50  0001 C CNN
+F 1 "VPP" H 14817 4223 50  0000 C CNN
+F 2 "" H 14800 4050 50  0001 C CNN
+F 3 "" H 14800 4050 50  0001 C CNN
+	1    14800 4050
+	1    0    0    -1  
+$EndComp
+Text Notes 15000 4050 0    50   ~ 0
+Output back EMF\nprotection
+Wire Wire Line
+	14600 4250 14800 4250
+Text Notes 13600 5400 0    50   ~ 0
+Hout
+Text Notes 13600 5500 0    50   ~ 0
+Lout
+Wire Wire Line
+	11900 5500 11900 6900
+$Comp
+L _Local:Header_M1x02 J3
+U 1 1 6523871B
+P 14000 5400
+F 0 "J3" H 13950 5200 50  0000 L CNN
+F 1 "Header_M1x02" H 13950 5100 50  0001 L CNN
+F 2 "" H 14000 5400 50  0001 C CNN
+F 3 "" H 14000 5400 50  0001 C CNN
+	1    14000 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:L L?
+U 1 1 6523F57D
+P 14850 5450
+F 0 "L?" H 14903 5496 50  0000 L CNN
+F 1 "L" H 14903 5405 50  0000 L CNN
+F 2 "" H 14850 5450 50  0001 C CNN
+F 3 "~" H 14850 5450 50  0001 C CNN
+	1    14850 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	14750 5400 14750 5300
+Wire Wire Line
+	14750 5300 14850 5300
+Wire Wire Line
+	14750 5500 14750 5600
+Wire Wire Line
+	14750 5600 14850 5600
+Text Notes 15000 5600 0    50   ~ 0
+8 ohm, Exciter
+Wire Wire Line
+	13800 5500 13400 5500
+Wire Wire Line
+	13400 5500 13400 6900
+Connection ~ 13400 6900
+$Comp
+L _Local:Header_F1x02 J3
+U 1 1 6524A06D
+P 14200 5400
+F 0 "J3" H 14200 5200 50  0000 C CNN
+F 1 "J3" H 13950 5000 50  0001 C CNN
+F 2 "" H 14200 5400 50  0001 C CNN
+F 3 "" H 14200 5400 50  0001 C CNN
+	1    14200 5400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	14400 5400 14750 5400
+Wire Wire Line
+	14400 5500 14750 5500
+$Comp
+L _Local:TLV4110 U1
+U 1 1 6525782B
+P 12800 5400
+F 0 "U1" H 12850 5700 50  0000 L CNN
+F 1 "TLV4110" H 12850 5600 50  0000 L CNN
+F 2 "PDIP-8" H 13000 5800 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/tlv4110.pdf" H 12800 5600 50  0001 C CNN
+	1    12800 5400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9800 5300 10200 5300
+Connection ~ 10700 5300
+Wire Wire Line
+	10700 5300 11200 5300
+Text Notes 8400 9400 0    50   ~ 0
+Input Attenuator:
+Text Notes 8600 9500 0    50   ~ 0
+Gin = 1 / (Rp1 / R2) + 1)       Input gain <1.0
+Text Notes 8600 9600 0    50   ~ 0
+Rp1 / R2 = (1 / Gin) - 1
+Text Notes 8400 9850 0    50   ~ 0
+Capacitors:  25 V
+Text Notes 10050 4700 0    50   ~ 0
+Input voltage protection
+$Comp
+L _Local:VPP #PWR?
+U 1 1 6526AFFB
+P 12950 5750
+F 0 "#PWR?" H 12950 6000 50  0001 C CNN
+F 1 "VPP" H 12967 5923 50  0000 C CNN
+F 2 "" H 12950 5750 50  0001 C CNN
+F 3 "" H 12950 5750 50  0001 C CNN
+	1    12950 5750
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	1700 10300 1700 1000
+Wire Wire Line
+	5700 10300 5700 1000
+$Comp
+L _Breadboard:OpAmp_Shutdown U1
+U 1 1 652780CB
+P 3700 6800
+F 0 "U1" H 3700 7065 50  0000 C CNN
+F 1 "TLV4110" H 3700 6974 50  0000 C CNN
+F 2 "" H 3700 6800 50  0001 C CNN
+F 3 "" H 3700 6800 50  0001 C CNN
+	1    3700 6800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3700 10100 3700 10400
+$Comp
+L _Breadboard:R4_4_1 Rp1
+U 1 1 6527CB15
+P 2900 6800
+F 0 "Rp1" H 2900 7000 50  0000 L CNN
+F 1 "30k" H 2850 6900 50  0000 L CNN
+F 2 "" H 2900 6800 50  0001 C CNN
+F 3 "" H 2900 6800 50  0001 C CNN
+	1    2900 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:R4_4_1 R2
+U 1 1 6527D8DC
+P 2900 7600
+F 0 "R2" H 2900 7800 50  0000 L CNN
+F 1 "7.5k" H 2850 7700 50  0000 L CNN
+F 2 "" H 2900 7600 50  0001 C CNN
+F 3 "" H 2900 7600 50  0001 C CNN
+	1    2900 7600
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:C1_1_0 C14
+U 1 1 6527EEEA
+P 3200 7500
+F 0 "C14" H 3200 7350 50  0000 L CNN
+F 1 "0.1uf" H 3200 7250 50  0000 L CNN
+F 2 "" H 3200 7500 50  0001 C CNN
+F 3 "" H 3200 7500 50  0001 C CNN
+	1    3200 7500
+	1    0    0    -1  
+$EndComp
+Text GLabel 2600 6400 0    50   Input ~ 0
+Vin
+Text GLabel 2600 7400 0    50   Input ~ 0
+VNN
+Text GLabel 4800 7200 2    50   Input ~ 0
+Hout
+Text GLabel 4800 7000 2    50   Input ~ 0
+VPP
+Text GLabel 4800 8400 2    50   Input ~ 0
+Lout
+$Comp
+L _Breadboard:R4_4_1 Rs
+U 1 1 6527F411
+P 4500 8000
+F 0 "Rs" H 4500 8150 50  0000 L CNN
+F 1 "2.0R" H 4650 8150 50  0000 L CNN
+F 2 "" H 4500 8000 50  0001 C CNN
+F 3 "" H 4500 8000 50  0001 C CNN
+	1    4500 8000
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:C3_3_0 C11
+U 1 1 6527F58E
+P 4400 7300
+F 0 "C11" H 4478 7346 50  0000 L CNN
+F 1 "0.1uf" H 4478 7255 50  0000 L CNN
+F 2 "" H 4400 7300 50  0001 C CNN
+F 3 "" H 4400 7300 50  0001 C CNN
+	1    4400 7300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3000 7600 3000 8000
+Wire Wire Line
+	3400 7600 4000 7600
+Wire Wire Line
+	2600 7600 2000 7600
+Wire Wire Line
+	4800 7600 5400 7600
+Text GLabel 5400 7800 2    50   Input ~ 0
+GND
+Wire Wire Line
+	3200 8300 4000 8400
+Text Label 2000 10200 0    50   ~ 0
+GND
+Text Label 5400 10200 0    50   ~ 0
+GND
+Wire Wire Line
+	4600 6800 4600 7000
+Wire Wire Line
+	2000 1000 2000 7600
+Connection ~ 2000 7600
+Wire Wire Line
+	2000 7600 2000 10300
+Wire Wire Line
+	5400 1000 5400 7600
+Connection ~ 5400 7600
+Wire Wire Line
+	5400 7600 5400 10300
+Wire Wire Line
+	3200 7000 3100 7100
+Wire Wire Line
+	3100 7100 3200 8300
+Text Notes 14500 3700 0    50   ~ 0
+NOT IMPLEMENTED!
+Text Notes 3200 10000 0    50   ~ 0
+Solderless Breadboard,\n0.2 inch drawn = 0.1 inch
+Text Label 10700 5300 0    50   ~ 0
+Vi
+$EndSCHEMATC

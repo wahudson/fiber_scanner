@@ -1,0 +1,37 @@
+2023-11-06  William A. Hudson
+
+		Low Current Buffer Planning
+		---------------------------
+
+Products:
+    Schematic
+    Design explanation
+    v1 Breadboard experiment - proof of concept
+    v2 Protoboard (soldered) version
+
+v1.0  Buffer on solderless breadboard
+
+    Build circuit on solderless breadboard.
+
+    Exp-1  general functionality
+	Demonstrate current buffer.
+
+    Exp-2  power supply headroom
+	TLV4110 output is rail-to-rail, but input is not.
+	Find limits on input common-mode voltage.
+
+
+v2.0  Buffer on soldered protoboard
+
+    PCB protoboard layout design.
+
+    Solder circuit on protoboard.
+
+    Mount on baseplate with BNC input and power switch.
+
+    Exp-1  general functionality
+
+    Exp-2  characterize operating window and failure limits.
+
+    Battery pack assembled.
+

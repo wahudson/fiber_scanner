@@ -1,0 +1,14 @@
+2023-10-07  William A. Hudson
+
+		Low-Current Buffer
+		------------------
+
+Library derive from (2023-10-07):  exciter/kicad/lib/
+Kicad:  Version: 5.0.2-bee76a0~70~ubuntu18.04.1, release build
+
+Files:
+------
+README
+buffer_low_v1/	Single TLV4110 Current Buffer, 0.1 mA/mV
+lib/		Library
+
