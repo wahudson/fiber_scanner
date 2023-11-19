@@ -1,0 +1,82 @@
+2023-11-11  William A. Hudson
+
+		Low-Current Buffer Turn-on - buffer_low_v1/
+		-------------------------------------------
+
+Purpose:
+    Initial turn-on of low-current buffer on solderless breadboard.
+    See constant current with varying load resistance.
+    See AC sinusoid operation.
+
+Files:
+    notes.text			this file
+
+Git:  e9e425bfc9  Sat Nov 11 20:49:18 2023 -0700
+    https://github.com/wahudson/fiber_scanner.git
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Circuit Configuration:
+
+    Schematic:  kicad/buffer_low_v1/ki.pro  v1.0.0  2023-11-11
+    Circuit built on solderless breadboard.
+
+    U1  = TLV4110I
+    Rp1 = 30 kohm
+    R2  = 7.5 kohm
+    Cp1 = none		no filter
+    Rs  = 2.0 ohm	sense resistor
+
+    Bypass caps:  only C11, C14  0.1 uF
+
+    Rl  = 10 ohm	load resistor
+
+    Max power supply:  +-3.0 Vdc  (6.0 V span)
+
+Components:
+
+    Power Supply:  HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Provide VPP, VNN
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+	Wavegen output as signal source.
+
+    Multimeter:  Fluke model 23
+
+----------------------------------------------------------------------------
+## Initial Run  2023-11-11
+----------------------------------------------------------------------------
+
+Initial exploration:
+    VPP= +3.0 V, VNN= -3.0 V
+
+    Circuit works as expected.  Both DC and AC sinusoid at 1 KHz.
+
+Issue:
+    Cannot see clipping due to exceeding input common mode range.
+    See output clipping due to power supply headroom.
+    Need less input attenuation, and lower load Rl.
+
+----------------------------------------------------------------------------
+## Input common mode range test  2023-11-11
+----------------------------------------------------------------------------
+
+Reconfigure
+    Rp1 = 30 kohm
+    R2  = open
+    Rs  = 10 ohm
+    Rl  =  2 ohm	load resistor
+
+Just beginning to explore what is needed.  No real progress here.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    Circuit works as expected.
+    AC sinusoid to 1 KHz looked clean (no fuzz, oscillation or distortion).
+    Just preliminary exploration.
+

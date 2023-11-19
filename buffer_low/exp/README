@@ -1,0 +1,17 @@
+2023-11-18  William A. Hudson
+
+			Low Current Buffer -- Experiments
+			---------------------------------
+Files:
+------
+README			this file
+data/			Bulk data, not in Git.
+
+		    Experiment directories
+exYYYY_MM_DD_*/
+    data ->		    symlink to data directory not in Git
+    notes.text		    note log and report
+    ...
+
+ex2023_11_11_first/	First Low Current Buffer on breadboard, v1.0
+
