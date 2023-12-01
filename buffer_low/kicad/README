@@ -6,9 +6,15 @@
 Library derive from (2023-10-07):  exciter/kicad/lib/
 Kicad:  Version: 5.0.2-bee76a0~70~ubuntu18.04.1, release build
 
-Files:
+Files:  2023-12-01
 ------
 README
+
 buffer_low_v1/	Single TLV4110 Current Buffer, 0.1 mA/mV
+buffer_low_v2/	Low-Current Buffer v2, protoboard
+opamp_vcm/	OpAmp Vcm and Output Margin experiments
+
 lib/		Library
+    _Breadboard.lib	Breadboard components
+    _Local.lib		Schematic components
 

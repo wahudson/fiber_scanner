@@ -24,4 +24,8 @@ D D Flip-Flop, Dual, Positive Edge Trigger, with Clear and Preset
 K flip-flop
 $ENDCMP
 #
+$CMP cp_6r3mm_1_0
+D Capacitor, 6.3 mm radial
+$ENDCMP
+#
 #End Doc Library

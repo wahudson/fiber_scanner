@@ -89,6 +89,10 @@ K single opamp
 F http://www.ti.com/lit/ds/symlink/tlv4110.pdf
 $ENDCMP
 #
+$CMP TermBlk_2
+D Terminal Block, enclosed pins
+$ENDCMP
+#
 $CMP VNN
 D Power flag, VNN, Negative Analog
 K power-flag

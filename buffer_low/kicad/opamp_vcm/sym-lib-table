@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name _Local)(type Legacy)(uri ${KIPRJMOD}/../lib/_Local.lib)(options "")(descr ""))
+  (lib (name _Breadboard)(type Legacy)(uri ${KIPRJMOD}/../lib/_Breadboard.lib)(options "")(descr ""))
+)
