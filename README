@@ -7,18 +7,19 @@
 A project to design and build a fiber scanning confocal microscope.
 Initially focusing on the fiber scanner system.
 
-Files:
+Files:  2023-12-01
 ------
-    README
-    camera/	camera image analysis
-    cbuffer/	current buffer circuit/instrument
+ v  README
+ v  buffer_low/ low-current buffer
+ v  camera/	camera image analysis
+ v  cbuffer/	current buffer circuit/instrument
     data/
-    doc/	general doc
-    exciter/	fiber electromagnetic driver systems
+ v  doc/	general doc
+ v  exciter/	fiber electromagnetic driver systems
     led_light/	LED fiber light source
-    lissajous/	Lissajous pattern, ellipse, and lockin theory
-    niDAQ/	Matlab language and NI DAQ use
-    optics/	optical system, lenses, fiber
+ v  lissajous/	Lissajous pattern, ellipse, and lockin theory
+ v  niDAQ/	Matlab language and NI DAQ use
+ v  optics/	optical system, lenses, fiber
     photo/	photographs
     piezo/	piezo tube scanner design
 	notes.text	main notes
@@ -27,4 +28,11 @@ Files:
     ref_papers/	copies of reference papers harder to acquire
     tmp/
     tool/
+
+ v  = in Git
+
+Git:
+    .gitignore files:
+    Balance between focus in each directory and too many files.
+    Favoring in each sub-project directory instead of in */kicad/ .
 
