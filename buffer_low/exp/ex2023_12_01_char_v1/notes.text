@@ -1,0 +1,569 @@
+2023-12-01  William A. Hudson
+
+	    Low-Current Buffer Characterization - buffer_low_v1/
+	    ----------------------------------------------------
+
+Purpose:
+    Characterization of Low-Current Buffer on solderless breadboard.
+    Verify power supply operating range.
+
+Files:
+    notes.text			this file
+
+Git:  29409e21eb  Fri Dec 1 11:49:48 2023 -0700
+    https://github.com/wahudson/fiber_scanner.git
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Circuit Configuration:
+
+    Schematic:  kicad/buffer_low_v1/ki.pro  v1.0.1  2023-12-01
+    Circuit built on solderless breadboard.
+
+    U1  = TLV4110I
+    Rp1 = 30 kohm,  5%
+    R2  = 7.5 kohm, 5%
+    Cp1 = none                 no filter
+    Rs  = 2.0 ohm,  5%, 1/4 W  sense resistor
+
+    Bypass caps:  only C2p, C2n  0.1 uF
+
+    Rload = 10 ohm, 5%, 5 W    load resistor
+
+    Power Supply limits - OpAmp TLV4110:   (recommended)
+	Max:  +-3.0  Vdc  (6.0 V span)
+	Min:  +-1.25 Vdc  (2.5 V span)
+	Absolute max:  7.0 V span
+
+Components:
+
+    Power Supply:  HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Provide VPP, VNN
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+	Wavegen output as signal source.
+
+    Multimeter:  Fluke model 23
+	Volt DC    accuracy:  +-(0.3% + 1 count), all ranges
+	Current DC accuracy:  +-(2.0% + 2 count), worst case
+	Resistance accuracy:  +-(0.5% + 1 count), 3.2 kohm to 3.2 Mohm
+	Meter is old, not calibrated, but functioning well.
+
+----------------------------------------------------------------------------
+## Plan
+----------------------------------------------------------------------------
+    Types of characterization measurements.  Not all will be done here.
+    Choose those most useful for getting first production unit working.
+
+Characterize to 20% margin.
+
+Trim input attenuator first.
+
+Power supply range:
+    Vnn= 3.0 V, Vpp= 3.0 V	full capability
+    Vnn= 1.5 V, Vpp= 1.5 V	expect Vcm violation
+
+    Vnn= 1.5 V, Vpp= 3.0 V	nominal
+    Vnn= 1.1 V, Vpp= 2.2 V	low battery
+
+AC response:
+    Input Vin = 1 kHz sinusoid, 0.1, 0.2, 0.5, 1.0, 1.2 Vpeak
+
+    Measure Vs and compute current.
+
+    Look for clipping.
+
+DC Response:
+    Input Vin = +- 0.0 to 1.4 Vdc, step 0.1 Vdc
+
+    Measure Vs and compute current.
+    Plot result.
+
+Measure input attenuator:
+    Gin = 1 / ((Rp1 / Rp2) + 1)
+
+    Vin = +- 0.1, 0.5, 1.0 Vdc
+    Measure Vi
+
+    Compute  Gin = Vi / Vin
+    Compute  Rp1 / R2 = (1 / Gin) - 1
+    Compare to ideal values.
+
+Measure input offset current:
+    Set Vin = 0 V (jumper to ground).
+    Measure current sense voltage Vs.
+    Compute output current, which is the offset current.
+
+    Alternatively:  Adjust input voltage Vin until Vs= 0 V.
+    Then Vin is the input offset voltage, i.e. the voltage necessary to
+    make zero output current.
+
+----------------------------------------------------------------------------
+## Input attenuator, theoretical value:
+----------------------------------------------------------------------------
+
+Design values:
+    Ideal Gin = 0.200
+
+    Rp1 = 30.0 kohm +-5% nominal
+    R2  =  7.5 kohm +-5% nominal
+
+    Gin = 1 / ((Rp1 / R2) + 1 )
+
+	Gin = 1 / ((30.0 / 7.5) + 1) = 0.2000    ideal input gain
+
+Does attenuator need trimming to 1% ?
+
+    High attenuation tolerance:  +5%, -5%
+	Rp1 = 1.05 * 30.0 kohm  = 31.5   kohm
+	R2  = 0.95 *  7.5 kohm  =  7.125 kohm
+
+	Gin = 1 / ((31.5 / 7.125) + 1) = 0.1845
+
+	Error:  (0.1845 / 0.200) - 1 = -0.0775  (-7.75%)
+
+    Low attenuation tolerance:  -5%, +5%
+	Rp1 = 0.95 * 30.0 kohm  = 28.5   kohm
+	R2  = 1.05 *  7.5 kohm  =  7.875 kohm
+
+	Gin = 1 / ((28.5 / 7.875) + 1) = 0.2165
+
+	Error:  (0.2165 / 0.200) - 1 = -0.0825  (-8.25%)
+
+    It looks like trimming will be needed.
+    Want +-1% total accuracy.
+
+    Maybe use a 2.0 kohm trim pot?
+    Maybe trim with a parallel resistor?
+    Maybe trim with a series resistor?
+
+Trim Rp1 with parallel resistor:  (worst case example)
+
+    Rp1   = 31.5 kohm
+    Rtrim = parallel trim resistor
+
+    Rgoal = 1 / ( (1 / Rp1) + (1 / Rtrim) )  = desired value for Rp1
+
+	1 / Rgoal = (1 / Rp1) + (1 / Rtrim)
+
+	(1 / Rgoal) - (1 / Rp1) = (1 / Rtrim)
+
+    Rtrim = 1 / ( (1 / Rgoal) - (1 / Rp1) )
+
+    Rtrim = 1 / ( (1 / 30.0 kohm) - (1 / 31.5 kohm) )  = 630 kohm
+
+Trim Gin with parallel resistor:  (worst case example)
+    Essentially trimming the resistor ratio, not their absolute values.
+    Assume Gin is too low.
+    Lowering Rp1 will increase Gin.
+
+    Gin = 1 / ( ((Rp1 + Rtrim) / R2) + 1 )
+
+	1 / Gin = ((Rp1 + Rtrim) / R2) + 1
+
+	( (1 / Gin) - 1 ) * R2 = Rp1 + Rtrim
+
+    Rtrim = ( (1 / Gin) - 1 ) * R2 - Rp1
+
+    But R2 and Rp1 have 5% uncertainty.
+    Seems like direct calculation may not be possible.
+
+    Can adjust Rtrim until the measured voltage ratio  (Gin = Vi / Vin)
+    is at the desired value.
+
+    Use a trim pot for Rtrim, then measure it and substitute a fixed resistor.
+    It looks like a 1 Mohm trim pot would work.
+    A low impedance for a DC Vin would keep Vin constant during trimming.
+
+Another way:
+    Measure resistance values of Rp1 and R2, compute Rtrim.
+    This has uncertainty of ohm meter measurement.
+    Voltage measurement has typically lower uncertainty than resistance.
+
+----------------------------------------------------------------------------
+## Calibrate Input Attenuator  2023-12-02
+----------------------------------------------------------------------------
+
+Measured resistors:  Carbon 1/4 W, 5%
+
+    Rp1 = 30.0  kohm,  nominal 30.0 kohm (Orn, Blk, Orn, Gold)
+    R2  =  7.43 kohm,  nominal  7.5 kohm (Vio, Grn, Red, Gold)
+
+    Gin = 1 / ((Rp1 / R2) + 1 )
+    Gin = 1 / ((30.0 / 7.43) + 1 )  = 0.1985
+
+	Error:  (0.1985 / 0.200) - 1 = -0.0075  (-0.75%)
+
+	This is less than 1%, no need to trim.
+
+----------------------------------------------------------------------------
+## Power Supply operating range  2023-12-02
+----------------------------------------------------------------------------
+    Interested in lower range limits, as they affect operational
+    common mode input voltage range and output voltage swing.
+
+Key circuit elements:
+    Resistors Rp1, R2 as measured above.
+
+    Rs    = 2.0 ohm 5%
+    Rload = 10 ohm 5%
+
+    For each power supply configuration, measure maximum AC and DC response.
+
+Power supply sets:
+    Vnn= 3.0 V, Vpp= 3.0 V	full capability
+    Vnn= 1.5 V, Vpp= 3.0 V	nominal
+ 1  Vnn= 1.2 V, Vpp= 2.4 V	low battery
+    Vnn= 1.1 V, Vpp= 2.2 V	low battery
+ 2  Vnn= 1.5 V, Vpp= 1.5 V	expect Vcm violation
+
+AC stimulus:
+    Sine wave, 1 kHz, 1.2 Vpeak
+    Expect 120 mA peak sine wave.
+
+DC stimulus:
+    +-1.2 Vdc
+    Expect +-120 mA DC current.
+
+Measure voltage Vs on sense resistor.
+    Scope:
+	Trigger:  WaveGen
+	Ch1:  Vin, WaveGen output
+	Ch2:  Vs,  Sense resistor (2.0 ohm 5%)
+	
+Quick look - do we see any failure edge?
+
+Set 1:  Vnn= -2.4 V, Vpp= 2.4 V nominal  (span 4.8 V)
+    Vpp = +2.383 V
+    Vnn = -2.378 V 
+
+    Vin = 0.001 V,  Vs= 0.001,  Vo= 0.005 V
+
+    AC Sine wave, F= 1.00 kHz
+	Viw = 1.00 Vpp  wave gen setting
+	Vin = 355 mVrms
+	Vs  =  69 mVrms
+
+	Viw	Vin	Vs
+	(Vpp)   (mVrms)	(mVrms)
+	1.00	355	 69
+	2.00	708	138
+	2.80	991	193
+
+2023-12-03
+
+Oscilloscope:
+    Trigger:  WaveGen, Rising Edge
+    Ch1:  1.00 V/div    Vin, WaveGen output
+    Ch2:  100  mV/div   Vs,  Sense resistor (2.0 ohm 5%)
+
+Set 2:  Vnn= -1.25 V, Vpp= 1.25 V nominal  (span 2.5 V), Rload= 10 ohm
+    Vpp = +1.260 V
+    Vnn = -1.256 V 
+
+    AC Sine wave, F= 1.00 kHz
+	Viw	Vin	Vs      Vs
+	(Vpp)   (mVrms)	(mVrms)	(mVpp)
+	1.00	355	 69	205
+	1.30	459	 88	261
+	1.40	495	 95	281
+	1.50	531	101	297  clipping begin
+	1.60	566	105	297  clipping
+	1.80	637	112	297  clipping
+
+Set 3:  Vnn= -1.5 V, Vpp= 1.5 V nominal  (span 3.0 V), Rload= 10 ohm
+    Vpp = +1.506 V
+    Vnn = -1.502 V 
+    Rload = 10 ohm 5%
+
+    AC Sine wave, F= 1.00 kHz
+	Viw	Vin	Vs      Vs
+	(Vpp)   (mVrms)	(mVrms)	(mVpp)
+	1.00	353	 69	205
+	1.40	496	 97	285
+	1.50	531	104	306
+	1.60	566	111	326
+	1.70	600	118	346
+	1.80	637	125	362  clipping begin
+	1.90	672	130	362  clipping
+	2.00	707	134	370  clipping
+	2.10	741	137	370  clipping
+
+	At Viw = 2.10 Vpp
+	Vs clipping:    -184 mV,   +266 mV
+	Vo clipping:  -1.106 V,  +1.088 V
+
+	Difference from supply:
+		Vnn
+	    Vnn - Vo = (-1.502 V) - (-1.106 V) =  -0.396 V
+	    Vpp - Vo = (+1.506 V) - (+1.088 V) =  +0.418 V
+
+	Iop = Vs / Rs  = +266 mV / 2.0 ohm  = 133 mA   clip level
+	Ion = Vs / Rs  = -184 mV / 2.0 ohm  =  92 mA   clip level
+
+    With Rload = 10 ohm, clipping seems due to output voltage Vo too close
+    to the power rails, not from input common mode exception.
+    Clipping is roughly symmetric, while the common mode limit is asymmetric,
+    with the recommended limit being (Vpp - 1.5 V) and (Vnn + 0.0 V).
+
+    Lower the load resistance to exercise at full 100 mA current.
+
+Rload = 5.0 ohm 5%  (two 10 ohm 5% resistors in parallel).
+
+Set 4:  Vnn= -1.5 V, Vpp= 1.5 V nominal  (span 3.0 V), Rload= 5 ohm
+    Vpp = +1.506 V
+    Vnn = -1.502 V 
+    Rload = 5.0 ohm 5%
+
+    Ch1:  1.00 V/div    Vin, WaveGen output
+    Ch2:  100  mV/div   Vs,  Sense resistor (2.0 ohm 5%)
+
+    AC Sine wave, F= 1.00 kHz
+	Viw	Vin	Vs      Vs
+	(Vpp)   (mVrms)	(mVrms)	(mVpp)
+	1.00	353	 70	205
+	1.60	566	111	326
+	1.80	638	126	366
+	2.00	707	139	406
+	2.40	848	167	486
+	2.80	990	195	563
+
+	No clipping.
+
+    Viw = 2.00 Vpp
+    Sweep Frequency:  Observe Vs.
+	Zero crossing distortion becomes noticeable at ~4 kHz.
+	Sine wave looks pretty good up to 20 kHz.
+	Seems stable up to 100 kHz, but has more distortion.
+	Looks very clean below 1 kHz.
+
+Set 5:  Vnn= -1.15 V, Vpp= 1.15 V nominal  (span 2.3 V), Rload= 5 ohm
+    Vpp = +1.153 V
+    Vnn = -1.150 V 
+    Rload = 5.0 ohm 5%
+
+    AC Sine wave, F= 1.00 kHz
+	Viw	Vin	Vs      Vs
+	(Vpp)   (mVrms)	(mVrms)	(mVpp)
+	2.00	707	139	406
+	2.10	741	146	426
+	2.20	779	153	438	clip bottom begin
+	2.30	814	159	450	clip bottom  -215 mV
+	2.40	848	164	462	clip top begin
+	2.50	883	169	466	clipping  -218 mV, +231 mV
+	2.60	921	173	466	clipping  -221 mV, +232 mV
+
+	At Viw = 2.60 Vpp
+	Vs clipping:    -221 mV, +232 mV
+	Vo clipping:    -731 mV, +737 mV
+	Vo Delta Rail:   420 mV,  416 mV
+
+	Load wire connections were loose above.  Affects load resistance.
+
+	At Viw = 2.60 Vpp
+	Vs clipping:    -230 mV, +241 mV
+	Vo clipping:    -812 mV, +818 mV
+	Vo Delta Rail:   338 mV,  335 mV
+
+Supply rails limit compliance voltage of current source.
+We want full range with an 8 ohm load.
+
+Seems like common mode range is NOT limiting, even though we are way beyond
+the recommended range.  Even at (Vin = 0 V) the supply voltage Vpp = +1.153 V
+does not meet ( Vcm < (Vpp - 1.5 V) ).
+
+At low battery (1.2 V):
+    Compliance voltage is about:  (Vpp - 0.4 V) = 0.8 V
+    Total resistance  Rs + Rload = 2 ohm + 8 ohm  = 10 ohm
+    Compliance voltage limits  Iout = 0.8 V / 10 ohm  = 80 mA
+
+Set 6:  Vnn= -1.2 V, Vpp= 2.4 V nominal  (span 3.6 V), Rload= 5 ohm
+    Vpp = +2.383 V
+    Vnn = -1.190 V 
+    Rload = 5.0 ohm 5%
+
+    AC Sine wave, F= 1.00 kHz
+	Viw	Vin	Vs      Vs
+	(Vpp)   (mVrms)	(mVrms)	(mVpp)
+	2.00	706	138	406
+	2.40	847	166	482
+	2.50	882	173	503
+	2.60	920	181	523
+	2.70	955	187	543
+	2.80	990	194	551	clip bottom begin
+	2.90	1025	199	563	clipping -266 mV
+	3.00	1062	205	575	clipping -266 mV
+
+	At Viw = 3.00 Vpp
+	Vs clipping:    -266 mV clip, +290 mV ok
+	Vo clipping:    -950 mV clip, +993 mV ok
+	Vo Delta Rail:   240 mV clip, 1390 mV ok
+
+    Clipping is now asymmetric, with only the negative side clipping.
+
+	Rload = 10 ohm
+	At Viw = 3.00 Vpp
+	Vs clipping:     -177 mV clip,  +290 mV ok
+	Vo clipping:    -1050 mV clip, +1731 mV ok
+	Vo Delta Rail:    140 mV clip,   652 mV ok
+
+	The higher load resistance allows the output Vo to get closer to the
+	negative rail.  Verified.
+
+    Seems a bit confusing.
+    Need to get clear on what the limiting factors are.
+
+    The Vo clipping level changes with load resistance because the op-amp
+    is not operating, so its effective output resistance is no longer small.
+    A smaller load resistor increases the output current and thus a larger
+    voltage drop across the op-amp output transistor.
+
+    The asymmetric power supplies helps satisfy the recommended positive
+    input common mode voltage range.  Thus the op-amp is probably in a
+    better operating region.
+
+    Having a low negative supply, e.g. Vnn = -1.5 V, does not allow much
+    output voltage compliance, especially at low battery Vnn = -1.2 V.
+    If that is acceptable, then a three-cell battery pack would work well.
+
+Compliance Voltage:
+    Use parameter absolute values in these equations.
+
+    Vcpli = Vnn - (Vheadn + (Rs + Rload) * Iout)
+
+    where
+	Vnn    = negative supply voltage
+	Vpp    = positive supply voltage
+	Vheadn = 0.23 V  head room from Vnn at 100 mA (datasheet)
+	Vheadp = 0.16 V  head room from Vpp at 100 mA
+	Iout   = output current
+	Rs     = 2.0 ohm sense resistor
+	Rload  = load resistance
+
+    Iout = (Vnn - Vheadn) / (Rs + Rload)
+
+    Require  Vnn > ((Rs + Rload) * Iout) + Vheadn
+
+	Vnn > ((2 ohm +  8 ohm) * (100 mA)) + 0.3 V  = 1.3 V
+	Vnn > ((2 ohm + 10 ohm) * (100 mA)) + 0.3 V  = 1.5 V
+
+	Thus a single 1.5 V battery cell (1.2 V discharged) is not really
+	sufficient.
+
+	If we accept a lower full scale current:
+
+	Vnn > ((2 ohm + 10 ohm) * (50 mA)) + 0.3 V  = 0.9 V
+
+	Iout = (Vnn - Vheadn) / (Rs + Rload)
+	Iout = (1.1 V - 0.3 V) / (2 ohm + 10 ohm)  = 67 mA
+	Iout = (1.1 V - 0.3 V) / (2 ohm +  8 ohm)  = 80 mA
+    
+----------------------------------------------------------------------------
+## Analysis  2023-12-06
+----------------------------------------------------------------------------
+
+Max current before clipping:  (in 0.1 V steps)
+    Viw = input voltage wavegen setting (0.1 V resolution)
+
+    Set 1:  Vnn= -2.4 V, Vpp= 2.4 V nominal  (span 4.8 V), Rload= 10 ohm
+	Viw >= 2.80 Vpp
+
+    Set 2:  Vnn= -1.25 V, Vpp= 1.25 V nominal  (span 2.5 V), Rload= 10 ohm
+	Viw = 1.40 Vpp
+
+    Set 3:  Vnn= -1.5 V, Vpp= 1.5 V nominal  (span 3.0 V), Rload= 10 ohm
+	Viw = 1.70 Vpp
+
+    Set 4:  Vnn= -1.5 V, Vpp= 1.5 V nominal  (span 3.0 V), Rload= 5 ohm
+	Viw >= 2.80 Vpp
+
+    Set 5:  Vnn= -1.15 V, Vpp= 1.15 V nominal  (span 2.3 V), Rload= 5 ohm
+	Viw = 2.10 Vpp
+
+    Set 6:  Vnn= -1.2 V, Vpp= 2.4 V nominal  (span 3.6 V), Rload= 5 ohm
+	Viw = 2.70 Vpp
+
+    Derive Iout from:
+	Iout = Vs / Rs
+	Vs   = Viw * Gin
+
+	Iout = (Viw * Gin) / Rs
+	     = (Viw * 0.1985) / (2.0 ohm)  = 0.0993 * Viw
+
+    Summary Table:
+	Viw  = the max input before clipping, in 0.1 V steps.
+	Iout = peak current at Viw
+
+      Set Rload	Iout	Viw	Viw	Vnn	Vpp
+	# (ohm)	(mA)	(Vpp)	(Vpeak)	(Vdc)	(Vdc)
+
+	2  10	 70	1.4	0.70	-1.26	+1.25
+
+	3  10	 85	1.7	0.85	-1.50	+1.51
+
+	4   5	140	2.8	1.40	-1.50	+1.51
+
+	5   5	105	2.1	1.05	-1.15	+1.15
+
+	6   5	135	2.7	1.35	-1.19	+2.38
+
+    Trying to see if a higher supply voltage allows a higher output current,
+    where Viw is an analog for the output current Iout.
+    Comparing set 5 and 6 suggests that it might, but is not conclusive.
+
+    The main thing we see is the output Rload had a big effect limiting
+    maxium current before clipping.  Most likely it is output headroom to
+    the power supply rails, but not easily shown with this data.
+
+    Too many confounding factors:  Cases are not easily comparable.
+    Rload changes.  Resolution of 0.1 V may not be enough.
+
+    Clipping could be due to two things:
+    A) Output voltage too close to the rails.
+    B) Recommended input common mode voltage is exceeded.
+
+Power Supply Suitability:
+    This is enough to demonstrate that a two-cell battery (e.g. +-1.5 V)
+    is not really good enough for full scale output current of 100 mA
+    with a 10 ohm load (see Set 3).  Especially at low battery voltage (Set 2).
+
+Need:
+    Better data to identify output voltage Vo, and input common mode voltage,
+    which is an analog of Vs.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    Compliance Voltage analysis - See Set 6.
+
+    A 4-cell battery pack (+-2.2 V discharged) would provide 100 mA
+    full scale current with a +-1.7 V compliance voltage range,
+    (e.g.  Rload < 17 ohm  at 100 mA).  [Analysis, not demonstrated.]
+
+    A 3-cell battery pack (Vnn= -1.1 V and Vpp= +2.2 V discharged)
+    cannot provide 100 mA full scale current for (Rload= 8 ohm).
+    But would work well for a smaller load resistance, or smaller full scale
+    current.  [Analysis, partly demonstrated in Set 6.]
+
+    A 2-cell battery pack (Vnn= -1.1 V and Vpp= +1.1 V discharged)
+    does not meet the recommended input common mode range maximum of
+    (Vpp - 1.5 V) for the TLV4110 op-amp.
+
+    AC sinusoid operation at 100 mA peak looks good at 1 kHz, with some
+    zero crossing distortion becoming noticeable at ~4 kHz.  (Set 4)
+
+    Demonstrated rail-to-rail output at +-1.15 V supplies:
+    We see output clipping within 0.3 V of power supply rails (Set 5).
+    This seems to fit with the data sheet graph.
+
+    Measuring conditions during op-amp clipping is not very meaningful, as
+    the op-amp is not operating properly.  It is better to measure conditions
+    just before clipping is reached.
+
+    Maybe use the  kicad/opamp_vcm/  schematic for characterization of op-amp
+    operating range.
+
