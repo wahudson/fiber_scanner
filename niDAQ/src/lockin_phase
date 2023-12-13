@@ -142,13 +142,16 @@ show_usage <- function()
 
 	names(df) <- c( "Vsig", "Vsum", "Vx", "Vy" )
 
-    # Compute PSD position for X and Y measurements
-	Dx_mm <- 5 * df$Vx[rn] / df$Vsum[rn]
-	Dy_mm <- 5 * df$Vy[rn] / df$Vsum[rn]
+    # Compute raw PSD position for X and Y measurements
+	RDx_mm <- 5 * df$Vx[rn] / df$Vsum[rn]
+	RDy_mm <- 5 * df$Vy[rn] / df$Vsum[rn]
 
-    # Mean values for reference
-	Meanx_mm <- mean( Dx_mm )
-	Meany_mm <- mean( Dy_mm )
+    # Place origin at the mean values
+	Meanx_mm <- mean( RDx_mm )
+	Meany_mm <- mean( RDy_mm )
+
+	Dx_mm <- RDx_mm - Meanx_mm
+	Dy_mm <- RDy_mm - Meany_mm
 
     # Lockin calculation
 	Lxi_mm <- mean( Dx_mm * RIvec )
@@ -202,6 +205,24 @@ show_usage <- function()
 	}
 
 	cat( "\n" )
+
+    # Generate theoretical ellipse, as in
+	# x = Ex * sin( u )
+	# y = Ey * sin( u + Pd )
+
+	PE_rad <- PE_deg * Pi / 180
+
+	uvec <- c(0:99) * (2 * Pi / 100)    # one cycle divided into 100 parts
+	ex <- Ex_mm * sin( uvec )
+	ey <- Ey_mm * sin( uvec + PE_rad )
+
+    # Plot results
+	pdf( "file.pdf" )
+	plot( Dx_mm, Dy_mm, pch='.', xlim=c(-1,1), ylim=c(-1,1) )
+	points( ex, ey, col='red' )
+	abline( h=0 )
+	abline( v=0 )
+	graphics.off()
 
     } # for inFile
 
