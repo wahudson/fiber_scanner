@@ -19,3 +19,7 @@ ex2022_09_27_dcvolt/	dc_voltmeter.m  script turn-on
 ex2022_10_18_psd/	PSD Lockin Frequency Sweep
 ex2022_11_15_psd/	PSD Lockin Frequency Sweep, Laser Current
 
+Oct 2023:  niDAQ input chInY moved from channel Ai4 to Ai5.
+
+ex2023_10_12_cameron/	Cameron's improved scripts to take an image
+

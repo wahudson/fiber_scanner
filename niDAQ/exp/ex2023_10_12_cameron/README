@@ -1,0 +1,18 @@
+2023-10-12
+		Piezo Scanner - with Cameron (on 2023-10-12)
+		----------------------------
+
+Running piezo scanner with Alex and Cameron.  See Red notebook.
+
+These are Cameron's scripts that she got running to take an image,
+modified from her earlier version.
+I did not collect any data, just the scripts for reference.
+
+Note niDAQ channels changed, screw is failing on one channel.
+
+Files:
+------
+README
+ContinuousDataAcquisitionCode_CNC_2023Oct12.m
+ContinuousDataAcquisitionCode_CNC_2023Oct12_WithLPSparseInpainting.m
+
