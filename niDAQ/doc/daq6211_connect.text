@@ -1,0 +1,156 @@
+2023-12-11  William A. Hudson
+
+		niDAQ USB-6211 Connections
+		--------------------------
+
+Reference:
+   NI USB-621x User Manual
+
+National Instruments USB-6211:
+   "16-input, 16-bit  250 kS/s Multifunction IO"
+
+----------------------------------------------------------------------------
+## Terminal Connections USB-6211  (2023-12-11)
+----------------------------------------------------------------------------
+
+See:  Red Notebook 2023-12-11
+
+These are the connections as applied to our fiber scanner.
+Terminal numbers 1 .. 11 are not shown here, are all open.
+
+Term	Top	Bottom
+Num	Label	Label	wire	filter	signal	function
+----	-----	-----	------	------	------	-------------------------
+12	Ao0	Ao0	coax	-	Xin	Piezo AC Amplifier
+13	Ao1	Ao1	coax	-	Yin	Piezo AC Amplifier
+14	AoGND	AoGND	shield
+
+15	Ai0	Ai0+	(open)
+16	Ai8	Ai0-	(open)
+
+17	Ai1	Ai1+	coax	-EF124-	Vsig	Intensity - Photo Detector
+18	Ai9	Ai1-	shield
+
+19	Ai2	Ai2+	coax	-EF124-	Vsum	PSD Sum
+20	Ai10	Ai2-	shield
+
+21	Ai3	Ai3+	coax	-EF124-	Vy	PSD Yout
+22	Ai11	Ai3-	shield
+
+23	AiSN	AiSN	(open)
+
+24	Ai4	Ai4+	(open)
+25	Ai12	Ai4-	(open)
+
+26	Ai5	Ai5+	coax	-EF124-	Vx	PSD Xout
+27	Ai13	Ai5-	shield
+
+28	AiGND	AiGND	(open)
+
+29	Ai6	Ai6+	(open)
+30	Ai14	Ai6-	(open)
+
+31	Ai7	Ai7+	(open)
+32	Ai15	Ai7-	(open)
+
+The interpretation (single-ended / differential) is controlled by software,
+indirectly thru MatLab.
+
+-EF124-
+Each of the 4 analog inputs (Ai*) is passed thru a low-pass filter module:
+    ThorLabs EF124  Low Pass Filter, DC to 50 kHz (-1 db) pass band.
+    Input:  50 ohms, +-10 V max
+    Output:  >= 100 kohm
+    Small red extruded aluminum box, 63 mm L, 32 mm W, 25 mm H.
+    BNC connectors on both ends.
+
+History:
+    Before Oct 2023:  PSD Xout was on channel Ai4.
+	The screw terminal became damaged, so Xout was moved to Ai5.
+
+----------------------------------------------------------------------------
+## Discussion USB-6211  (2023-12-11)
+----------------------------------------------------------------------------
+
+Note the analog input ground (AiGND) was left open.
+
+Conjectures:  (need validation)
+
+    Are the Position Sensitive Detector (PSD) and the Photo Detector floating
+    signal sources?  Is the case connected to signal ground?
+
+    It is likely they are floating sources, to avoid creating unnecessary
+    ground loops.
+
+    The PSD is powered by an isolated laboratory power supply, which has
+    option to equipment ground any power output.
+
+    The photo detector is powered by an line-cord power supply, which are
+    often isolated.
+
+See:  Ch4 "Using Differential Connections for Floating Signal Sources", p.63
+
+    For a differential input, connect signal lines to Ai+ and Ai-.
+
+    They also recommend connecting the negative signal line directly to AiGND,
+    which will prevent the source from floating beyond the input common mode
+    range of the DAQ.
+
+    Our sources do not have true differential outputs.
+    We are using pseudo differential type sensing, to perhaps help avoid
+    ground loops and noise pickup.
+
+    We are using coax cable connections for most of the signal path, which
+    intrinsically provides shielding against noise pickup.
+    Thus less need for true differential input on the DAQ.
+
+    The BNC shield on connectors and filters can easily come in contact with
+    equipment ground, i.e. the metal optical table, and thus become an
+    accidental part of a ground loop.
+
+    We still want to minimize ground loops.
+    Thus avoid connecting the signal sources to equipment ground, and
+    provide only one ground point at the DAQ, i.e. AiGND.
+
+    We should do an experiment to measure signal noise before and after any
+    ground configuration change.
+
+    The signal sources are likely low impedance, i.e. op-amp outputs.
+    But the passive low-pass filters are high-impedance, as in their output
+    must be connected to a high-impedance load.
+
+    How is the channel mode (e.g. differential) configured?
+    The DAQ terminals have no method to set the mode, yet the terminal
+    labels on top show single-ended and on bottom show corresponding
+    differential connections.
+    Thus it must be in software.
+
+    What is the default channel mode?
+    Our current code makes no explicit setting.
+
+    Note that the positive differential input terminal is the same as the
+    corresponding single-ended input terminal.
+    If the negative signal line is ground, then the DAQ could read the same
+    voltage in either differential or single-ended mode.
+
+    Since we see the input signals basically "working", I suspect fixing the
+    differential ground and input mode may only have an effect on the
+    signal noise level.
+
+----------------------------------------------------------------------------
+## Software USB-6211  (2023-12-11)
+----------------------------------------------------------------------------
+
+Purpose:
+    Want a script to query or change the channel mode and make voltage
+    measurements.
+    Probably derive from  dc_voltmeter.m  script.
+
+https://www.mathworks.com/help/daq/channel-properties.html
+
+    # Get current property information:
+    get( ch )
+
+    # To view ranges allowed for each property (i.e. documentation)
+    set( ch )
+
