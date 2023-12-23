@@ -13,6 +13,7 @@ config_li_eigen_freq.pl	Configure "eigen_freq.m" ouput file names for
 ac_millimeter.m		AC Voltmeter measuring scanner response
 dc_psdmeter.m		DC PSD meter output position in mm and V
 dc_voltmeter.m		DC Voltmeter for testing DAQ channels
+dac_mode.m		niDAQ Analog Input mode (derived from dc_voltmeter.m)
 
 
 eigen_axis.m		Fiber scanner sweep eigen axis
