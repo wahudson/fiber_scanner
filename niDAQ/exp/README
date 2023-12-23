@@ -22,4 +22,5 @@ ex2022_11_15_psd/	PSD Lockin Frequency Sweep, Laser Current
 Oct 2023:  niDAQ input chInY moved from channel Ai4 to Ai5.
 
 ex2023_10_12_cameron/	Cameron's improved scripts to take an image
+ex2023_12_14_daq/	DAQ Input Mode  dac_mode.m
 

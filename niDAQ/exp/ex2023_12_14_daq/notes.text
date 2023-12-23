@@ -1,0 +1,109 @@
+2023-12-22  William A. Hudson
+
+		DAQ Input Mode  dac_mode.m - ex2023_12_14_daq/
+		--------------------------
+
+Purpose:
+    Verify DAQ differential configuration - new  dac_mode.m
+    Capture a Lissajous trace for Alex Olson.
+
+See:  red notebook  12-14-2023
+
+Files:
+------
+    console_2023_12_14.txt	console output
+    dac_mode.m
+ *  file6.txt			raw data from one_lissajous.m
+    notes.text			this file
+    one_lissajous.m
+
+ *  = Not in Git (too big)
+
+----------------------------------------------------------------------------
+## System Configuration  (piezo scanner)
+----------------------------------------------------------------------------
+    It has been over a year since I last ran the system.
+
+Much the same, except:
+    DAQ input 'Ai5' replaced 'Ai4'.
+    See:  niDAQ/doc/daq6211_connect.text
+
+    Piezo scanner has been moved, PSD beam sampler changed, and PSD is
+    still free on optical bench.
+
+----------------------------------------------------------------------------
+## Lissajous trace capture
+----------------------------------------------------------------------------
+
+    Alex set up the oscilloscope in XY mode while I explored the DAQ mode.
+    The oscilloscope was very useful to see the actual Lissajous trace
+    in real time, but with the DAQ not connected to the PSD.  Alex took
+    some videos.  Slow Lissajous evolution, e.g. around 0.5 Hz difference
+    looked quite good.
+
+    Re-connected PSD to DAQ and captured the trace.
+
+    Script:  one_lissajous.m
+
+    Console log note:
+    %% file6 - amp 0.15 V, 805 Hz, 806 Hz
+    OutAmp_V = 0.15
+    FreqX_Hz = 805;
+    FreqY_Hz = 806;
+    Laser current:  30 mA
+    Distance from lens frame to PSD:  69.5 mm
+
+----------------------------------------------------------------------------
+## DAQ Mode
+----------------------------------------------------------------------------
+
+    Initial turn-on of script.  Not trying to control DAQ inputs.
+
+Script:  dac_mode.m
+    Display and experiment with niDAQ Analog Input mode.
+    Derived from dc_voltmeter.m
+    This is first turn-on of the minor changes.
+
+DAQ Connections:
+    See:  niDAQ/doc/daq6211_connect.text
+
+Looking at console log:  (the last run of dac_mode.m)
+    Assembled an analysis of the output here.
+
+    # view current channel properties
+    > get( chInSig );
+	   Coupling: DC
+     TerminalConfig: Differential
+	      Range: -10 to +10 Volts
+	       Name: 'Dev1_ai1'
+		 ID: 'ai1'
+	     Device: [1x1 daq.ni.DeviceInfo]
+    MeasurementType: 'Voltage'
+
+    # view allowed range of channel properties
+    > set( chInSig );
+	  Coupling: [ DC | AC ]
+    TerminalConfig: [ Differential | SingleEnded | SingleEndedNonReferenced | \
+			PseudoDifferential ]
+	     Range: -10 to +10 Volts
+	      Name: {}
+ 
+Conclusions:
+
+    The default analog input seems to be DC coupled Differential on all 4
+    channels.
+
+    It looks like the coupling could be set to 'AC', although I don't recall
+    seeing that in the manual.
+
+    Not really clear what 'PseudoDifferential' means in relation to the
+    DAQ manual.
+
+    The DAQ help command seems pretty useless, e.g.
+	help chInSig.TerminalConfig;
+
+Next:
+    Apply known input signals and verify actual differential reading.
+    Try 'SingleEnded' mode.
+    Try 'AC' coupling.
+
