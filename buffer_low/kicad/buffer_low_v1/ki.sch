@@ -6,11 +6,11 @@ $Descr B 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "Low-Current Buffer - buffer_low_v1/"
-Date "2023-12-01"
-Rev "v1.0.1"
+Date "2023-12-23"
+Rev "v1.0.2"
 Comp "William A. Hudson"
-Comment1 ""
-Comment2 ""
+Comment1 "v1.0.1  Rename bypass capacitors"
+Comment2 "v1.0.2  Rs= 2.0 ohm, 1%"
 Comment3 ""
 Comment4 ""
 $EndDescr
@@ -74,7 +74,7 @@ L Device:R_US Rs
 U 1 1 5EB4E054
 P 13400 7150
 F 0 "Rs" H 13332 7104 50  0000 R CNN
-F 1 "2.0R  1/4 W, 5%" H 13332 7195 50  0000 R CNN
+F 1 "2.0R  1/4 W, 1%" H 13332 7195 50  0000 R CNN
 F 2 "" V 13440 7140 50  0001 C CNN
 F 3 "~" H 13400 7150 50  0001 C CNN
 	1    13400 7150
@@ -410,7 +410,7 @@ Vin
 Text Notes 12300 9100 0    70   ~ 0
 Current Buffer:  0.1 mA/mV, 100 mA Full Scale
 Text Notes 8400 10000 0    50   ~ 0
-Resistors:  1/4 W, 5% Carbon
+Resistors:  1/4 W, 5% Carbon (1% for accuracy)
 $Comp
 L Device:D_Schottky_Small_ALT D2
 U 1 1 64440762
@@ -499,7 +499,7 @@ Wire Wire Line
 Wire Wire Line
 	14750 5600 14850 5600
 Text Notes 15000 5600 0    50   ~ 0
-8 ohm, Exciter
+Rload = 8 ohm, Exciter
 Wire Wire Line
 	13800 5500 13400 5500
 Wire Wire Line
@@ -539,7 +539,7 @@ Wire Wire Line
 Text Notes 8400 9400 0    50   ~ 0
 Input Attenuator:
 Text Notes 8600 9500 0    50   ~ 0
-Gin = 1 / (Rp1 / R2) + 1)       Input gain <1.0
+Gin = 1 / ((Rp1 / R2) + 1)       Input gain <1.0
 Text Notes 8600 9600 0    50   ~ 0
 Rp1 / R2 = (1 / Gin) - 1
 Text Notes 8400 9850 0    50   ~ 0
