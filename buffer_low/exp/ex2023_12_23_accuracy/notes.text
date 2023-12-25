@@ -1,0 +1,312 @@
+2023-12-22  William A. Hudson
+
+	    Low-Current Buffer DC Accuracy - ex2023_12_23_accuracy/
+	    -------------------------------------------------------
+
+Purpose:
+    Precision resistors for Rs and Rload.
+    Measure DC accuracy on solderless breadboard.
+
+Result:
+    Contact resistance in solderless breadboard made measurements useless.
+
+Follow from:  ex2023_12_01_char_v1/notes.text
+
+Files:
+    notes.text			this file
+
+Schematic:
+    kicad/buffer_low_v1/  v1.0.2  2023-12-23
+
+Git:  3b339fed43  Sat Dec 23 15:01:48 2023 -0700
+    https://github.com/wahudson/fiber_scanner.git
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Circuit Configuration:
+
+    Schematic:  kicad/buffer_low_v1/ki.pro  v1.0.1  2023-12-01
+    Circuit built on solderless breadboard.
+
+    U1  = TLV4110I
+    Rp1 = 30 kohm,  5%
+    R2  = 7.5 kohm, 5%
+    Cp1 = none                 no filter
+    Rs  = 2.0 ohm,  1%, 0.6 W, 50 ppm  sense resistor, Vishay MBB series
+
+    Bypass caps:  only C2p, C2n  0.1 uF
+
+    Rload = 10 ohm, 0.1%, 0.25 W, +-15 ppm/K  load resistor
+	Max current:  Imax = sqrt( 0.25 W / 10 ohm ) = 158 mA
+
+    Power Supply limits - OpAmp TLV4110:   (recommended)
+	Max:  +-3.0  Vdc  (6.0 V span)
+	Min:  +-1.25 Vdc  (2.5 V span)
+	Absolute max:  7.0 V span
+
+Components:
+
+    Power Supply:  HP6236B Triple Output Power Supply
+	0 to +-20 V, 0 to 0.5 A
+	Provide VPP, VNN
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+	Wavegen output as signal source.
+
+    Multimeter:  Fluke model 23
+	Volt DC    accuracy:  +-(0.3% + 1 count), all ranges
+	Current DC accuracy:  +-(2.0% + 2 count), worst case
+	Resistance accuracy:  +-(0.5% + 1 count), 3.2 kohm to 3.2 Mohm
+	Meter is old, not calibrated, but functioning well.
+
+----------------------------------------------------------------------------
+## Plan
+----------------------------------------------------------------------------
+
+    Want to get an initial idea of accuracy on the solderless breadboard.
+    This will be repeated on the soldered version, so no need for many data
+    points.
+
+Measure DC accuracy:
+
+    DC Stimulus on Vin to provide nominal
+	Iout = +-( 0, 1, 10, 20, 50, 100, 150 ) mA
+
+    Measure:
+	Vin:    meter on Vin to GND.
+	Vload:  meter on Vo  to Vs, i.e. voltage across Rload.
+	Maybe also measure Vi, meter on Vi to GND.
+
+    The precision resistor for Rload (10 ohm, 0.1%) gives a very accurate
+    measure of output current  Iout = Vload / Rload
+
+    Note Rs is a 2 ohm 1% resistor, so not as accurate as Rload.
+
+Measure Offset:
+
+    A) Set  Vin = open, i.e. R2 providing zero volts to GND.
+	Measure  Vload.
+	Compute  Io = Vload / Rload
+
+    B) Adjust Vin until Vload = 0.0 V
+	Measure Vin, which is the input offset voltage.
+
+----------------------------------------------------------------------------
+## Measure DC accuracy  (2023-12-23)
+----------------------------------------------------------------------------
+
+Decided to measure all voltages w.r.t. GND for easier connections.
+i.e. need only move one meter lead for measurements.
+
+Power Supply:  +-2.9 V nominal
+    Vpp = +2.909 V
+    Vnn = -2.904 V
+    Rs    =  2.0 ohm 1%
+    Rload = 10.0 ohm 0.1%
+
+    Viw   = Wavegen output DC voltage setting, applied to Vin
+    Vin   = Measured input voltage,         Vin to GND
+    Vo    = Measured output voltage,        Vo to GND
+    Vload = Measured voltage across Rload,  Vo to Vs
+    Vs    = Measured voltage across Rs,     Vs to GND
+    Vi    = Measured input attenuator voltage, Vi to GND
+
+Compute:
+    Iout = Vs / 2.0 ohm
+
+    Rld  = derived value for Rload, from Rs = 2.0 ohm, 1%.
+    Rld  = (Vo - Vs) / Iout  = Rs * (( Vo / Vs ) - 1)
+    Rld  = (Vo - Vs) / Iout  = (2.0 ohm) * (( Vo / Vs ) - 1)
+
+	Viw	Vin	Vo	Vs	Vi	Iout	Rld
+	(mV)	(mV)	(mV)	(mV)	(mV)	(mA)	(ohm)
+	  100	   99	  120	  20	  19	  9.5	 9.5
+	  500	  497	  557	 100	  99	 50	 9.14
+	 1000	  993	 1129	 200	 200	100	 9.29
+	 1500	 1489	 1698	 300	 299	150	 9.32
+	   20	   19	   28	   5	   4	  2.5
+	    0	    0	    5	   1	   0	  0
+	 -100	  -99	 -106	 -18	 -19
+	 -500	 -495	 -557	 -97	 -98
+	-1000	 -992	-1086	-196	-196	-98	 9.08
+	-1500	-1488	-1711	-294	-295
+	-1500	-1488	-1676	-294	-295
+	-1000	 -992	-1115	-196	-196
+	-1000	 -992	-1120	-196	-196
+	-1000	 -992	-1028	-196	-196
+
+Output voltage Vo seems very flaky.
+As if the Rl is making bad contact.
+Vs seems stable.
+    Vpp = +2.912 V
+    Vnn = -2.897 V
+    Rload = 9.9 ohm, measured (meter accuracy +-0.150 ohm)
+
+	Viw	Vin	Vo	Vs	Vi
+	(mV)	(mV)	(mV)	(mV)	(mV)
+	-1000	 -992	-1031	-199	-197
+	-1000	 -992	-1045	-199	-197
+	 1000	  993	 1029	 199	 198
+
+Can watch Vo slowly drop.
+Its as if Rload is wrong value and changing.
+Vs seems stable, and op-amp seems to work fine.
+
+Rload = 10 ohm, 5%, 5 W
+	Viw	Vin	Vo	Vs	Vi
+	(mV)	(mV)	(mV)	(mV)	(mV)
+	 1000	  993	 1165	 198	 198
+    This works fine and seems stable.
+
+Possibly intermediate jumper is the problem?
+Removed jumper on Rload.
+
+Rload = 10.0 ohm 0.1%
+	Viw	Vin	Vo	Vs	Vi
+	(mV)	(mV)	(mV)	(mV)	(mV)
+	 1000	  993	 1176	 199	 198
+	 1000	  993	 1137	 199	 198
+	 1000	  993	 1130	 199	 198
+	 1000	  993	 1093	 199	 198
+	 1000	  993	 1088	 198	 197
+	 1000	  993	 1080	 198	 197
+	-1000	 -992	-1070	-196	-196
+	-1000	 -992	-1062	-196	-196
+	 1000	  993	 1069	 198	 197
+
+    Still drifting with no movement of wires in breadboard connections.
+    Seems like Rload itself is changing.
+
+Conclusion:
+    Seems like Rload = 10.0 ohm 0.1%  is a bad resistor.
+    It seems to have large drift with a negative drift coefficient.
+    Possible accidental damage from over power (over current), 158 mA max. 
+
+    I was hoping to use the 0.1% precision Rload resistor as a way to
+    calibrate the output current.
+    But the Rload resistor was flaky.
+
+    We are really comparing Rs against Rload, both having the same unknown
+    current.
+
+    How do we know if it is Rs or Rload changing?
+    When we substitute the 5 W wirewound resistor for Rload, there is no
+    drift in Vo.  Thus Rs seems to be stable.
+
+    What about contact resistance?  (In the solderless breadboard tie points.)
+
+2023-12-24
+
+Try to figure out the above anomaly:
+    Rs    = 1.9 ohm  measured
+    Rload = 9.9 ohm  measured,  Nominal 10 ohm, 0.1%, 0.25 W
+
+    Ohm-meter measurement seems solid, and within meter accuracy.
+
+Isolate the load resistor Rload on alligator clip leads:
+    The resistor itself and its clip contacts seem solid, no variation in Vo.
+    Not seeing any change with manipulating the resistor.
+
+    The wire leads on Rload into the breadboard seem to have much variation
+    in contact resistance.
+
+    At Iout= 100 mA, a 1 mV variation in Vo is 10 mOhm resistance change.
+    (i.e. 1 mV / 100 mA = 0.01 ohm)
+    This is very much in the contact resistance variation range.
+
+    Contact resistance should only add to Rload.
+    How does the apparent resistance of Rload go lower than the resistor
+    itself?  Does it really?
+
+    Rload on alligator clip leads:
+	Viw	Vin	Vo	Vs	Vi
+	(mV)	(mV)	(mV)	(mV)	(mV)
+	 1000	  993	 1214	 198	 197	contacts stabilized
+	 Iout = 99 mA
+	 Rld  = 10.26 ohm
+
+    Alligator leads add significant resistance.
+
+Analyze:
+
+    Iout = Vs / Rs		output current
+
+    Vo - Vs = Iout * Rload	voltage across Rload
+
+    Rload / Rs = ( Vo / Vs ) - 1
+
+	We can only measure the ratio of load to sense resistance.
+
+    The load and sense resistances includes contact resistance:
+
+    Rload = Ror + Roc	total load resistance
+    Rs    = Rsr + Rsc	total sense resistance
+
+	Ror = load resistor
+	Roc = load contact resistance
+
+	Rsr = sense resistor
+	Rsc = sense contact resistance
+
+    (Ror + Roc) / (Rsr + Rsc)      = ( Vo / Vs ) - 1
+
+    (10 ohm + Roc) / (2 ohm + Rsc) = ( Vo / Vs ) - 1
+
+    If contact resistance Roc and Rsc are similar, then the sense contact
+    resistance will have a greater effect because the sense resistor is
+    smaller, Rsr << Ror.
+    Indeed, moving the sense resistor contact does have a large effect on Vo.
+
+    This also explains how the apparent resistance of Rload seems to go lower,
+    because the effective Rs went higher due to contact resistance Rsc.
+
+Explanation:
+    Op-amp feedback makes the sense resistor voltage Vs match the input
+    attenuator voltage Vi, which is very stable (coming from Wavegen).
+    Thus Vs is stable even if sense resistance Rs is changing.
+    We see this in all measurements, where Vs tracks Vi very well.
+
+    When contact resistance in Rs changes, the output voltage Vo (and output
+    current Iout) changes to keep Vs constant.  Thus a change in Rs can
+    cause Vo to change while Vs remains constant.
+
+    Similarly, a change in Rload will cause a corresponding change in Vo to
+    keep Iout and Vs constant.  Thus a change in Rload directly causes Vo to
+    change while Vs remains constant.
+
+----------------------------------------------------------------------------
+## Measure DC Offset
+----------------------------------------------------------------------------
+
+    Not done, since contact resistance variation confuses the result.
+    But at Iout = 0, contact resistance would have no effect, so it would
+    be possible.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    The sense resistor voltage Vs tracks the input attenuator voltage Vi
+    within +-1 mV (the meter resolution) in virtually all cases.  This shows
+    the op-amp is working well to make Vo such that (Vs = Vin), as expected.
+
+    Overall DC accuracy in output current Iout depends on the accuracy
+    of sense resistor Rs and the input attenuator resistor ratio (Rp1 / R2).
+    All three resistors should be 1% or better.
+
+    The breadboard contact resistance variations are significant, and
+    dominate the error in measurement.
+
+    At Iout= 100 mA, a 1 mV variation in Vo is a 10 mOhm resistance change
+    in Rload.  (i.e. 1 mV / 100 mA = 0.01 ohm)
+
+    We easily see 10 to 80 mV changes in Vo by moving breadboard contacts,
+    which equates to roughly 0.1 ohm to 0.8 ohm variation.
+    Thus no point in trying to measure accuracy of the circuit on the
+    breadboard.
+
+    Decide to make accuracy and DC offset measurements on the soldered
+    version.
+
