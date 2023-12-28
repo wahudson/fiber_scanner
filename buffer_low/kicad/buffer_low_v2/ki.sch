@@ -6,10 +6,10 @@ $Descr B 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "Low-Current Buffer - buffer_low_v2/"
-Date "2023-11-17"
-Rev "v2.0.0"
+Date "2023-12-27"
+Rev "v2.0.1"
 Comp "William A. Hudson"
-Comment1 ""
+Comment1 "v2.0.1  +-3 V battery, protoboard layout, wire colors"
 Comment2 ""
 Comment3 ""
 Comment4 ""
@@ -224,7 +224,7 @@ Text Notes 9350 7100 0    50   ~ 0
 Text Notes 9350 7500 0    50   ~ 0
 -V
 Text Notes 9350 6900 0    50   ~ 0
-V = 1.5 V dc nom (3.0 V max)
+V = 3.0 V dc nom (3.0 V max)
 Wire Wire Line
 	13400 7300 13400 7500
 Wire Wire Line
@@ -603,11 +603,11 @@ Text GLabel 2600 8900 3    50   Input ~ 0
 Vin
 Text GLabel 3400 8900 3    50   Input ~ 0
 VNN
-Text GLabel 4200 8900 3    50   Input ~ 0
+Text GLabel 4400 8900 3    50   Input ~ 0
 Hout
 Text GLabel 3800 8900 3    50   Input ~ 0
 VPP
-Text GLabel 4400 8900 3    50   Input ~ 0
+Text GLabel 4600 8900 3    50   Input ~ 0
 Lout
 Text GLabel 2800 8900 3    50   Input ~ 0
 GND
@@ -688,19 +688,19 @@ $EndComp
 $Comp
 L _Local:Screw_TermB_01x02 J3
 U 1 1 6559CDAF
-P 4200 8800
-F 0 "J3" V 4119 8470 50  0000 R CNN
-F 1 "Header-2" V 4075 8470 50  0001 R CNN
-F 2 "" H 4200 8800 50  0001 C CNN
-F 3 "" H 4200 8800 50  0001 C CNN
-	1    4200 8800
+P 4400 8800
+F 0 "J3" V 4300 8500 50  0000 R CNN
+F 1 "Header-2" V 4275 8470 50  0001 R CNN
+F 2 "" H 4400 8800 50  0001 C CNN
+F 3 "" H 4400 8800 50  0001 C CNN
+	1    4400 8800
 	0    -1   1    0   
 $EndComp
 $Comp
 L _Local:Screw_TermB_01x03 J2
 U 1 1 6559CEA8
 P 3800 8800
-F 0 "J2" V 3719 8930 50  0000 L CNN
+F 0 "J2" V 3700 8900 50  0000 L CNN
 F 1 "Header-3" V 3764 8930 50  0001 L CNN
 F 2 "" H 3800 8600 50  0001 C CNN
 F 3 "" H 3800 8600 50  0001 C CNN
@@ -713,7 +713,7 @@ $Comp
 L _Local:Screw_TermB_01x02 J1
 U 1 1 6559F54F
 P 2600 8800
-F 0 "J1" V 2519 8470 50  0000 R CNN
+F 0 "J1" V 2500 8500 50  0000 R CNN
 F 1 "Header-2" V 2475 8470 50  0001 R CNN
 F 2 "" H 2600 8800 50  0001 C CNN
 F 3 "" H 2600 8800 50  0001 C CNN
@@ -723,19 +723,19 @@ $EndComp
 $Comp
 L _Breadboard:R4_4_0 Rs
 U 1 1 6559FA4A
-P 4800 7200
-F 0 "Rs" H 4697 7154 50  0000 R CNN
-F 1 "2.0R" H 4697 7245 50  0000 R CNN
-F 2 "" H 4800 7200 50  0001 C CNN
-F 3 "" H 4800 7200 50  0001 C CNN
-	1    4800 7200
+P 4800 7000
+F 0 "Rs" H 4697 6954 50  0000 R CNN
+F 1 "2.0R" H 4697 7045 50  0000 R CNN
+F 2 "" H 4800 7000 50  0001 C CNN
+F 3 "" H 4800 7000 50  0001 C CNN
+	1    4800 7000
 	-1   0    0    1   
 $EndComp
 $Comp
-L _Local:Battery B3
+L _Local:Battery B4
 U 1 1 655A6D94
 P 7800 7000
-F 0 "B3" H 7825 7265 50  0000 C CNN
+F 0 "B4" H 7825 7265 50  0000 C CNN
 F 1 "AA1.5V" H 7825 7174 50  0000 C CNN
 F 2 "" H 7800 7000 50  0001 C CNN
 F 3 "" H 7800 7000 50  0001 C CNN
@@ -743,10 +743,10 @@ F 3 "" H 7800 7000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L _Local:Battery B2
+L _Local:Battery B3
 U 1 1 655A7184
 P 7150 7000
-F 0 "B2" H 7175 7265 50  0000 C CNN
+F 0 "B3" H 7175 7265 50  0000 C CNN
 F 1 "AA1.5V" H 7175 7174 50  0000 C CNN
 F 2 "" H 7150 7000 50  0001 C CNN
 F 3 "" H 7150 7000 50  0001 C CNN
@@ -754,10 +754,10 @@ F 3 "" H 7150 7000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L _Local:Battery B1
+L _Local:Battery B2
 U 1 1 655A723D
 P 7200 7400
-F 0 "B1" H 7200 7250 50  0000 C CNN
+F 0 "B2" H 7200 7250 50  0000 C CNN
 F 1 "AA1.5V" H 7200 7150 50  0000 C CNN
 F 2 "" H 7200 7400 50  0001 C CNN
 F 3 "" H 7200 7400 50  0001 C CNN
@@ -772,8 +772,6 @@ Wire Wire Line
 	6750 7000 6750 7200
 Wire Wire Line
 	6750 7400 6850 7400
-Wire Wire Line
-	8700 7400 7500 7400
 $Comp
 L Switch:SW_DPDT_x2 SW1
 U 1 1 655AB8C3
@@ -893,19 +891,15 @@ Wire Bus Line
 Wire Bus Line
 	4000 7400 4200 8000
 Wire Wire Line
-	3800 7600 4800 7600
-Wire Wire Line
 	4200 7000 4450 7100
 Wire Wire Line
 	4450 7100 4450 8300
 Wire Wire Line
-	4450 8300 4200 8600
+	4450 8300 4400 8600
 Wire Wire Line
-	4400 8600 4650 8300
+	4600 8600 4550 8300
 Wire Wire Line
-	4650 8300 4650 6900
-Wire Wire Line
-	4650 6900 4800 6800
+	4550 8300 4550 6700
 Wire Wire Line
 	2400 7800 2600 8600
 Wire Wire Line
@@ -925,17 +919,8 @@ Wire Bus Line
 	3300 7300 3400 7200
 Wire Bus Line
 	3600 7400 3800 7400
-Wire Bus Line
-	3800 7400 3800 7600
 Wire Wire Line
-	2600 7800 2900 7700
-Wire Wire Line
-	2900 7700 3000 7200
-Wire Wire Line
-	3000 7200 3100 7500
-Wire Wire Line
-	3100 7500 3600 7600
-Connection ~ 3000 7200
+	2600 7800 2900 7600
 Wire Bus Line
 	3600 8600 3800 7600
 Wire Bus Line
@@ -944,15 +929,10 @@ Wire Bus Line
 	3400 8000 3600 7600
 Wire Bus Line
 	4000 8000 3800 7600
-Connection ~ 3800 7600
 Wire Wire Line
 	3200 6800 3100 6600
 Wire Wire Line
 	3100 6600 3200 6400
-Wire Wire Line
-	3200 6400 4500 6400
-Wire Wire Line
-	4500 6400 4800 6800
 Wire Notes Line
 	2000 9200 2000 4600
 Wire Notes Line
@@ -1008,4 +988,150 @@ Text Notes 12000 3900 0    50   ~ 0
 Unimplemented:  C1pn, C3p, C3n
 Text Notes 5100 5000 0    50   ~ 0
 Reference Via locations
+Wire Wire Line
+	2900 7600 3000 7200
+Wire Wire Line
+	4550 6700 4600 6600
+Wire Wire Line
+	4600 6600 4800 6600
+$Comp
+L _Local:Socket1 J?
+U 1 1 658C4757
+P 4800 6400
+F 0 "J?" H 4848 6446 50  0001 L CNN
+F 1 "Socket1" H 4848 6355 50  0001 L CNN
+F 2 "" H 4800 6400 50  0001 C CNN
+F 3 "" H 4800 6400 50  0001 C CNN
+	1    4800 6400
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:Socket1 J?
+U 1 1 658C4C48
+P 4800 7800
+F 0 "J?" H 4848 7846 50  0001 L CNN
+F 1 "Socket1" H 4848 7755 50  0001 L CNN
+F 2 "" H 4800 7800 50  0001 C CNN
+F 3 "" H 4800 7800 50  0001 C CNN
+	1    4800 7800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4800 6400 4800 6600
+Text Notes 5050 7850 0    50   ~ 0
+GND  probe
+Text Notes 5050 6450 0    50   ~ 0
+Vs  probe
+Wire Wire Line
+	3200 6400 4500 6400
+Wire Wire Line
+	4600 6600 4500 6400
+Connection ~ 4600 6600
+Wire Bus Line
+	3800 7400 3800 7600
+Wire Wire Line
+	4800 7400 4800 7600
+Wire Wire Line
+	3800 7600 4800 7600
+Connection ~ 3800 7600
+Connection ~ 4800 7600
+Wire Wire Line
+	4800 7600 4800 7800
+Wire Wire Line
+	2600 7800 3250 7550
+Wire Wire Line
+	3250 7550 4700 7550
+Wire Wire Line
+	4700 7550 4800 7400
+Connection ~ 2600 7800
+$Comp
+L _Breadboard:Pin P?
+U 1 1 658F6B05
+P 2400 8800
+F 0 "P?" H 2453 8846 50  0001 L CNN
+F 1 "Pin" H 2453 8755 50  0001 L CNN
+F 2 "" H 2400 8800 50  0001 C CNN
+F 3 "" H 2400 8800 50  0001 C CNN
+	1    2400 8800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:Pin P?
+U 1 1 658F6B85
+P 3000 8800
+F 0 "P?" H 3053 8846 50  0001 L CNN
+F 1 "Pin" H 3053 8755 50  0001 L CNN
+F 2 "" H 3000 8800 50  0001 C CNN
+F 3 "" H 3000 8800 50  0001 C CNN
+	1    3000 8800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:Pin P?
+U 1 1 658F6C05
+P 3200 8800
+F 0 "P?" H 3253 8846 50  0001 L CNN
+F 1 "Pin" H 3253 8755 50  0001 L CNN
+F 2 "" H 3200 8800 50  0001 C CNN
+F 3 "" H 3200 8800 50  0001 C CNN
+	1    3200 8800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:Pin P?
+U 1 1 658F6CAC
+P 4000 8800
+F 0 "P?" H 4053 8846 50  0001 L CNN
+F 1 "Pin" H 4053 8755 50  0001 L CNN
+F 2 "" H 4000 8800 50  0001 C CNN
+F 3 "" H 4000 8800 50  0001 C CNN
+	1    4000 8800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Breadboard:Pin P?
+U 1 1 658F6D2C
+P 4200 8800
+F 0 "P?" H 4253 8846 50  0001 L CNN
+F 1 "Pin" H 4253 8755 50  0001 L CNN
+F 2 "" H 4200 8800 50  0001 C CNN
+F 3 "" H 4200 8800 50  0001 C CNN
+	1    4200 8800
+	1    0    0    -1  
+$EndComp
+$Comp
+L _Local:Battery B1
+U 1 1 658F90CB
+P 7850 7400
+F 0 "B1" H 7850 7250 50  0000 C CNN
+F 1 "AA1.5V" H 7850 7150 50  0000 C CNN
+F 2 "" H 7850 7400 50  0001 C CNN
+F 3 "" H 7850 7400 50  0001 C CNN
+	1    7850 7400
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8150 7400 8700 7400
+Text Notes 11950 4650 0    100  ~ 0
+*
+Text Notes 12000 5150 0    100  ~ 0
+*
+Text Notes 11950 6150 0    100  ~ 0
+*
+Text Notes 11900 3900 0    100  ~ 0
+*
+Text Notes 8200 7000 0    50   ~ 0
+Red
+Text Notes 8200 7400 0    50   ~ 0
+Black
+Text Notes 8200 7200 0    50   ~ 0
+White
+Text Notes 8850 5300 0    50   ~ 0
+Red
+Text Notes 8850 5400 0    50   ~ 0
+Black
+Text Notes 14750 5350 0    50   ~ 0
+Red
+Text Notes 14750 5650 0    50   ~ 0
+Black
 $EndSCHEMATC
