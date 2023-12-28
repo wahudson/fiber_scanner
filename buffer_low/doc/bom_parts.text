@@ -1,0 +1,115 @@
+2023-12-27  William A. Hudson
+
+	    Bill of Material (BOM) - Low-Current Buffer
+	    -------------------------------------------
+
+Schematic:  kicad/buffer_low_v2/ki.pro  v2.0.1  2023-12-26
+
+----------------------------------------------------------------------------
+## As Built, v2.0.1
+----------------------------------------------------------------------------
+
+Open frame instrument (no cover).
+
+Circuit Board
+-------------
+
+ 1  TLV4110  High output Operational Amplifier, Shutdown, 300 mA
+	http://www.ti.com/lit/ds/symlink/tlv4110.pdf
+	$2.64 DigiKey  TLV4110IP  8-PDIP, with Shutdown
+
+ 2  Electrolytic Capacitor - C4n, C4p, power bypass
+	Rubycon ZLH  6.3 mm dia  +-20%,  Small size
+	$0.34  Rubycon 25ZLH150MEFC6.3X11  150 uF,  94 mohm, 0.54 A, 6000 hr
+
+ 2  Ceramic Capacitor 0.1 uF - C2n, C2p, power bypass
+	Kemet MLCC radial lead - Goldmax 300 Series, Yellow
+	$0.10  DigiKey  Kemet C320C104K5R5TA     0.1uF,  50V, Straight 0.100
+
+ 1  Resistor Rs, 2 ohm, 0.6 W - current sense
+	Vishay MBB/SMA Series, Professional Metal Film Leaded Resistors
+	$0.23  DigiKey Vishay MBB02070C2008FCT00   2 ohm,  1%, 0.6 W, 50 ppm
+
+    Resistors, 1/4 W, Metal Film, 1% - input attenuator
+ 1	30 kohm,  Rp1 (nominal 5%, selected <1%)
+ 1	7.5 kohm, R2  (nominal 5%, selected <1%)
+
+
+ 1  Ceramic Capacitor Cp1, 1 nF COG - low pass filter
+	On-hand, Vishay Mulit-layer Ceramic Capacitor Kit
+
+    Male Header pins, 0.1 inch pitch, - external connections
+ 1	J2     - 3 position
+ 2	J1, J3 - 2 position
+	Cut from breakaway strip.
+	$1.49  DigiKey Amphenol 68001-120HLF   0.230  0.120  30ui gold  20 pin
+
+ 4  Male Header pins, 2 pos - Input connection, option jumpers, shutdown, LED
+	On-hand.  Cut header strip.
+
+ 1  Socket, 2 position - for optional capacitor Cp1
+	Solder tails on PCB
+	On-hand
+
+ 1  Breadboard, Pad per Hole, Plated Thru
+	Mounting holes for 2.5 mm dia screw, drill out for #4 screw.
+	$2.50/3  AdaFruit 4785  14x20 holes, 4 x 6 cm
+
+ +  Wire 26 AWG solid, PVC, 300V, Jacket dia 0.036 inch, Alpha Wire
+	$15.16  DigiKey  A422601L-100-ND  100ft Blue    (special value)
+
+Front Panel:
+------------
+
+ 1  DPDT Toggle Switch - power switch
+	$2.39 DigiKey  100DP1T1B1M1QEH  DPDT, On-On, Round 10.41 mm, Solder lug
+
+ 1  BNC Female barrel with locknut and solder lug - Input
+	$2.00  DigiKey  ARFX1064-ND, Amphenol 31-221-RFX
+
+ 1  Terminal Block Header, panel mount - output current connector
+	Male pins, Shrouded, 0.200 inch pitch.
+	Retaining screw thread is M2.5-0.5 (fine).
+	$1.07  DigiKey Molex 0395355002 2-pos, vertical, retain, flange, grn
+
+ 1  Aluminum Angle, Anodized, 1 inch, 1/16 inch thick - front panel
+	Cut 61 mm long.
+	Ace Hardware, Hillman #11438
+
+ 1  Base Plate - to hold everything together
+	1/4 inch thick hardboard, cut 3.5 inch x 6.0 inch
+
+ 1  Battery Holder, 4 x AA, Flat
+	$0.95  PiShop SKU: 1412, 14 cm wire leads, coil spring
+
+Output Cable:
+-------------
+
+ 1  Terminal Block Plug, Female Sockets, 0.200 inch pitch
+	$0.72  DigiKey Weidmuller 2647250000  2-pos, 180 deg, 12-30 AWG ($3.10)
+	$2.91  DigiKey  Phoenix 1792249       2-pos,  90 deg, 12-30 AWG
+
+ 1  Cable, 2-conductor, twisted pair
+	On-hand, cut ~3 feet long.
+
+Hardware:
+---------
+
+ 4  Stand-off, #4 nylon, 1/4 inch long
+	$0.10  Digikey  Bivar 9911-250, #4 0.125 ID, 0.250 OD, 0.250 L
+	Mount protoboard.
+
+ 4  Screw, #4 sheet metal, 5/8 inch long
+	Mount protoboard.
+
+ 2  Screw, #6 sheet metal, 3/8 inch long
+	Front panel aluminum angle attach to base plate.
+
+ 3  Screw, #6 sheet metal, 1 inch long, large pan head
+	Mount battery box, ends.
+
+ 2  Screw, #6 sheet metal, 3/4 inch long, normal pan head
+	Mount battery box, sides.
+
+Grind off tips of sheetmetal screws as needed for the base plate.
+

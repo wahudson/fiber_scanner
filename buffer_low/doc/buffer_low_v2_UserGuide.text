@@ -1,0 +1,290 @@
+2023-12-26  William A. Hudson
+
+		Low Current Buffer v2.0.1 - User Guide
+		--------------------------------------
+
+https://github.com/wahudson/fiber_scanner/buffer_low/
+
+This is a Current Source instrument, providing a current output proportional
+to a voltage input.  Essentially it is a transconductance amplifier.
+
+Front panel title:  "Buffer  0.1 mA/mV"
+
+Schematics:
+    kicad/buffer_low_v2/ki.pro	v2.0.1  2023-12-27
+
+Documentation:  doc/
+    buffer_low_v2_UserGuide.txt	this file
+    buffer_low_v2_design.text	design notes
+    architecture.text		general concept and circuit design
+    bom_parts.text		parts list
+
+Datasheets:
+    http://www.ti.com/lit/ds/symlink/tlv4110.pdf	300 mA Op-Amp  TLV4110
+
+    Alkaline-Manganese Dioxide Battery
+    https://www.duracell.com/wp-content/uploads/2016/03/MN15USCT0122-A.pdf
+
+----------------------------------------------------------------------------
+## Summary Specification
+----------------------------------------------------------------------------
+
+    Low-Current Buffer -- 0.1 mA/mV, 100 mA Full Scale
+
+Input Signal:  (voltage)
+    Voltage Range:  -1.0 V to +1.0 V
+    Input offset voltage:  +-1 mV typ, +-18 mV max  (estimated)
+    Frequency:  DC to 1 kHz
+    Input impedance:  30 kohm
+    Single-ended input, ground referenced.
+    Input protection:  to +-10 V, even with power OFF.
+
+    CAUTION:  Exceeding input voltage range could damage (over heat) the op-amp.
+
+Output Signal:  (current)
+    Current Range:  -100 mA to +100 mA
+    Voltage Compliance:  +-1.5 V min
+
+    Current Limit Protection:  none
+	If the input voltage is > 1.0 V, the circuit will try to deliver
+	the corresponding current, limited only by battery impedance,
+	possibly damaging the op-amp.
+
+    Unbalanced differential output, cannot be grounded.
+	The "Lo" side is a 2.0 ohm sense resistor to ground.
+	The "Hi" side is the op-amp output.
+	The load must be isolated, e.g. a voice coil exciter.
+
+	Caution:  Do not attempt to connect anything other than an isolated
+	passive load.
+	No ground connections.
+	No voltage sources.
+	No parallel current sources.
+
+    Output Protection:  none
+	No over-current or over-temperature protection.
+
+    Intended load:  80 mW, e.g. small (1 W) 8 ohm exciter (speaker) for
+	driving a fiber optic cantilever at resonance.
+
+Low-pass filter:
+    The input has a single-pole low-pass filter, with a single configurable
+	capacitor.
+    Rp1 = 30 kohm, fixed
+    Cp1 = 1 nF typ, changeable in sockets
+    F0  = 5.3 kHz typ
+    F0 = 1 / (2*Pi * Rp1 * Cp1)  corner frequency
+    With no capacitor bandwidth is limited by the TLV4110 op-amp.
+    Intended to provide a simple filter for use with a DAC (digital to analog
+    converter).
+
+Battery power:
+    4x AA alkaline battery cells.
+
+    Voltage:  +-3 Vdc nominal
+	Operable with depleted cells down to 1.2 V (+-2.4 V battery pack).
+    Current:  100 mA max
+
+Operating principle:
+    OpAmp (TLV4110) adjusts output voltage such that the voltage across
+    the sense resistor Rs in series with the load matches the attenuated
+    (0.2 x) input voltage.  See schematic.
+
+This specification is intended to identify a safe operating region for driving
+voice coil exciters up to +-100 mA peak current.
+
+----------------------------------------------------------------------------
+## Controls and Connectors
+----------------------------------------------------------------------------
+
+Front Panel:
+------------
+
+Input BNC:  "Input"
+    Standard BNC connector.
+
+Output connector:  "Output"
+    Terminal Block Header, Panel Mount, Male pins, 0.200 inch pitch
+	Phoenix 0707248
+	https://www.phoenixcontact.com/us/products/0707248
+	Contacts rated:  300 V, 15 A
+	Typically rated for ~150 connect/disconnect cycles.
+    Mating connectors:
+	Terminal Block Plug, Female Sockets, 0.200 inch pitch
+	$2.51  DigiKey  Phoenix 1757019       2-pos, 180 deg, 12-30 AWG
+	$2.91  DigiKey  Phoenix 1792249       2-pos,  90 deg, 12-30 AWG
+	These have screw terminals for attaching wires.
+
+    This is where the load is connected.
+    Positive current flows out "Ho" and returns thru "Lo".
+
+Power switch:  "Power ON/OFF"
+    Up   "ON"  position:  Battery is connected.
+    Down "OFF" position:  Battery is disconnected.
+
+Internal Configuration:  (on PCB)
+-----------------------
+
+Test/Probe points:
+
+    GND:  A short 20 AWG wire loop for attaching alligator clips
+
+    Vs:   Header pin
+
+Lowpass Filter:  Capacitor Cp1 on sockets
+    A simple single-pole low-pass filter.
+
+    F0 = 1 / (2*Pi * Rp1 * Cp1)		corner frequency
+
+    If a lowpass filter is desired, this capacitor can be installed.
+    Intended to use Cp1= 1 nF for a F0= 5.3 kHz corner frequency.
+
+Enclosure:
+----------
+
+    Is an open-frame, 3.5 inch x 6.0 inch, intended for lab bench use.
+
+----------------------------------------------------------------------------
+## Operation Guide
+----------------------------------------------------------------------------
+
+Introduction:
+
+    This instrument is a transconductance amplifier, providing a current output
+    proportional to a voltage input.  It is also called a Current Source or
+    a Current Buffer.
+
+    We are familiar with voltage source devices, commonly as power supplies
+    or batteries.
+    A current source is different, needing a little more thought for
+    safe operation.
+
+    An ideal current source delivers as much voltage as necessary to cause
+    the specified current to flow in the load:
+
+    + When no load is connected, it will drive an arbitrarily high voltage,
+	which could be hazardous or damaging to the load.
+
+    + Shorting the output, i.e. connecting a zero ohm load, is perfectly fine
+	and the current source delivers the specified current at zero volts.
+
+    This is opposite what you might expect from a voltage source.
+
+    A real current source has a "compliance voltage", the maximum voltage
+    that it can deliver across the load.  When the compliance voltage
+    is reached, the output current will be less than specified.  When this
+    occurs, the op-amp output voltage is clipped, limited by the
+    power supply voltage.  Generally it is not good to operate in this
+    condition.
+
+    Fortunately this instrument is low current (100 mA full scale) and
+    low power (+-3 V from 4x AA batteries), so hazards are less.
+
+Transfer function:
+
+    Io = (0.2 / Rs) * Vin		output current
+
+	Rs  = 2.0 ohm  internal sense resistor
+	Vin = input voltage
+
+    Io = (0.1 mA/mV) * Vin	output current
+
+    Accuracy is limited by the accuracy of the Rs sense resistor (1%) and
+    the input voltage divider.
+
+    In addition there is an input offset voltage (from the op-amp) that
+    contributes a corresponding output offset current.
+
+Output operation:
+
+    Typically the output of a current source should not be left open-circuit,
+    as the output will go to the supply rails and will toggle if the input
+    is alternating around zero volts.
+
+    Whenever the output terminals are unconnected, set the "Power" switch
+    to "OFF".
+
+Valid operating region:
+
+    For any load resistance Rd, the allowed output current Io is constrained
+    by the full-scale current and the available compliance voltage.
+
+	Vd = Io * Rd		voltage across the load
+
+	Io = Vd / Rd		current thru the load
+
+	    |Vd| <= 1.5 V	compliance voltage limit
+
+	|Io_max| = 1.5 V / Rd	maximum current, positive or negative
+
+    The max current also constrains:  |Io_max| <= 100 mA
+
+	Rd (ohm)     |Io_max| (mA) Maximum Valid current
+	--------     -------------
+	  0		100
+	  1		100
+	  2		100
+	  5		100
+	  8		100
+	 10		100
+	 15		100	- Max Rd for full scale current
+	 20		 75	< compliance voltage limit
+	 50		 30	<
+	100		 15	<
+	200		  8	<
+	500		  3	<
+
+Recommended operation sequence:
+
+    There are many ways to achieve any particular operation, so a strict
+    cookbook approach does not really work.  Instead we present some simple
+    sub-operation snippets.  Modify to suit the needs of your load.
+
+    Programmed current:
+	The programmed current (i.e. Vin) should always be managed to avoid
+	exceeding the specified compliance voltage.  Require:
+	    Vd <= Vcv
+
+	    Vcv = 1.5 V		max compliance voltage
+	    Vd  = Rd * Io	voltage across the load
+		Rd = effective load resistance
+		Io = programmed output current
+
+    Power ON/OFF:
+	Set power OFF whenever the load is disconnected.
+
+    Connecting the input:
+	This can be done anytime, even while load is energized.
+	When the input is disconnected, the R2 pull-down resistor will
+	set the input to Vin = 0.0 mV, and corresponding 0.0 mA output current.
+
+	Ensure  |Vin| < 1.0 V  to avoid possible damage to the op-amp from
+	over current.
+
+	When power is OFF, the circuit is protected for Vin = +-10 V.
+
+    Connecting load:
+	Set power OFF whenever the load is disconnected.
+
+	Connect the load.
+	Set power ON.
+
+	To minimize transients, set the input voltage to zero first
+	(i.e. Io = 0 mA), power ON, and then ramp the input voltage to
+	desired operation.
+
+Distortion:
+    At higher frequencies (e.g. 10 kHz) a spurious transient glitch has
+    been observed in the negative half of a sinusoid waveform.  The
+    transient seems negligible at lower frequencies (e.g 1 kHz).
+    Cause is unknown, and has not been characterized.
+
+Caution:
+    A resistive load with a positive temperature coefficient, e.g. a tungsten
+    filament light bulb, may experience thermal run-away.
+    As the filament heats up its resistance increases, but the current
+    is held constant so more power is dissipated causing even more heat
+    and even higher resistance.
+
+    On the other hand, an LED is ideally driven by a current source.
+

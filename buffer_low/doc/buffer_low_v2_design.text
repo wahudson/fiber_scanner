@@ -1,0 +1,55 @@
+2023-11-18  William A. Hudson
+
+		buffer_low_v2/ -- Design
+		------------------------
+
+This is the first soldered assembly version.
+
+See also:
+    doc/architecture.text	Background and requirements
+
+----------------------------------------------------------------------------
+## Circuit Design
+----------------------------------------------------------------------------
+
+Schematic:  kicad/buffer_low_v2/ki.pro
+    Has complete circuit schematic and system components.
+    Has protoboard layout.
+
+Op-amp:
+    TLV110 (Texas Instruments) 300 mA output, 8-PDIP.
+
+Bypass Capacitors:
+    C1pn
+    C2p, C2n
+    C3p, C3n
+    C4p, C4n
+
+
+----------------------------------------------------------------------------
+## Physical Design Protoboard
+----------------------------------------------------------------------------
+
+Protoboard PCB:
+
+ >  AdaFruit P4785, vias 14x20, size 4cm x 6cm
+    Had this small board on hand, seems like a good use.
+    Circuit really only covers about half the board.
+
+    Drill out mounting holes to 1/8 inch for #4 sheetmetal screws.
+
+Power Connector:
+
+ >  A) Header pins (0.1 inch pitch).
+	+ Smaller size, need carry only 100 mA.
+	+ Convenient to slide on connector plug.
+	- Slide-on plug could come loose.
+
+    B) Screw terminal block, PCB pins, 0.2 inch pitch.
+	- Larger size, a bit overkill in current capacity.
+	+ Looks like power pins, nice and solid.
+
+    We have room for either.
+    Decide on (A) for first assembly.
+
+
