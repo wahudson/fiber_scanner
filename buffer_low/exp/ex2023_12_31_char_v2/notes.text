@@ -1,0 +1,345 @@
+2023-12-31  William A. Hudson
+
+	DC calibration - buffer_low_v2/ v2.0.1 - ex2023_12_31_char_v2/
+	--------------------------------------
+
+Purpose:
+    DC accuracy measured on v2.0.1 system (soldered protoboard).
+    Precision resistor Rload, 10 ohm, 0.1%.
+
+Result:  (equivalent fitted transfer functions)
+    Iout = (0.0997 mA/mV) * Vin + 0.358 mA
+    Iout = (0.0997 mA/mV) * (Vin + 3.59 mV)
+
+Follow from:  ex2023_12_23_accuracy/notes.text
+See Also:
+    cbuffer/exp/ex2023_04_29_cal/notes.text
+    cbuffer/exp/ex2023_05_03_ac_char/notes.text
+    cbuffer/exp/ex2023_06_25_cal/notes.text
+
+Files:
+    notes.text		this file
+    dc_cal.tab		measured data
+    dc_cal.pdf		plot transfer function Iout vs Vin
+
+Schematic:
+    kicad/buffer_low_v2/  v2.0.1  2023-12-27
+
+Git:  75c96d9f48  Wed Dec 27 20:17:07 2023 -0700
+    https://github.com/wahudson/fiber_scanner.git
+
+----------------------------------------------------------------------------
+## Configuration
+----------------------------------------------------------------------------
+
+Circuit Configuration:
+
+    Schematic:  kicad/buffer_low_v2/ki.pro  v2.0.1  2023-12-27
+    Built on soldered protoboard.
+
+    U1  = TLV4110I
+    Rp1 = 30 kohm,  5%
+    R2  = 7.5 kohm, 5%
+    Cp1 = none                 no filter
+    Rs  = 2.0 ohm,  1%, 0.6 W, 50 ppm  sense resistor, Vishay MBB series
+
+    Bypass caps:
+	C2p, C2n  0.1 uF
+	C4p, C4n  150 uF, 25 V, electrolytic
+
+    Rload = 10 ohm, 0.1%, 0.25 W, +-15 ppm/K  load resistor
+	Max current:  Imax = sqrt( 0.25 W / 10 ohm ) = 158 mA
+
+    Power Supply limits - OpAmp TLV4110:   (recommended)
+	Max:  +-3.0  Vdc  (6.0 V span)
+	Min:  +-1.25 Vdc  (2.5 V span)
+	Absolute max:  7.0 V span
+
+    Battery Power:  4x AA cells  in assembled instrument.
+
+Components:
+
+    Oscilloscope:  Keysight DSOX1204G, 4 channel, 70 MHz, 2 GSa/s
+	Wavegen output as signal source.
+
+    Multimeter:  Fluke model 23
+	Volt DC    accuracy:  +-(0.3% + 1 count), all ranges
+	Current DC accuracy:  +-(2.0% + 2 count), worst case
+	Resistance accuracy:  +-(0.5% + 1 count), 3.2 kohm to 3.2 Mohm
+	Meter is old, not calibrated, but functioning well.
+
+----------------------------------------------------------------------------
+## Plan
+----------------------------------------------------------------------------
+
+    Measure DC transfer function with a precision 10 ohm, 0.1%, load.
+    Measuring voltage Vload across Rload (floating) thus gives an accurate
+    current.
+
+    Iout = Vload / Rload
+
+    Note Rs is a 2 ohm 1% resistor, so not as accurate as Rload.
+
+Measure DC accuracy:
+
+    DC Stimulus on Vin to provide nominal
+	Iout = +-( 0, 5, 10, 20, 40, 60, 80, 100, 120, 140 ) mA
+
+    Measure:
+	Vin:    meter on Vin to GND.
+	Vload:  meter connected directly across Rload.
+
+    It is a bit cumbersome to switch both meter leads to measure Vin and Vload.
+    The wavegen output on the oscilloscope is digitally controlled, and
+    is quite repeatable, so we can sweep the wavegen DC output (Viw) measuring
+    only Vin once, and use those values while measuring only Vload in another
+    sweep.
+
+Measure Offset:
+
+    A) Set  Vin = open, i.e. R2 providing zero volts to GND.
+	Measure  Vload.
+	Compute  Io = Vload / Rload
+
+    B) Adjust Vin until Vload = 0.0 V
+	Measure Vin, which is the input offset voltage.
+
+----------------------------------------------------------------------------
+## Measure DC accuracy  (2023-12-31)
+----------------------------------------------------------------------------
+
+Power Supply:  Battery
+    Vpp = +2.658 V
+    Vnn = -2.643 V
+    Rs    =  2.0 ohm 1%
+    Rload = 10.0 ohm 0.1%
+
+    Viw   = Wavegen output DC voltage setting, applied to Vin
+    Vin   = Measured input voltage,         Vin to GND
+    Vload = Measured voltage across Rload,  Vo to Vs
+    Vo    = Measured output voltage,        Vo to GND
+    Vs    = Measured voltage across Rs,     Vs to GND
+    Vi    = Measured input attenuator voltage, Vi to GND
+
+Compute:
+    Iout = Vload / 10.00 ohm	output current measured on precision resistor
+
+Measurements:
+
+	Viw	Vin	Vload	Iout
+	(mV)	(mV)	(mV)	(mA)
+	    0	    0	    4	  Z
+	   50	   49	   53	  Z
+	  100	   99	  102	  Z
+	  200	  198	  201	  Z
+	  400	  396	  399	  Z
+	  600	  597	  598	  Z
+	  800	  796	  796	  Z
+	 1000	  994	  994	  Z
+	 1200	 1193	 1192	  Z
+	 1400	 1391	 1390	  Z
+
+	    0	    0	    4	  Z
+	  -50	  -49	  -45	  Z
+	 -100	  -98	  -94	  Z
+	 -200	 -198	 -193	  Z
+	 -400	 -396	 -391	  Z
+	 -600	 -594	 -588	  Z
+	 -800	 -792	 -786	  Z
+	-1000	 -991	 -984	  Z
+	-1200	-1189	-1182	  Z
+	-1400	-1388	-1380	  Z
+
+ >  Data table file:  dc_cal.tab
+	Numeric sort and edit to keep only one zero input.
+
+Analysis:  (running R)
+
+    df <- read.table( "dc_cal.tab", header=TRUE )
+    plot( df$Vin_mV, df$Vload_mV )
+
+    # Compute output current Iout
+    df$Iout_mA <- df$Vload_mV / 10.00
+    plot( df$Vin_mV, df$Iout_mA )
+
+    # Linear model to fit a line
+    fmod <- lm( Iout_mA ~ Vin_mV, data=df )
+    coefficients( fmod )
+	(Intercept)       Vin_mV
+	    0.35822      0.09966
+
+    abline( 0.35822, 0.09966 )
+    abline( h=0.0 )
+    abline( v=0.0 )
+
+    residuals( fmod )
+	Residuals are the deviation of the measured value, i.e. Iout_mA, from
+	the fitted function.
+	Virtually all are < 0.08 mA deviation, less than the 0.1 mA resolution
+	of measurement.
+
+    df$Resid_mA <- residuals( fmod )
+
+    plot( df$Viw_mV, df$Vin_mV )
+    wmod <- lm( Vin_mV ~ Viw_mV, data=df )
+	Coefficients:
+	(Intercept)       Viw_mV
+	     0.9474       0.9924
+
+    plot( df$Viw_mV, df$Iout_mA )
+    imod <- lm( Iout_mA ~ Viw_mV, data=df )
+	Coefficients:
+	(Intercept)       Viw_mV
+	     0.4526       0.0989
+
+Transfer Function:
+
+    Fitting the data with a linear model is the best way to estimate the
+    transfer function.
+
+    Slope-intercept form:
+	Iout = (Kc * Vin) + Ioff
+
+	where
+	    Kc   = 0.09966 mA/mV	slope
+	    Ioff = 0.35822 mA		intercept
+
+    Input offset form:  (useful when you want to pre-compensate Vin)
+	Iout = Kc * (Vin + Voff)
+
+	where
+	    Voff = Ioff / Kc
+	    Voff = (0.35822 mA) / (0.09966 mA/mV)  = 3.5944 mV
+
+
+    Iout = (0.09966 mA/mV) * Vin + 0.35822 mA
+    Iout = (0.09966 mA/mV) * (Vin + 3.5944 mV)
+
+Data Table:
+    print( df )
+
+	   Viw_mV Vin_mV Vload_mV Iout_mA     Resid_mA
+	1   -1400  -1388    -1380  -138.0 -0.035512698
+	2   -1200  -1189    -1182  -118.2 -0.067082477
+	3   -1000   -991     -984   -98.4  0.001003872
+	4    -800   -792     -786   -78.6 -0.030565908
+	5    -600   -594     -588   -58.8  0.037520442
+	6    -400   -396     -391   -39.1  0.005606792
+	7    -200   -198     -193   -19.3  0.073693141
+	8    -100    -98      -94    -9.4  0.008080187
+	9     -50    -49      -45    -4.5  0.024929839
+	10      0      0        4     0.4  0.041779491
+	11     50     49       53     5.3  0.058629143
+	12    100     99      102    10.2 -0.024177334
+	13    200    198      201    20.1  0.009865841
+	14    400    396      399    39.9  0.077952191
+	15    600    597      598    59.8 -0.052929848
+	16    800    796      796    79.6 -0.084499628
+	17   1000    994      994    99.4 -0.016413279
+	18   1200   1193     1192   119.2 -0.047983058
+	19   1400   1391     1390   139.0  0.020103291
+
+Make finished plot:
+
+    plot( df$Vin_mV, df$Iout_mA, ylim=c(-150,150), xlim=c(-1500,1500),
+	ylab="Iout_mA", xlab="Vin_mV" )
+
+    abline( 0.35822, 0.09966 )
+    abline( h=0.0 )
+    abline( v=0.0 )
+
+    title( main='Low Current Buffer  0.1 mA/mV' )
+    text( 100, -60,  pos=4, "Iout = (Kc * Vin) + Ioff" )
+    text( 100, -80,  pos=4, "Iout = Kc * (Vin + Voff)" )
+    text( 200, -100, pos=4, "Kc  = 0.0997 mA/mV" )
+    text( 200, -120, pos=4, "Ioff = 0.358 mA" )
+    text( 200, -140, pos=4, "Voff = 3.59 mV" )
+    title( sub='buffer_low_v2/ v2.0.1,  measured 2023-12-31' )
+
+ >  dev.copy2pdf( file="dc_cal.pdf" )
+
+    Note:  The pdf file shows the plotted points offset slightly from
+    the fit line, while the R plot window shows the points correctly aligned.
+    The fit is very good, so all points should fall on the line.
+    Seems like an artifact of pdf generation or rendering.
+
+----------------------------------------------------------------------------
+## Measure DC Offset
+----------------------------------------------------------------------------
+
+    A) Set  Vin = open, i.e. R2 providing zero volts to GND.
+	Measure  Vload.
+
+    B) Adjust Vin until Vload = 0.0 V
+	Measure Vin, which is the input offset voltage.
+
+	Viw	Vin	Vload	Iout
+	(mV)	(mV)	(mV)	(mA)
+    A)	    0	  0	  4	  0.4	Ioff = Iout  = 0.4 mA
+    B)	 -4.3	 -4	  0	  0	Voff = -Vin  = 4 mV
+
+    This is good as a direct measurement, but the linear model fit above is
+    a better estimate.  They agree well with the linear model:
+	Ioff = 0.358 mA
+	Voff = 3.59 mV
+
+----------------------------------------------------------------------------
+## Other Observations
+----------------------------------------------------------------------------
+
+Battery Power:
+    The circuit works fine on battery power.
+    Battery was at +-2.65 V.
+    At Iout= 140 mA, Vo = Iout * (Rload + Rs) = 0.14 A * (10 + 2 ohm) = 1.68 V
+    Op-amp head room requires ~0.4 V, giving 2.08 V min power supply.
+    Is good margin for +-2.2 V discharged battery supply (1.1 V per cell).
+
+Frequency:
+    Output Vo waveform looked good to ~10 kHz, then was showing more
+    crossover distortion.
+
+Driving Exciter:
+    Soberton E-12041808,  0.728 dia, 8 ohm, 2.0 W exciter
+
+    Quickly explored driving exciter.
+    Sweep frequency, see resonance around 400 Hz where Vo rises significantly
+    to keep current amplitude constant.
+    Drove current up to 150 mA.
+
+    Seems like 50 mA peak-peak should be good enough to resonate fiber
+    cantilever.  Makes noticeable noise.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    Transfer Function:
+	From a linear model fitted to the measured data.
+
+	Iout = (Kc * Vin) + Ioff	Slope-intercept form
+
+	Iout = Kc * (Vin + Voff)	Input offset form
+
+	where
+	    Kc   = 0.0997 mA/mV	slope
+	    Ioff = 0.358 mA		output offset current (intercept)
+	    Voff = 3.59 mV		input offset voltage
+
+	Looks linear to better than 1%.
+
+    Accuracy:
+	Meter readings limited to +-1 mV.
+	Used a 0.1%, 10.00 ohm resistor to measure current.
+	Did not try to make a detailed accuracy assessment.
+	Above parameters probably only good to 3 significant figures.
+
+    The circuit works fine on battery power.
+    Here operated with battery at +-2.65 V (no load).
+
+    Minimum required power supply is +-2.08 V.  (calculated)
+    Is good margin for +-2.2 V discharged battery supply (1.1 V per cell).
+
+    Measured to extended range of +-140 mA, which was just within power
+    limit of 0.25 W, 10.00 ohm load resistor.  Shows good margin for
+    a +-100 mA full scale specification.
+
