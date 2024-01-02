@@ -9,20 +9,25 @@ amplifier).
 
 See also:  cbuffer/
 
-Files:  (2023-11-11)
+Files:  (2024-01-01)
 ------
 README		this file
 
 doc/		Documentation
-    architecture.text       Overall design
-    bom_parts.text          #!! Bill of Material
-    plan.text               planning outline
+    architecture.text               Overall design
+    bom_parts.text                  Bill of Material
+    buffer_low_v2_UserGuide.text    User Guide for v2.0.1
+    buffer_low_v2_design.text       design details
+    plan.text                       planning outline
 
 kicad/		Schematic design
     README
-    buffer_low_v1/	Current Buffer circuit
+    buffer_low_v1/	Current Buffer v1, solderless breadboard
+    buffer_low_v2/	Current Buffer v2, soldered protoboard
     lib/		local library
+    opamp_vcm/		OpAmp Vcm and Output Margin experiments
 
 exp/		Experiments and Results
     README
+    ...
 

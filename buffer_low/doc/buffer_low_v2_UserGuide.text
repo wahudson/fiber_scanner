@@ -1,9 +1,9 @@
-2023-12-26  William A. Hudson
+2024-01-01  William A. Hudson
 
 		Low Current Buffer v2.0.1 - User Guide
 		--------------------------------------
 
-https://github.com/wahudson/fiber_scanner/buffer_low/
+https://github.com/wahudson/fiber_scanner/ -> buffer_low/
 
 This is a Current Source instrument, providing a current output proportional
 to a voltage input.  Essentially it is a transconductance amplifier.
@@ -25,6 +25,8 @@ Datasheets:
     Alkaline-Manganese Dioxide Battery
     https://www.duracell.com/wp-content/uploads/2016/03/MN15USCT0122-A.pdf
 
+2023-12-26  First written version.
+
 ----------------------------------------------------------------------------
 ## Summary Specification
 ----------------------------------------------------------------------------
@@ -33,13 +35,15 @@ Datasheets:
 
 Input Signal:  (voltage)
     Voltage Range:  -1.0 V to +1.0 V
-    Input offset voltage:  +-1 mV typ, +-18 mV max  (estimated)
     Frequency:  DC to 1 kHz
     Input impedance:  30 kohm
     Single-ended input, ground referenced.
     Input protection:  to +-10 V, even with power OFF.
 
     CAUTION:  Exceeding input voltage range could damage (over heat) the op-amp.
+
+    Input offset voltage:  +-1 mV typ, +-20 mV max  (estimated)
+	The input voltage that may be required to produce zero output current.
 
 Output Signal:  (current)
     Current Range:  -100 mA to +100 mA
@@ -287,4 +291,26 @@ Caution:
     and even higher resistance.
 
     On the other hand, an LED is ideally driven by a current source.
+
+----------------------------------------------------------------------------
+## Calibration
+----------------------------------------------------------------------------
+
+    There are no adjustments to correct the transfer function, i.e. no
+    offset zero, no gain adjust.
+
+    However, the instrument transfer function can be measured, and used
+    to compensate the input voltage for the desired output current.
+
+Calibration measurement:  2023-12-31  buffer_low_v2/ v2.0.1
+
+    See:  buffer_low/exp/ex2023_12_31_char_v2/notes.text
+
+    The two equivalent fitted linear transfer functions are:
+	Iout = (0.0997 mA/mV) * Vin + 0.358 mA		output offset current
+	Iout = (0.0997 mA/mV) * (Vin + 3.59 mV)		input offset voltage
+
+    These parameters are probably only good to 2 significant figures.
+    Measured on that specific instrument.  NOT a specification.
+    Unknown effect of time or temperature drift.
 
