@@ -84,6 +84,8 @@ Creating, Concatenating, and Expanding Matrices
 	Create a 4 element vector, space is the separator.
     A = [12 62; 93 -8]
 	Create a 4 element array, semicolon separates rows.
+    C = [A B]
+	concatenate row vectors A and B (optional comma)
     https://www.mathworks.com/help/matlab/math/creating-and-concatenating-matrices.html
 
 Matrices and Arrays
