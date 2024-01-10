@@ -41,6 +41,9 @@
     LineCycY_n = 200 * 2;	% number of X cycles in ramp cycle
     FrameCnt_n = 1;		% number of frames (Y ramp cycles)
 
+    FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
+    LineCycY_n = 4 * 2;
+
     totalTime_s = FrameCnt_n * LineCycY_n / FreqX_Hz;
     totalSamp_n = totalTime_s * sampRate;
 
@@ -48,6 +51,14 @@
     OutAmpY_V = 0.05;		% output amplitude, ramp voltage peak
 
     % pi = 3.14159;
+
+    fprintf( 'FreqX_Hz      = %10.3f\n', FreqX_Hz      );
+    fprintf( 'LineCycY_n    = %10.3f\n', LineCycY_n    );
+    fprintf( 'FrameCnt_n    = %10.3f\n', FrameCnt_n    );
+    fprintf( 'OutAmpX_V     = %10.3f\n', OutAmpX_V     );
+    fprintf( 'OutAmpY_V     = %10.3f\n', OutAmpY_V     );
+    fprintf( 'totalTime_s   = %10.3f\n', totalTime_s   );
+    fprintf( 'totalSamp_n   = %10d\n',   totalSamp_n   );
 
 %% Y Waveform (slow triangle wave)
 
@@ -58,20 +69,22 @@
     periodY_s = periodX_s * LineCycY_n;		% period of one Y ramp cycle
 
     quarterY_s = periodY_s / 4;			% quarter ramp cycle
-    quarterY_n = round( quarterY_s / dt_s );
+    quarterY_n = quarterY_s / dt_s;
 
     dY_V = OutAmpY_V / quarterY_n ;		% Y ramp increment
-
-    dY_V = OutAmpY_V * (dt_s / (periodY_s / 4));	% Y ramp increment
 
     % vector segments of Y ramp cycle
     A = [          0 :  dY_V : ( OutAmpY_V - dY_V ) ];
     B = [  OutAmpY_V : -dY_V : (-OutAmpY_V + dY_V ) ];
     C = [ -OutAmpY_V :  dY_V : ( 0         - dY_V ) ];
 
+    % Note parameters are all floating point.  Number of samples in each
+    % ramp segment may vary due to rounding.  Good enough for initial use.
+
     outVecY = [A B C];		% concatenate row vectors
+
     n = 1;
-    while ( n < FrameCnt_n )
+    while ( n < FrameCnt_n )	% add ramp cycles to fill out frame
 	n = n + 1;
 	outVecY = [outVecY A B C];
     end
@@ -91,14 +104,6 @@
 
     outVecX = OutAmpX_V * sin( wX * tVec_s );
 
-    % output parameters
-    fprintf( 'FreqX_Hz      = %10.3f\n', FreqX_Hz      );
-    fprintf( 'LineCycY_n    = %10.3f\n', LineCycY_n    );
-    fprintf( 'FrameCnt_n    = %10.3f\n', FrameCnt_n    );
-    fprintf( 'OutAmpX_V     = %10.3f\n', OutAmpX_V     );
-    fprintf( 'OutAmpY_V     = %10.3f\n', OutAmpY_V     );
-    fprintf( 'totalTime_s   = %10.3f\n', totalTime_s   );
-    fprintf( 'totalSamp_n   = %10d\n',   totalSamp_n   );
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s          );
     fprintf( 'periodX_s     = %12.4e\n', periodX_s     );
