@@ -41,8 +41,8 @@
     LineCycY_n = 200 * 2;	% number of X cycles in ramp cycle
     FrameCnt_n = 1;		% number of frames (Y ramp cycles)
 
-    FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
-    LineCycY_n = 4 * 2;
+%   FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
+%   LineCycY_n = 4 * 2;
 
     totalTime_s = FrameCnt_n * LineCycY_n / FreqX_Hz;
     totalSamp_n = totalTime_s * sampRate;
@@ -114,6 +114,9 @@
     fprintf( 'lengthY_n     = %10d\n',   lengthY_n     );
     fprintf( 'nsampX_n      = %10.3f\n', nsampX_n      );
 
+    figure(1);  clf;
+    plot( tVec_s, outVecX, tVec_s, outVecY );
+
 %% Run the DAQ
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
@@ -125,4 +128,7 @@
     fprintf( 'ofile         = %s\n', ofile );
 
     save( ofile, 'inScanData', '-ascii' );
+
+    figure(2);  clf;
+    plot( inScanData  );
 

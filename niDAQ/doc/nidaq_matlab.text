@@ -197,6 +197,21 @@ fprintf( formatSpec, vars, .. )		print to screen, or file
 sprintf( formatSpec, vars, .. )		return a string
     Similar to standard C.
 
+Plotting:
+
+figure(n)
+    Create a new figure window.  n= figure number identifier
+
+clf
+clf(n)
+    Clear figure window contents.
+
+plot( x, y );
+plot( x, y1, x, y2 );
+    Plot multiple lines in current figure.
+plot( matrix );
+    Plot each matrix column as a separate line vs index number.
+
 ----------------------------------------------------------------------------
 ## User Suggestions
 ----------------------------------------------------------------------------
