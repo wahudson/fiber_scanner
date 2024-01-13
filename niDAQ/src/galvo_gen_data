@@ -1,0 +1,97 @@
+#! /usr/bin/perl -w
+# 2024-01-13  William A. Hudson
+
+# Generate Galvo XY data added to input signal intensity data.
+#
+# Recreate  raster_gal.m  XY drive values.
+# Input:  DAQ data table, Vsig_V intensity data in first column.
+# Output:
+#      Vsig_V   Vx_V     Vy_V
+#     -0.00099  0.00000  0.00002
+
+# usage:  galvo_gen_data < data.txt
+
+# Config parameters
+    my $sampRate  = 62500;	# DAQ samples per second
+
+    my $FreqX_Hz   = 100;	# fast scan sine wave
+    my $LineCycY_n = 200 * 2;	# number of X cycles in ramp cycle
+    my $FrameCnt_n = 1;		# number of frames (Y ramp cycles)  Unused
+
+    my $OutAmpX_V = 2.00;	# output amplitude, sine wave voltage peak
+    my $OutAmpY_V = 1.00;	# output amplitude, ramp voltage peak
+
+# Derived parameters
+    my $totalTime_s = $FrameCnt_n * $LineCycY_n / $FreqX_Hz;
+    my $totalSamp_n = $totalTime_s * $sampRate;
+
+    printf( STDERR  "FreqX_Hz      = %10.3f\n", $FreqX_Hz      );
+    printf( STDERR  "LineCycY_n    = %10.3f\n", $LineCycY_n    );
+    printf( STDERR  "FrameCnt_n    = %10.3f\n", $FrameCnt_n    );
+    printf( STDERR  "OutAmpX_V     = %10.3f\n", $OutAmpX_V     );
+    printf( STDERR  "OutAmpY_V     = %10.3f\n", $OutAmpY_V     );
+    printf( STDERR  "totalTime_s   = %10.3f\n", $totalTime_s   );
+    printf( STDERR  "totalSamp_n   = %10d\n",   $totalSamp_n   );
+
+    my $dt_s = 1 / $sampRate;			# time sample interval
+
+    my $periodX_s = 1 / $FreqX_Hz;		# period of one X sine cycle
+    my $periodY_s = $periodX_s * $LineCycY_n;	# period of one Y ramp cycle
+
+    my $quarterY_s = $periodY_s / 4;		# quarter ramp cycle
+    my $quarterY_n = $quarterY_s / $dt_s;
+
+    my $DY_V = $OutAmpY_V / $quarterY_n ;	# Y ramp increment
+
+    my $MaxY =  $OutAmpY_V;
+    my $MinY = -$OutAmpY_V;
+
+    my $Pi = 3.14159;
+    my $wX = 2 * $Pi * $FreqX_Hz;		# radian frequency
+
+    printf( STDERR  "sampRate      = %10d\n",   $sampRate      );
+    printf( STDERR  "dt_s          = %14.4e\n", $dt_s          );
+    printf( STDERR  "periodX_s     = %14.4e\n", $periodX_s     );
+    printf( STDERR  "periodY_s     = %14.4e\n", $periodY_s     );
+    printf( STDERR  "quarterY_s    = %14.4e\n", $quarterY_s    );
+    printf( STDERR  "quarterY_n    = %10d\n",   $quarterY_n    );
+    printf( STDERR  "dY_V          = %14.4e\n", $DY_V          );
+
+# Main loop
+    my $ix = 0;		# index (integer)
+    my $tx = 0;		# time (float)
+
+    my $outX = 0;
+    my $outY = 0;
+
+    my $dY_V = $DY_V;	# Y ramp increment
+
+    print( " Vsig_V   Vx_V     Vy_V\n" );
+
+    while ( <> ) {
+	my ( $Vsig_V ) = split( ' ', $_ );
+
+	$outX = $OutAmpX_V * sin( $wX * $tx );
+
+	$outY += $dY_V;
+
+	if ( $outY > $MaxY ) {
+	    $dY_V = -$DY_V;
+	    $outY += $dY_V;
+	}
+
+	if ( $outY < $MinY ) {
+	    $dY_V = $DY_V;
+	    $outY += $dY_V;
+	}
+
+	printf( "%8.5f %8.5f %8.5f\n", $Vsig_V, $outX, $outY );
+	    # assume resolution to 0.01 mV
+
+	$ix++;
+	$tx += $dt_s;
+    }
+
+    printf( STDERR  "length_n      = %10d\n",   $ix            );
+    printf( STDERR  "TotalTime     = %10.3f\n", $tx            );
+
