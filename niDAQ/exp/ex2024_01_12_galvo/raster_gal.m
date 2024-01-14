@@ -24,12 +24,12 @@
     chInSig = addinput( dq, 'Dev1', 'ai1', 'Voltage' ); % Intensity Signal
 
     % input channels from PSD
- %  chInSum = addinput( dq, 'Dev1', 'ai2', 'Voltage' ); % PSD Sum Pin Signal
- %  chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
- %  chInY   = addinput( dq, 'Dev1', 'ai5', 'Voltage' ); % PSD Y Pin Signal
+    chInSum = addinput( dq, 'Dev1', 'ai2', 'Voltage' ); % PSD Sum Pin Signal
+    chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
+    chInY   = addinput( dq, 'Dev1', 'ai5', 'Voltage' ); % PSD Y Pin Signal
 
- %  chInX.Range = [-5,5];
- %  chInY.Range = [-5,5];
+    chInX.Range = [-5,5];
+    chInY.Range = [-5,5];
 
     % DAQ sample rate
     dq.Rate  = 62500;		% set samples per second
@@ -39,15 +39,15 @@
 
     FreqX_Hz   = 100;		% fast scan sine wave
     LineCycY_n = 200 * 2;	% number of X cycles in ramp cycle
-    FrameCnt_n = 1;		% number of frames (Y ramp cycles)
+    FrameCnt_n = 4;		% number of frames (Y ramp cycles)
 
-%   FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
-%   LineCycY_n = 4 * 2;
+%    FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
+%    LineCycY_n = 4 * 2;
 
     totalTime_s = FrameCnt_n * LineCycY_n / FreqX_Hz;
     totalSamp_n = totalTime_s * sampRate;
 
-    OutAmpX_V = 1.00;		% output amplitude, sine wave voltage peak
+    OutAmpX_V = 2.00;		% output amplitude, sine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
     % pi = 3.14159;
@@ -114,8 +114,8 @@
     fprintf( 'lengthY_n     = %10d\n',   lengthY_n     );
     fprintf( 'nsampX_n      = %10.3f\n', nsampX_n      );
 
-    % figure(1);  clf;
-    % plot( tVec_s, outVecX, tVec_s, outVecY );
+%    figure(1);  clf;
+ %   plot( tVec_s, outVecX, tVec_s, outVecY );
 
 %% Run the DAQ
 
@@ -124,11 +124,11 @@
 
     inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
 
-    ofile = "ras1.txt";
+    ofile = "ras3.txt";
     fprintf( 'ofile         = %s\n', ofile );
 
-    save( ofile, 'inScanData', '-ascii' );
+   save( ofile, 'inScanData', '-ascii' );
 
-    % figure(2);  clf;
-    % plot( inScanData  );
+ %   figure(2);  clf;
+  %  plot( inScanData  );
 

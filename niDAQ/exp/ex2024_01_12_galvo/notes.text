@@ -1,0 +1,419 @@
+2024-01-12  William A. Hudson
+
+		Galvo Scanner Raster Scan -- ex2024_01_12_galvo/
+		-------------------------
+
+Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+My first measurements.
+
+See:  red notebook  1-12-2024, 1-10-2024
+USB stick:  csu2024_01_12/
+
+Files:
+    data ->			archive data (symlink)
+    raster_gal.m		control script, modified as run here
+    reformat_daq1		reformat raw data keeping only Vsig_V column,
+				    modified from  reformat_daq1.
+
+    f1_quarter_scan.pdf		urast2.text, iris open,   ~5 mm
+    f2_quarter_scan.pdf		urast3.text, iris narrow, ~1.5 mm
+
+Data files:  (.txt not saved)
+		    raw data (4 frames) from Matlab - raster_gal.m
+    ras1.txt		round mirror, original iris ~1.5 mm?
+    ras2.txt		Edmund Optic (EO) 10LPM target, iris ~5 mm
+    ras3.txt		EO target,                      iris ~1.5 mm
+
+    ras[123].text	reduced to single Vsig_V column - reformat_daq1
+
+		    1 frame:
+    rast[12].text	reconstructed XY drive signals - galvo_gen_data
+    urast[23].text	reconstructed XY with unfolded X - galvo_gen_data
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+
+Galvo scanner RCM as built by Jesse Wilson on 1-10-2024.
+    Using fiber scanner NI DAQ USB-6211 and 780 nm laser on fiber optic.
+    Laser current:  30 mA
+
+    Git:  32ede19b31  Thu Jan 11 21:17:45 2024 -0700
+    Matlab:  raster_gal.m	modified here
+
+    sampRate   = 62500;         % samples per second
+    FreqX_Hz   = 100;           % fast scan sine wave
+    LineCycY_n = 200 * 2;       % number of X cycles in ramp cycle
+    FrameCnt_n = 4;             % number of frames (Y ramp cycles)
+
+Run Matlab:  raster_gal.m
+    Similar runs for ras[123].txt, same parameters.
+    % diary console2.txt
+
+    %% rast1.txt  100 Hz, 400 lines, 4 frames, X= 2.0V, Y=1.0V
+    > raster_gal
+    FreqX_Hz      =    100.000
+    LineCycY_n    =    400.000
+    FrameCnt_n    =      4.000
+    OutAmpX_V     =      2.000
+    OutAmpY_V     =      1.000
+    totalTime_s   =     16.000
+    totalSamp_n   =    1000000
+    sampRate      =   6.2500e+04
+    dt_s          =   1.6000e-05
+    periodX_s     =   1.0000e-02
+    periodY_s     =   4.0000e+00
+    quarterY_s    =   1.0000e+00
+    quarterY_n    =      62500
+    dY_V          =   1.6000e-05
+    lengthY_n     =    1000000
+    nsampX_n      =    625.000
+    ofile         = ras1.txt
+
+----------------------------------------------------------------------------
+## Initial look at data  2024-01-12
+----------------------------------------------------------------------------
+    I think X is horizontal, Y is vertical.
+
+Format raw data keeping only Vsig_V column:
+    reformat_daq1 < ras1.txt > ras1.text
+    reformat_daq1 < ras2.txt > ras2.text
+    reformat_daq1 < ras3.txt > ras3.text
+
+    Source data files (ras*.txt) are huge.
+    Reduced files (ras*.text) are 9 Mbyte each (4 frames).
+
+Analyze with R:
+
+    df <- read.table( "ras1.text", header=FALSE )
+    names( df ) <- "Vsig_V"
+
+    dim(df)
+    [1] 1000000       1
+
+	    1 million points is slow
+
+    plot( df$Vsig_V )
+	See 4 peaks corresponding to the 4 frames.
+
+    rn <- c(200000:250000)
+    plot( rn, df$Vsig_V[rn] )
+	See right half of first peak.
+
+    rn <- c(200000:201000)
+    plot( rn, df$Vsig_V[rn] )
+	See two sets of two peaks.  These are two X scan lines?
+	Locate the 4 peaks:
+
+    locator()
+    $x
+    [1] 200091.4  200241.8  200718.4  200868.8
+    $y
+    [1] 0.1332183 0.1338128 0.1344073 0.1344073
+	L         R         L         R
+
+    Assume the zero areas between peaks are no signal from beam being too off
+    axis to the mirror.  Asymmetric because mirror is not normal to the
+    X=0 position.  i.e. Bright peak is closer to one end of X scan.
+
+    Centers of low level are the ends of the X scan.
+    Thus distance between the same peak in two pairs is the X scan length.
+
+    deltaX = 200718.4 - 200091.4 = 627
+
+        Measured is close to exact nsampX_n below.
+
+    Samples in one X cycle:
+	periodX_s = 1 / FreqX_Hz;
+	nsampX_n  = periodX_s / dt_s;
+
+	nsampX_n  =    625.000
+
+	one frame = LineCycY_n * nsampX_n   = 400 * 625   = 250000 samples
+
+    rn <- c(230000:231000)
+    plot( rn, df$Vsig_V[rn] )
+	See same symmetry, but half the amplitude due to Y ramp.
+
+Zoom in on a peak
+    rn <- c(200075:200125)
+    plot( rn, df$Vsig_V[rn] )
+
+
+Want to form a 2D array, folding every nsampX_n (625) samples.
+    ?array
+
+    rn <- c(1:250000)
+    fr = array( df$Vsig_V, c(625,400) )
+
+	Left dimension (625) varies fastest, is vertical (columns), while
+	right dimension (400) varies slowest, is rows.
+
+Plot with index vectors in data frame:
+    xv = c(1:625)
+    yv = c(1:400)
+
+    Intensity range:
+    % max( df$Vsig_V )
+	[1] 0.14201
+    % min( df$Vsig_V )
+	[1] -0.00264
+
+    iu <- (df$Vsig_V + 0.003 ) / 0.150
+	Gray scale intensity range 0..1
+
+    xv = rep( c(1:625), 400 )
+    yv = rep( c(1:400), each=625 )
+
+    rn <- c(100000:200000)
+    plot( xv[rn], yv[rn], pch=20, col=gray( iu[rn] ) )
+    	Starting to look like an image.
+	See two bright vertical bars on left side with horizontal scan lines.
+	A dimmer section in center of bars might be Y ramp reversing?
+
+2024-01-13
+
+    Invert the Z gray scale:
+    plot( xv[rn], yv[rn], pch=20, col=gray( 1.0 - iu[rn] ) )
+
+    plot( xv[rn], yv[rn], pch='.', col=gray( 1.0 - iu[rn] ) )
+	See narrower scan lines, quantized.
+	Quantized because of integer xv and yv.
+
+Quick look at ras2.text:
+
+    df <- read.table( "ras2.text", header=FALSE )
+    names( df ) <- "Vsig_V"
+
+    %  max( df$Vsig_V )
+	[1] 0.11604
+    % min( df$Vsig_V )
+	[1] -0.00231
+
+    iu <- (df$Vsig_V + 0.003 ) / 0.120
+	Gray scale intensity range 0..1
+
+    rn <- c(150000:250000)
+    plot( xv[rn], yv[rn], pch=20, col=gray( iu[rn] ) )
+    See bright column in center, and one on each edge.
+    Bright areas have dark streaks, mirrored on center and right columns.
+
+    rn <- c(100000:200000)
+
+----------------------------------------------------------------------------
+## Analysis  2024-01-13
+----------------------------------------------------------------------------
+Proper X and Y positions:
+    Reconstruct the actual drive waveforms.
+    Script:  src/galvo_gen_data		git:  Sat Jan 13 14:19:12 2024 -0700
+    
+    Write an separate program to do this.  Best way for me.
+    Essentially mirror what the rasta_gal.m script did.
+
+    # Truncate dataset to one frame:
+    % head -250000 ras1.text | galvo_gen_data > rast1.text 2> rast1.err
+    % head -250000 ras2.text | galvo_gen_data > rast2.text 2> rast2.err
+	These files are 6.75 Mbyte each.
+
+    rast2.err:
+	FreqX_Hz      =    100.000
+	LineCycY_n    =    400.000
+	FrameCnt_n    =      1.000
+	OutAmpX_V     =      2.000
+	OutAmpY_V     =      1.000
+	totalTime_s   =      4.000
+	totalSamp_n   =     250000
+	sampRate      =      62500
+	dt_s          =     1.6000e-05
+	periodX_s     =     1.0000e-02
+	periodY_s     =     4.0000e+00
+	quarterY_s    =     1.0000e+00
+	quarterY_n    =      62500
+	dY_V          =     1.6000e-05
+	length_n      =     250000
+	TotalTime     =      4.000
+
+rast1.text:  Analyze with R
+    df <- read.table( "rast1.text", header=TRUE )
+
+    % names( df )
+	[1] "Vsig_V" "Vx_V"   "Vy_V"
+    % dim(df)
+	[1] 250000      3
+
+    Intensity range:
+    % max( df$Vsig_V )
+	[1] 0.14201
+    % min( df$Vsig_V )
+	[1] -0.00264
+
+    iu <- (df$Vsig_V + 0.003 ) / 0.150
+	Gray scale intensity range 0..1
+
+    rn <- c(125000:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	X:  -2.0 to +2.0
+	Y:  -1.0 to  0.0
+	See bright column in lower right corner.
+	This is bidirectional X trace, since we are plotting actual X.
+
+    rn <- c(225000:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See definite phase shift in image with direction of X.
+
+	We may be seeing only the edge of the mirror.
+
+	Want to unfold the X fast sweep.
+
+rast2.text:  Analyze with R
+    df <- read.table( "rast2.text", header=TRUE )
+
+    Intensity range:
+    % max( df$Vsig_V )
+	[1] 0.11604
+    % min( df$Vsig_V )
+	[1] -0.00231
+
+    iu <- (df$Vsig_V + 0.003 ) / 0.120
+	Gray scale intensity range 0..1
+
+    rn <- c(1:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See one broad bright area for (Vx < 0.5), dark above.
+	Fuzzy dark vertical striations over bright area.
+	See artifact horizontal lines from plot circle rendering.
+
+    rn <- c(225000:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+
+Unfold X scan:  urast2.text
+
+    Script:  src/galvo_gen_data		git:  Sat Jan 13 22:20:43 2024 -0700
+	Set $UnFold = 1;
+
+    % head -250000 ras2.text | galvo_gen_data > urast2.text 2> urast2.err
+    % head -250000 ras3.text | galvo_gen_data > urast3.text 2> urast3.err
+
+    urast3.err:
+	FreqX_Hz      =    100.000
+	LineCycY_n    =    400.000
+	FrameCnt_n    =      1.000
+	OutAmpX_V     =      2.000
+	OutAmpY_V     =      1.000
+	UnFold        =          1
+	totalTime_s   =      4.000
+	totalSamp_n   =     250000
+	sampRate      =      62500
+	dt_s          =     1.6000e-05
+	periodX_s     =     1.0000e-02
+	periodY_s     =     4.0000e+00
+	quarterY_s    =     1.0000e+00
+	quarterY_n    =      62500
+	dY_V          =     1.6000e-05
+	length_n      =     250000
+	TotalTime     =      4.000
+
+    df <- read.table( "urast2.text", header=TRUE )
+
+    rn <- c(225000:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See X scan nicely unfolded:
+	X:  -2 to +2   is positive slope
+	X:  +2 to +6   is negative slope, inverted (mirrored)
+
+    rn <- c(1:250000)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See one Y ramp cycle:  0 to +1, down to -1, up to 0
+	Has re-trace in it.
+
+    View only single Y trace:
+    quarterY_n    =      62500
+
+    rn <- c(1:(1*62500))		# Y:   0 to +1
+    rn <- c((1*62500):(3*62500))	# Y:  +1 to -1
+    rn <- c((3*62500):(4*62500))	# Y:  -1 to  0
+
+	See the doubled bright column, would fold in center at X=+2.0 V.
+	One side of the bright column is sharper, the other fades to black.
+	The top has part cut off sharp, and part ragged.
+	Dark blotches in the bright area, might be dirt on the target.
+	(The EO target was noticeably dirty.)
+	Not enough context for a good interpretation.
+
+Plot one scan line across image:
+
+    rn <- c(1:625)
+
+    rn <- c(18750:(18750+625))
+    plot( df$Vx_V[rn] )
+
+    rn <- c(18750:(18750+125))
+    plot( df$Vx_V[rn], df$Vsig_V[rn] )
+	See Vx= 0.0 on left, +2.0 on right and samples get closer together
+	at peak of X scan on the right.
+
+    title( main="urast2.text", sub="rn = c(18750:(18750+625))" )
+ >  dev.copy2pdf( file="f1_quarter_scan.pdf" )
+	Possible interpretation:
+	Peak is reflection off of solid part of target.
+	Left of peak falls off quickly on sharp edge of target with fine
+	ruled lines "10 LPM" on left side, possibly only 10% reflective
+	duty cycle.  Right side is solid part of target, fades to zero
+	as beam gets sufficiently off-axis.
+	Maybe.
+
+Quick look at narrow iris:  urast3.text
+    Added in red to same plot of urast2.text above.
+
+    df <- read.table( "urast3.text", header=TRUE )
+
+    rn <- c(18750:(18750+125))
+    points( df$Vx_V[rn], df$Vsig_V[rn] )
+    text( 1.0, 0.06, pos=4, col='red', "urast3.text" );
+    text( 1.0, 0.065, pos=4, col='black', "urast2.text" );
+
+ >  dev.copy2pdf( file="f2_quarter_scan.pdf" )
+
+	Both traces have the same character, but smaller iris (urast3.text)
+	has lower intensity.
+
+    Full intensity XY plot shows similar pattern to urast2, but less bright.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    Good enough to turn-on and improve script  raster_gal.m
+
+    Both targets, the mirror and Edmund Optics 10LPM slide, show good signal.
+    Was a good exercise to position the targets at focus.
+
+    Interpretation of image is limited.  Not enough concrete context.
+    No actual object in the frame.
+
+    Iris opening affects intensity of signal, but did not affect the
+    character (profile) of the bright peak.  f2_quarter_scan.pdf
+
+----------------------------------------------------------------------------
+## Next
+----------------------------------------------------------------------------
+
+    Improve raster_gal.m:
+	Put X and Y drive waveforms in Matlab output data.
+	Remove unused PSD columns.
+	Maybe add scan mark flag indicating positive slope on X scan.
+
+    Want record in notebook:
+	XY axis as observed on IR card.
+	XY axis directions, i.e. which way is +X and +Y.
+
+    Place target so a recognizable object is in the scan field.
+
+    Want a known width slot in target to help measure resolution.
+
+    Try a paper reflectance target with black ink.
+
+    Scan field is order of 3 mm, try a large object.
+
+    Check galvo scan range - could we be clipping?
+
