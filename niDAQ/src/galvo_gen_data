@@ -21,6 +21,8 @@
     my $OutAmpX_V = 2.00;	# output amplitude, sine wave voltage peak
     my $OutAmpY_V = 1.00;	# output amplitude, ramp voltage peak
 
+    my $UnFold    = 1;		# 1= Unfold X sinewave, unidirectional sweep
+
 # Derived parameters
     my $totalTime_s = $FrameCnt_n * $LineCycY_n / $FreqX_Hz;
     my $totalSamp_n = $totalTime_s * $sampRate;
@@ -30,6 +32,7 @@
     printf( STDERR  "FrameCnt_n    = %10.3f\n", $FrameCnt_n    );
     printf( STDERR  "OutAmpX_V     = %10.3f\n", $OutAmpX_V     );
     printf( STDERR  "OutAmpY_V     = %10.3f\n", $OutAmpY_V     );
+    printf( STDERR  "UnFold        = %10d\n",   $UnFold        );
     printf( STDERR  "totalTime_s   = %10.3f\n", $totalTime_s   );
     printf( STDERR  "totalSamp_n   = %10d\n",   $totalSamp_n   );
 
@@ -61,6 +64,7 @@
     my $ix = 0;		# index (integer)
     my $tx = 0;		# time (float)
 
+    my $sinX = 0;
     my $outX = 0;
     my $outY = 0;
 
@@ -71,7 +75,16 @@
     while ( <> ) {
 	my ( $Vsig_V ) = split( ' ', $_ );
 
-	$outX = $OutAmpX_V * sin( $wX * $tx );
+	my $sine = sin( $wX * $tx );
+
+	if ( $UnFold && (($sine - $sinX ) < 0) ) {	# negative derivitive
+	    $outX =  2.0 - $sine;	# unfold negative slope on top
+	}
+	else {
+	    $outX = $sine;
+	}
+	$sinX = $sine;
+	$outX = $OutAmpX_V * $outX;
 
 	$outY += $dY_V;
 
