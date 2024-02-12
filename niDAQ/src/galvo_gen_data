@@ -18,7 +18,7 @@
     my $LineCycY_n = 200 * 2;	# number of X cycles in ramp cycle
     my $FrameCnt_n = 1;		# number of frames (Y ramp cycles)  Unused
 
-    my $OutAmpX_V = 2.00;	# output amplitude, sine wave voltage peak
+    my $OutAmpX_V = 1.00;	# output amplitude, sine wave voltage peak
     my $OutAmpY_V = 1.00;	# output amplitude, ramp voltage peak
 
     my $UnFold    = 1;		# 1= Unfold X sinewave, unidirectional sweep

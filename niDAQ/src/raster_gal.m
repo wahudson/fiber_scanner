@@ -50,6 +50,8 @@
     OutAmpX_V = 1.00;		% output amplitude, sine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
+    Ofile = "rss1.txt";		% output data file name
+
     % pi = 3.14159;
 
     fprintf( 'FreqX_Hz      = %10.3f\n', FreqX_Hz      );
@@ -124,10 +126,17 @@
 
     inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
 
-    ofile = "ras1.txt";
-    fprintf( 'ofile         = %s\n', ofile );
+    allScanData = [ inScanData, outScanData ];
 
-    save( ofile, 'inScanData', '-ascii' );
+    % Range of chInSig, first column of inScanData
+    sigMax_V = max( allScanData(:,1) );
+    sigMin_V = min( allScanData(:,1) );
+    fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
+    fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
+
+    fprintf( 'Ofile         = %s\n', Ofile );
+
+    save( Ofile, 'allScanData', '-ascii' );
 
     % figure(2);  clf;
     % plot( inScanData  );
