@@ -349,6 +349,16 @@ It appears the USB-6211 is obsolete - no specs or manual can be found on
     NI website.  Maybe replaced by another device.  Very unprofessional to
     not have data on their old products.  (2022-12-20)
 
+Manual copies found on the web:  (see /home/var/ref/ )
+
+    USB-6211.pdf                    2022-12-20
+	NI USB-621x Specifications (Aug 2006)
+	https://devenport.aoe.vt.edu # inst3 # USB-6211
+
+    USB-621x_User_Manual.pdf        2022-12-20
+	NI USB-621x User Manual - Bus-Powered M Series USB Devices (Apr 2009)
+	http://www.biomech.hacettepe.edu.tr # manuals
+
 ----------------------------------------
 Linux:
 

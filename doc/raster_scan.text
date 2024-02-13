@@ -35,3 +35,20 @@ Low-speed Scan system:  (2022-03-03)
     Image scan, needs less photodiode bandwidth (i.e. 5 kHz).
     Planar fiber tip motion, constant NA getting light into the fiber.
 
+Methods for Low-speed Scan:  (2022-11-19)
+    Frequencies well below resonant frequency of structure.  e.g. <10 Hz
+    Voice coil exciters with 2 mm to 5 mm displacement.
+
+    A) Orthoganal exciters drive balsawood spider holding the fiber.
+
+    B) Bending beam driven by X-exciter, Y-exciter on end of beam direct
+	drive of fiber.
+
+    C) Bending rod driven by push rods on orthogonal exciters.
+
+    D) Bending beam on a pivot.
+
+    E) Beam hinged on a gimbal.
+
+    F) Vertical exciter carries horizontal exciter that carries the fiber.
+

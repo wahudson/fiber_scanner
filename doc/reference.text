@@ -692,3 +692,21 @@ MEMS-based multiphoton endomicroscope for repetitive imaging of mouse colon
     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4541532/
     (see doc/mems_compare_2023.text)
 
+Fast Iterative Fourier Filtering Reconstruction and Optimizing a
+    Lissajous-scanning Reflectance Confocal Microscope
+    Cameron N. Coleal, William A. Hudson, and Jesse W. Wilson
+    JOSAA, April 2023
+    https://doi.org/10.1364/JOSAA.484370
+    This is the fiber scanner we built at CSU.
+
+Beyond laser safety glasses: augmented reality in optics laboratories
+    Franco Quercioli
+    Applied Optics (2017)
+    DOI: 10.1364/AO.56.001148
+    https://pubmed.ncbi.nlm.nih.gov/28158127
+    Using a smartphone's camera and display, augmented reality headset.  Use
+    is demonstrated, and strengths and weaknesses are discussed.
+    Issues include:  Camera not aligned with eyes.  Weight of headset.
+    Lack of stereo vision requires adaptation.  Head motion dizziness due to
+    low video frame rate and slow autofocus.
+

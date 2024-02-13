@@ -1,0 +1,64 @@
+2024-02-08  William A. Hudson
+
+Ideas of stuff to buy for the 2023-2024 BME fiber scanner project.
+Do we have a list of parts already purchased?
+
+    Test target, 100 um slit.
+	Use for spot diameter measurement by scanning across slit to measure
+	spot velocity and knife edge diameter.
+	Max spot diameter is less than the slit width.
+	Spot must travel fully beyond each side of the slit.
+	Thus need spot travel > (2 * slit_width), plus a large margin (i.e. 2x).
+	Trade-off required scan range vs maximum spot diameter measured.
+	Widths:  20, .., 50, 100, 150, 200 um
+	$121.72  Thorlabs S50LK    50 um, 10 mm long, 1 inch dia mounted slit
+ >	$121.72  Thorlabs S100LK  100 um, 10 mm long, 1 inch dia mounted slit
+	$121.72  Thorlabs S200LK  200 um, 10 mm long, 1 inch dia mounted slit
+
+    Fiber optic light trap, terminator, beam dump.
+	Convert our 2x2 fiber coupler into 1x2.
+	Eliminate back reflections from the unused port.
+ >	$41.29  ThorLabs FTFC1   FC/PC
+	$41.29  ThorLabs FTAPC1  FC/APC
+
+    Index matching gell for fiber optic connectors.
+	FC/PC connector loss:  1.12 db in air, 0.59 db with gel
+	What about lifetime of product in package and on the connector?
+	$48.41  ThorLabs G608N3  Index matching gel, 3 cc syringe
+
+    Fiber splitter 1x2.
+	This could help back reflections from the unused port on 2x2.
+
+    Fiber circulator.
+	Is a 3-port device.  Could be better than our 2x2 splitter.
+
+    APC ferrules for slow scanner.
+	Polish fiber end at APC angle to eliminate back reflection.
+	Do they make these?
+
+    Ferrule ceramic 1.25 mm dia, 6.4 mm long
+	We have some, do we need more?
+	$23.16  ThorLabs CFLC126-10  126 um bore
+	$25.07  ThorLabs CFLC128-10  128 um bore
+
+    Beam sampler - use in place of our microscope slide.
+	To reduce the double reflection to the PSD.
+	Maybe an anti-reflective coating on the backside?
+	Is the wedge angle enough to block the backside reflection?
+
+    Tube lens for  10x, 20x or 40x objective?
+
+    Microscope objective lens?
+
+    Camera sensor for beam profile.
+
+    Neutral density filter, for camera sensor.
+
+    LED fiber light for beam profile measurement.
+	Lower intensity for camera sensor.
+
+    Ground glass for finding focus by speckle method.
+	Might also be an interesting sample to look at.
+
+    Other parts?  Lens tubes?  Lenses?
+
