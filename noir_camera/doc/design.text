@@ -1,0 +1,233 @@
+2024-01-03  William A. Hudson
+
+			Noir Camera
+			-----------
+
+Objective:
+    Assemble a Raspberry Pi (RPi) NoIR Camera in a case for viewing infra red
+    (IR) things in the optics lab.
+
+See also:  /home/wah/pro/raspberryPi/rpiNoir.text
+
+----------------------------------------------------------------------------
+## Components, Bill of Materials (BOM)
+----------------------------------------------------------------------------
+
+Computer Components:
+
+    5V 2.5A Switching Power Supply with 20AWG MicroUSB Cable
+ 1	$7.50  DigiKey AdaFruit 1995, 1.8 m cable  (received 1.5 m cable)
+
+    Mini HDMI to HDMI male Cable
+ 1	$12.80	DigiKey	 Tripp Lite P571-006-MINI, 1.83 m (6 ft)
+
+    USB OTG Host Cable - MicroB OTG male to A female, 6 inch
+ 1	$2.45  PiShop.us  801 - Raspberry Pi Foundation
+
+    USB A-male to MicroB-male
+ 1	$5.04  DigiKey	Assmann AK67421-2,   2.00 m, 28 AWG
+
+    Official Raspberry Pi Keyboard and Hub
+ 1	$17.00	DigiKey	 RPi SC0197, US Keyboard Black/Grey, with USB cable
+
+    Raspberry Pi Official Mouse
+ 1	$9.25  PiShop SKU: 2010, Official Mouse Red/White
+
+    $54 total
+
+Display/Optional Components:
+
+    7inch Universal Portable Touch Monitor, 1080x1920 Full HD, IPS, Mini HDMI
+ 1	$109.95  PiShop.us  SKU:849  Waveshare
+	Fully enclosed silver case, separate triangle stand, no buttons.
+	No backlight or contrast control buttons.
+	Toughened glass panel, 6H hardness
+	On/Off button - hold to adjust brightness.
+	Case:  metal alloy shell, 98 mm X 188 mm X 10.5 mm thick
+	Display area:  (estimate)  91 mm X 154 mm, about 1/3 of big monitor
+	Includes:  Mini HDMI to HDMI cable, Mini HDMI to Micro HDMI cable,
+		Triangle stand.
+	https://www.pishop.us/product/7inch-universal-portable-touch-monitor-1080-1920-full-hd-ips-mini-hdmi/
+
+    USB A-male to MicroB-male
+ 1	$5.04  DigiKey	Assmann AK67421-2,   2.00 m, 28 AWG
+
+    JOBY GorillaPod Magnetic Tripod
+	About 6 inch long, 10 flexible ball joints on each leg.  Magnetic feet.
+ 1	$20.00  on-hand
+
+    $135 total
+
+Camera Box Components:
+
+    Raspberry Pi Camera Module 3
+ 1	$15.00	PiShop,	  Camera Module 3 NoIR
+	$15.00	PiShop,	  Camera Module 2 NoIR
+
+    Raspberry Pi Zero v1.3 Camera Cable, 150mm
+	$5.95  PiShop.us 407
+
+    Raspberry Pi Zero Mini Camera Cable, 38mm
+ 1	$2.95  PiShop.us 850
+
+    Raspberry Pi Zero W, Wireless
+ 1	$15.00	PiShop.us 808, no header
+
+    Micro SDHC Card, 16 GB, Class 10 - BLANK  SanDisk Ultra
+ 1	$6.95  PiShop.us  936 - Blank
+
+    Hammond 1594 Series - Heavy Duty ABS Enclosures
+ 1	$13.13  DigiKey  Hammond 1594CBK,  Standard, Black
+
+ 2  Screw + Nut, #2-56 x 1/2 inch round head, grind down to 13/64 long.
+	Mount Camera Module 3 using only the 2 centered holes.
+
+ 2  Screw, #6 SM x 3/8 inch, tip ground off.
+	Mount aluminum angle holding the Camera Module.
+
+ 4  Screw, #4-40 machine, self thread into hardboard 3/32 inch hole.
+ 4  Spacer, Nylon, 0.25 inch long, for #4-40 screw.
+	Mount RPi Zero board to base plate.
+
+ 4  Screw, #6-32 flat head machine, self thread into hardboard 1/8 inch hole.
+	Mount hardboard base plate to box.
+
+ 1  T-Nut, 1/4-20 x 5/16 inch long, stainless, 2-hole mount.
+ 2  Screw, #6 SM x 3/8 inch, tip ground off
+	For Tripod mount.  Recessed into base plate, extend thru box bottom.
+
+    $53 total (not including screws)
+
+----------------------------------------------------------------------------
+## Tripod Mount
+----------------------------------------------------------------------------
+
+Want to mount the camera box on a standard tripod.
+    This provides a way of holding the camera on a subject while adjusting
+    the camera or optics on the lab bench.
+
+    Typical tripod mounts have a 1/4-20 screw on the tripod that threads into
+    the camera base.  The thread length is typically very short, less than
+    1/4 inch.
+
+How to provide female threads on camera box?:
+
+    A) Captive nut in baseplate inside the box.
+	-- Box thickness prevents the short screw reaching the nut.
+
+ >  B) T-nut, nose projects thru the box wall.
+ >	Purchased.
+	Custom made T-nut.  Brass bolt machined into a T-nut.
+	+ Flat box bottom, no projecting mount plate.
+	+ Direct attach to base plate inside the box.
+	- A long tripod screw could hit the RPi Zero inside.
+
+    C) Mount plate attached to bottom of box.
+	- Is a lump on bottom of box.  Broader is better.
+	+ Much more freedom for solutions.
+	+ Have a 1/4-20 tap.
+	+ Mount plate screws can also secure the base plate inside the box.
+
+Mount Plate ideas:
+
+    D) Camera mount plate - Edmund Optics
+	https://www.edmundoptics.com/p/Blackflyreg-frac14-20-Tripod-Adapter
+	Blackfly S (30mm)/Blackfly/Flea3/Chameleon3 1/4-20 Tripod Adapter
+	$11.80  Edmund Optics  #88-210
+	+ Looks very nice and professional.  Black, w brass insert.
+	- Mounting pitch to box looks small, ~0.5 inch.
+
+    E) Custom mount plate - steel
+	+ Could be thinner, e.g. 1/8 inch
+	- Harder to fabricate.
+
+    F) Custom mount plate - aluminum
+	- Soft, threads would wear.  But not with this expected use.
+	+ Easy to fabricate.
+	- Buy aluminum.
+
+    G) Custom mount plate - brass
+	+ Easy to fabricate.
+	- Buy brass.
+
+    H) Custom mount plate - wood
+	+ Brass insert, helical outer insert, for wood.
+	- Need ~0.5 inch thick wood.
+	+ Easy to fabricate.
+	+ Have all materials on hand.
+
+    I) Custom mount plate - plastic
+	+ Brass insert, knurled for thermoplastic.
+	- Rely on insert well bonded to plastic plate.
+	+ Easy to fabricate.
+	- Buy knurled insert.
+	+ Maybe tap (thread) a hole in 1/4 inch plastic?
+
+My choice really depends on what is available in the near term.
+ >  1) Purchased T-nut.
+    2) Custom mount plate materials.
+
+----------------------------------------------------------------------------
+## Fabrication
+----------------------------------------------------------------------------
+
+See paper drawings in file folder:  "Noir Camera"
+
+Base Plate:
+    Made from 1/4 inch thick hardboard, which is very easy to cut and file.
+
+    There is a raised ridge around the inside box bottom.  I cut a notch to
+    match on the connector side of the base plate, and an angle on the
+    opposite side.  It was then filed to exactly fit the box bottom between
+    the cover pillars on the long edge.  The snug fit made insertion/removal
+    very repeatable, which really helped in fitting/cutting the other holes
+    in the box.
+
+    The base plate mounting screws were laid out on the hardboard, drilled,
+    and then the box was match drilled.
+
+RPi Zero Mounting:
+    Used #4-40 machine screws self threaded into the hardboard with 1/4 inch
+    long nylon standoffs.
+    Self-threaded is easiest to do, but not long wearing for repeated screwing.
+    If the threads fail, drill out for screw clearance and partial back drill
+    a larger hole to hold a captive nut.
+
+Camera Mounting:
+    The camera module needed to be orthogonal to the long edge of RPi Zero
+    so the camera axis is collinear with the cables (HDMI, USB, power).
+    This is to make handling/pointing of the camera easier.
+
+    I wanted everything to mount to the base plate so the whole unit can
+    be easily removed from the box (removing only the 4 base plate screws).
+
+    An 1 inch aluminum angle was used to hold the camera module PCB
+    perpendicular to the base plate.  It has a cutout on both sides of the
+    angle for the camera lens block on the front side, and on the bottom side
+    for the PCB to extend into the base plate.  This was needed so the
+    lens hole in the box would be centered vertically on the box side, which
+    was only 1.1 inch high.
+
+    A 1/4 inch hardboard spacer was made to hold the camera module PCB back
+    from the box side (and back from aluminum angle) so the lens was clear
+    inside the box for protection.
+
+    Other trade-offs might simplify the mount design, but this seemed best
+    for an initial construction.
+
+Camera lens hole in box:
+    Tried to make same size as outside of circular ring surrounding the lens.
+
+    Original hole:  13/64 inch (5.16 mm)
+    Final hole:     15/64 inch (5.95 mm)
+    With taper diameter (drill sizes step by 1/32 inch) thru thickness of
+    box wall to the outside of box.
+
+    The camera module position was ~9.5 mm back from inside of the box.
+    The lens and sensor module seems slightly tilted down.
+
+    The original hole size had slight vignetting on the top of image,
+    offset due to slight offset of hole on lens axis.
+    Thus drilled out additional to give more clearance (better too much,
+    than not enough).
+

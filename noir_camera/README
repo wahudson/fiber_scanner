@@ -1,0 +1,25 @@
+2024-02-16  William A. Hudson
+
+		IR Camera for Photographs
+		-------------------------
+
+An infrared (IR) camera for viewing optical bench setups.
+
+It is a Raspberry Pi (RPi) Zero with NoIR Camera Module 3 assembled in a box.
+The camera sensor has no IR filter, so it is sensitive to IR light.
+
+Construction and operation.
+
+Files:  (2024-02-16)
+------
+README		    this file
+
+doc/		    Documentation
+    design.text		design and construction
+
+exp/		    Experiments and Results
+
+src/		    Source code
+    icam		script to run camera
+    vctemp		measure processor core temperature
+

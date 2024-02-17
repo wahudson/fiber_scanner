@@ -1,0 +1,157 @@
+2024-02-16  William A. Hudson
+
+			Noir Camera Operation
+			---------------------
+
+Operate a Raspberry Pi (RPi) NoIR Camera in a case for viewing infra red (IR)
+things in the optics lab.
+
+See also:
+    design.text
+    /home/wah/pro/raspberryPi/rpiNoir.text
+
+----------------------------------------------------------------------------
+## System Configuration
+----------------------------------------------------------------------------
+
+Note:
+    A hardwire HDMI display is required to view the camera preview window.
+    It is possible to use X11 forwarding with the --qt-preview option, but
+    this is not recommended due to poor performance.
+
+RPi Computer configuration:
+    Computer:  rpiNoir Box with RPi Zero Wireless and Camera Module 3 Noir.
+    Keyboard/hub:  Official Raspberry Pi Keyboard and Hub
+    Mouse:  Official Raspberry Pi mouse
+    5V MicroUSB Switching Power Supply - to RPi Zero
+    Mini HDMI to HDMI male Cable - RPi Zero to Display
+    USB OTG adapter (A-female to micro-male) cable to keyboard/hub.
+    USB A-male to MicroB-male - cable to keyboard/hub
+
+Waveshare Display configuration:
+    Display:  Waveshare  7inch Touch Monitor, 1080x1920 Full HD, IPS, Mini HDMI
+    5V MicroUSB Switching Power Supply - to Display
+    USB A-male to MicroB-male - Touch Display to keyboard/hub
+
+RPi Zero Wireless summary specs:
+    802.11 b/g/n wireless LAN
+    Bluetooth 4.1
+    Bluetooth Low Energy (BLE)
+    1 GHz, single-core CPU
+    512 MB RAM
+    Mini HDMI port and micro USB On-The-Go (OTG) port
+    Micro USB power
+    HAT-compatible 40-pin header
+    Composite video and reset headers
+    CSI camera connector
+
+    Note RPi Zero is slow and has small memory.
+    Do not run large processes (e.g. display x.jpg).
+
+SD card:  2024-02-10
+    1314DRDXJ02A 16GB  SanDisk Ultra  Class 10, HC I
+
+    % uname -a
+    Linux rpiNoir 6.1.0-rpi7-rpi-v6 #1 Raspbian 1:6.1.63-1+rpt1 (2023-11-24) \
+        armv6l GNU/Linux
+
+    % cat /etc/os-release
+    PRETTY_NAME="Raspbian GNU/Linux 12 (bookworm)"
+    NAME="Raspbian GNU/Linux"
+    VERSION_ID="12"
+    VERSION="12 (bookworm)"
+    VERSION_CODENAME=bookworm
+    ID=raspbian
+    ID_LIKE=debian
+    HOME_URL="http://www.raspbian.org/"
+    SUPPORT_URL="http://www.raspbian.org/RaspbianForums"
+    BUG_REPORT_URL="http://www.raspbian.org/RaspbianBugs"
+
+----------------------------------------------------------------------------
+## OpenBox window manager
+----------------------------------------------------------------------------
+Key Bindings:  /etc/xdg/openbox/rc.xml
+
+    <Alt><Esc>  "FocusToBottom"
+	Move the window to the bottom of the recently-used-windows.
+
+    <Alt><Tab>	"NextWindow"
+	Brings up a menu list of windows, each <Alt><Tab> advances to the
+	next window which is shown raised as a wire frame.  When <Alt> is
+	released the last selected window is raised.
+
+Camera --fullscreen mode:
+    When the preview window covers the full monitor screen, a way to access
+    the windows below is needed.  Use these key/mouse bindings to lower
+    the camera preview window and expose the terminal windows.
+    RPi Zero is slow, so wait for each operation.
+
+----------------------------------------------------------------------------
+## Operation
+----------------------------------------------------------------------------
+
+Camera Software:
+    https://www.raspberrypi.com/documentation/computers/camera_software.html
+
+Power up:
+    Connect cables.
+    Plug in 5V MicroUSB power supplies.
+
+RPi Zero boot:  is slow
+    Display shows Raspberry Pi boot window, followed by blank display with
+    only the mouse pointer.
+    Finally the root window is displayed with icon control tray.
+    Auto login as user 'pi'.
+
+Waveshare Display (on rpiNoir):
+    Is very finicky.
+    On power up, it shows a very slightly illuminated display background.
+    Left alone on power up, it typically does not display anything, even
+    though RPi has completed boot.
+    Toggle the Waveshare power button (OFF, then ON) restarted it and
+    displayed the root window scene.
+
+Rotate display:
+    The Waveshare display comes up in portrait mode.
+    Open a terminal window.  (very slow, click only once)
+    Makefile in home directory:
+
+    % make display
+	DISPLAY=:0  xrandr --output HDMI-1 --rotate right
+	DISPLAY=:0  xset r rate 250 40
+
+Monitor processor temperature:
+    In a small terminal window:  run ~/bin/vctemp
+    % vctemp
+
+    Temperature typ around 40 C when idle, rises to 60 C with camera running.
+    [Room temp 68 F, box closed.]
+
+Camera script:  ~/bin/icam
+    Edit to suit.
+    Camera is physically inverted in the box, so the preview display is
+    rotated 180 degrees by --hflip --vflip.
+
+    Preview window runs indefinitely, timeout (-t 0), for general viewing
+    of objects in the lab.
+
+    rpicam-still -t 0  --hflip --vflip --gain=1.0 --awbgains=1.0,0.0  ${@}
+
+    Execute with any desired additional options.
+    Note duplicating any option (e.g. option in the script) draws an error.
+
+    % icam
+
+Image file capture:
+    Add Keypress mode (-k) to capture an image file.  e.g.
+
+    % cd ~/tmp/
+    % icam -k -o im%d.jpg
+
+    In the terminal window running icam (rpicam-still),
+    Type <Enter> to capture an image, 'x'<Enter> to exit.
+
+----------------------------------------------------------------------------
+## Summary options:  rpicam-still
+----------------------------------------------------------------------------
+

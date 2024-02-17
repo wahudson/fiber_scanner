@@ -1,0 +1,17 @@
+#! /bin/bash
+
+# Monitor processor (video core) temperature.
+#     Typically run in a small window.
+
+# usage:  vctemp [Wait_s]
+
+Wait_s=${1:-10}
+
+echo "Temperature check every ${Wait_s} seconds"
+
+while true
+do
+    vcgencmd measure_temp
+    sleep ${Wait_s}
+done
+

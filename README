@@ -19,6 +19,7 @@ Files:  2023-12-01
     led_light/	LED fiber light source
  v  lissajous/	Lissajous pattern, ellipse, and lockin theory
  v  niDAQ/	Matlab language and NI DAQ use
+ v  noir_camera/  RPi Zero Camera, no IR filter
  v  optics/	optical system, lenses, fiber
     photo/	photographs
     piezo/	piezo tube scanner design
