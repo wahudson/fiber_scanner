@@ -53,7 +53,7 @@ SD card:  2024-02-10
 
     % uname -a
     Linux rpiNoir 6.1.0-rpi7-rpi-v6 #1 Raspbian 1:6.1.63-1+rpt1 (2023-11-24) \
-        armv6l GNU/Linux
+	armv6l GNU/Linux
 
     % cat /etc/os-release
     PRETTY_NAME="Raspbian GNU/Linux 12 (bookworm)"
@@ -151,7 +151,246 @@ Image file capture:
     In the terminal window running icam (rpicam-still),
     Type <Enter> to capture an image, 'x'<Enter> to exit.
 
+Full screen preview:
+    Totally fill the screen (may crop some edge)
+    % icam --fullscreen
+
+    A reasonably large window on Waveshare 1080x1920 display:
+    % icam -p 0,40,1780,1000
+
+Long exposure:
+    Disable the AEC/AGC and AWB by providing explicit values.  Otherwise they
+    force the user to wait for a number of frames while they converge.
+    The entire preview phase can be skipped with the --immediate option.
+
+    Example 100 second exposure capture:
+
+	% rpicam-still -o long_exposure.jpg --shutter 100000000 --gain 1 \
+	    --awbgains 1,1 --immediate
+
 ----------------------------------------------------------------------------
 ## Summary options:  rpicam-still
 ----------------------------------------------------------------------------
+    https://www.raspberrypi.com/documentation/computers/camera_software.html
+    This is only a partial list.
+
+    -h, --help
+		List options, then quit.
+
+    --version
+		Show versions of libcamera and the app, then quit.
+
+    -v, --verbose=2
+		0= no verbose at all, 1= default, 2= debug output
+
+    --list-cameras
+		Show available cameras and sensor modes.
+
+    --camera=INDEX
+		Select camera by index number from --list-cameras.
+
+    -c, --config=FILE
+		Read additional options from file, modified option format.
+		Long option names with '=', without '--', one per line.  e.g.
+		    timeout=99000
+		    version=
+		    fullscreen=
+		    output=FILE
+
+    -t, --timeout=N_ms
+		Run duration showing preview window or recording a video.
+		Time in milliseconds (ms), 0= indefinitely, default 5000 ms.
+		On timeout, rpicam-still will capture an image.
+
+Preview Window:
+
+    -n, --nopreview
+		Do not display a preview window.
+
+    --immediate
+		Skip the entire preview phase.
+
+    -p, --preview  X,Y,W,H
+		Preview window size and location.
+		It does not affect the final captured image.
+		The preview image is scaled to fit the limiting dimension.
+		Aspect ratio is preserved, the result may be letter-boxed.
+		--preview=10,40,1000,500
+
+    -f, --fullscreen
+		Force preview window to use full screen, with no border or
+		title bar.  Image may be pillar/letter-boxed to preserve the
+		preview image aspect ratio.
+		Use window manager key/button bindings to lower preview window
+		to expose other windows for control.  e.g. for OpenBox
+		use <Alt><Esc> to lower the preview window.
+
+    --qt-preview
+		Switch preview window to use the Qt-based implementation,
+		which supports X forwarding.
+		It does not use zero-copy buffer sharing nor GPU acceleration
+		and is therefore very expensive.  Advised to keep the
+		preview window small.  Generally not recommended.
+
+    --info-text="STRING"
+		Customise the preview window title text.  Has '%' directives
+		which are substituted with image metadata.  e.g.
+		--info-text="Focus measure: %focus"
+
+Image Resolution:
+
+    --width=N
+    --height=N
+		Output image size in pixels.
+
+    --rawfull
+		Force sensor to be driven in its full resolution readout mode,
+		regardless of --width and --height.
+
+    --mode=W:H:[Depth:Packing]
+    --mode=W:H
+		Sensor mode WxH resolution, bit-depth and packing mode.
+		The system will select the closest values it can find.
+		W= image width, in pixels
+		H= image height, in pixels
+		Bit-depth and packing mode depending on camera and RPi version:
+		    Depth= {10,12}  number of bits in a pixel (per color?)
+		    Packing= {P,U}  packed, unpacked pixel bits into bytes
+
+    --hflip
+    --vflip
+    --rotation={0,180}
+		Readout mirror image horizontally, and/or flip it vertically.
+		Rotation of 180 degrees is identical to --hflip --vflip.
+
+    --roi=X,Y,W,H
+		Crop region of interest from the full field of view.
+
+    --hdr=MODE
+		Run camera in High Dynamic Range (HDR) mode.  Default 'off'.
+
+Manual Exposure control:
+
+    --shutter=N_us
+		Set the exposure time in microseconds.
+		HQ camera maximum is 670.74 seconds.
+
+    --gain=N
+		Sets the combined analog and digital gains.
+		[Disables AEC/AGC.]
+		AnalogueGain : [1.000000 .. 22.260870]
+
+    --awbgains=Nred,Nblue
+		Set fixed color gains.  [are w.r.t. green?]
+		Disable AWB algorithm.
+
+Automatic Exposure/Metering:
+
+    --awb=STRING
+		Set automatic white balance (AWB) mode.
+		Disabled when --awbgains is specified.
+
+    --ev=N
+		Sets EV compensation of image in units of stops {-10 .. 10}.
+		Default is 0.  Works by raising or lowering the target values
+		the AEC/AGC algorithm is attempting to match.
+
+    --metering=STRING
+		Sets metering mode of the AEC/AGC algorithm.
+
+Focus control:
+
+    --lens-position=N
+		Move lens to a fixed focal distance, N in diopters
+		(units of 1/distance in meters).
+		0.0 = focus at "infinity"
+		N   = focus at (1/N) position in meters
+		'default' = move lens to the hyperfocal position (the closest
+		    focus while keeping objects at infinity acceptably sharp).
+
+    --autofocus-mode={default, manual, auto, continuous}
+
+    --autofocus-range={normal, macro, full}
+		normal = focus from reasonably close to infinity (default)
+		macro  = focus only on close objects
+		full   = the entire range, from very closest to infinity
+
+    --autofocus-speed={normal, fast}
+
+    --autofocus-window=X,Y,W,H
+
+    --autofocus-on-capture
+
+Image processing:
+
+    --sharpness=N
+		Adjust image sharpness.
+		0    = no sharpening is applied
+		1.0  = default
+		>1.0 = use extra sharpening
+
+    --denoise={auto (default), off, ..}
+
+Output File Options:
+
+    -o, --output=FILE
+		Name of the output file.  '-' is stdout.
+		Can use network address, udp://  or tcp://
+		String "%d" replaced with file open count (see --framestart).
+		Standard C format directive modifiers are permitted, e.g.
+		"%04d" is a 4 digit field padded with leading zeros.
+
+    --framestart=N
+		Starting value for the %d file number counter.
+
+    --wrap=N
+		Reset %d file number counter to zero when it reaches N.
+
+    --latest=STRING
+		Make a symbolic link to the most recently saved file.
+
+    --timestamp
+		Output file name is the current system timestamp (number of
+		seconds since 1970).  (rpicam-still only.)
+
+    --datetime
+		Output file name in MMDDhhmmss.jpg format.
+		(month, day, hour, minute, second)
+
+    --flush
+		Flush files to disk as soon as every frame is written.
+
+    -q, --quality=N
+		Set the JPEG quality, 100 is maximum, 93 is default.
+
+    --thumb=W:H:Q
+		Sets the dimensions and quality of the associated thumbnail
+		image.  'none'= no thumbnail.
+
+    -e, --encoding={jpg, png, bmp, rgp, yuv420}
+		Select the still image encoding to be used.  [Default =jpg]
+		The output file name extension is ignored.
+
+    -r, --raw
+		Save a raw Bayer file (.dng) alongside the usual output file.
+		Raw data from sensor.  EXIF data has parameters.
+
+    -x, --exif=TAG
+		Add EXIF tags into the JPEG image, up to 32.  Predetermined
+		tag names.
+
+Capture Control:
+
+    -k, --keypress
+		Keypress mode to capture image.
+		<enter>  = capture image
+		<x>      = quit without capturing
+		Repeat <enter> to capture another, overwrite file unless %d.
+		After first <enter>, get message "Still capture image received"
+		suggesting shutter is closed again.
+
+    -s, --signal
+		Signal SIGUSR1 will capture an image.
+		Signal SIGUSR2 will quit without capturing.
+		Kind of like --keypress.
 
