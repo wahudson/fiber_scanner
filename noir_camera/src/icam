@@ -8,7 +8,7 @@ set -x
 
 vcgencmd measure_temp
 
-rpicam-still -t 0  --hflip --vflip --gain=1.0 --awbgains=1.0,0.0  ${@}
+rpicam-still -t 0  --hflip --vflip --gain=1.0 --awbgains=1.0,0.1  ${@}
 
 vcgencmd measure_temp
 
@@ -46,6 +46,7 @@ vcgencmd measure_temp
 #    --awbgains=Nred,Nblue
 #		Set fixed colour gains.  [are w.r.t. green?]
 #		Disable Automatic White Balance (AWB) algorithm.
+#		Note:  Setting a gain to 0.0 may cause it to be ignored.
 
 #    --denoise={auto (default), off, ..}
 

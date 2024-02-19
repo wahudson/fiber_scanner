@@ -120,6 +120,10 @@ Rotate display:
 	DISPLAY=:0  xrandr --output HDMI-1 --rotate right
 	DISPLAY=:0  xset r rate 250 40
 
+Terminal window font size:  (lxterminal)
+    <Crtl><Shift>+  Increase font size
+    <Crtl><Shift>-  Decrease font size
+
 Monitor processor temperature:
     In a small terminal window:  run ~/bin/vctemp
     % vctemp
@@ -182,6 +186,7 @@ Long exposure:
 
     -v, --verbose=2
 		0= no verbose at all, 1= default, 2= debug output
+		Debug output includes option settings and control ranges.
 
     --list-cameras
 		Show available cameras and sensor modes.
@@ -210,7 +215,7 @@ Preview Window:
     --immediate
 		Skip the entire preview phase.
 
-    -p, --preview  X,Y,W,H
+    -p, --preview=X,Y,W,H
 		Preview window size and location.
 		It does not affect the final captured image.
 		The preview image is scaled to fit the limiting dimension.
@@ -273,7 +278,9 @@ Manual Exposure control:
 
     --shutter=N_us
 		Set the exposure time in microseconds.
-		HQ camera maximum is 670.74 seconds.
+		670.74 s  max HQ camera
+		112 s     max Camera Module 3
+		11.76 s   max Camera Module v2
 
     --gain=N
 		Sets the combined analog and digital gains.
@@ -283,6 +290,7 @@ Manual Exposure control:
     --awbgains=Nred,Nblue
 		Set fixed color gains.  [are w.r.t. green?]
 		Disable AWB algorithm.
+		Note:  Setting a gain to 0.0 may cause it to be ignored.
 
 Automatic Exposure/Metering:
 
