@@ -162,6 +162,10 @@ readwrite()
     Presume columns are in addoutput/addinput declaration order.
     https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.readwrite.html
 
+start(d, ...)
+    Start DataAcquisition background operation.
+    https://www.mathworks.com/help/daq/daq.interfaces.dataacquisition.start.html
+
 save()
     Save workspace variables to file.
     save( 'file.txt', 'v1', v2', .. , '-ascii', '-tabs' );
@@ -211,6 +215,34 @@ plot( x, y1, x, y2 );
     Plot multiple lines in current figure.
 plot( matrix );
     Plot each matrix column as a separate line vs index number.
+
+xlim([0 10])
+ylim([-0.4 0.8])
+title('2-D Line Plot')
+xlabel('x')
+ylabel('cos(5x)')
+    These operate on the current figure (after the plot is made).
+    https://www.mathworks.com/help/matlab/axes.html
+    https://www.mathworks.com/help/matlab/creating_plots/change-axis-limits-of-graph.html
+    https://www.mathworks.com/help/matlab/ref/matlab.graphics.axis.axes-properties.html
+
+scatter(x,y);
+scatter(x,y,sz,c,'filled');
+    sz= point symbol size
+    c = color vector, length of x
+    Scatter plot can vary point colors.
+    https://www.mathworks.com/help/matlab/ref/scatter.html
+
+gray(m);
+    Gray scale color map.
+    https://www.mathworks.com/help/matlab/ref/gray.html
+
+DAQ Explanations:
+-----------------
+    https://www.mathworks.com/help/daq/acquire-continuous-and-background-data-using-ni-devices.html
+
+    dq.ScansAvailableFcn
+    dq.ScansAvailableFcnCount
 
 ----------------------------------------------------------------------------
 ## User Suggestions
