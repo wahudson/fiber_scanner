@@ -138,6 +138,38 @@
 
     save( Ofile, 'allScanData', '-ascii' );
 
-    % figure(2);  clf;
-    % plot( inScanData  );
+%% Plot one line across center
+
+    periodX_n = int( periodX_s * dt_s );	% samples in one X sine cycle
+    center_ix = int( quarterY_n * 2 );		% index of first center (zero Y)
+    fprintf( 'periodX_n     = %10.3f\n', periodX_n     );
+    fprintf( 'center_ix     = %10.3f\n', center_ix     );
+
+    rn = [(center_ix - periodX_n):(center_ix + periodX_n)];
+				% index range of two X cycles at center Y=0
+
+    figure(2);  clf;
+    plot( rn, inScanData(rn) );
+    ylim([-0.010 0.090]);	% prevent auto-scale
+
+%% Plot XY results
+
+    % scale intensity to fit in range 0..1
+    iu   = (inScanData + 0.005 ) / 0.150;	% intensity vector {0.0 .. 1.0}
+    cmap = gray( 256 );		% gray scale color map vector, 256 entries
+    col  = cmap( 256 * (1 - iu) );	% intensity color vector
+
+    xx = outScanData(2,:);
+    yy = outScanData(3,:);
+    rm = [(center_ix - quarterY_n):(center_ix + quarterY_n)];
+				% index range positive Y ramp
+
+    figure(3);  clf;
+    scatter( xx(rm), yy(rm), [], col(rm), "filled );
+
+	% [] is default point size in examples
+	% row vs column vectors??
+
+    % sz = zeros( 1, length( rm ) ) + 36;	% row vector
+	% in case point size needs to be a vector for scatter() color
 
