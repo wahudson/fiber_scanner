@@ -1,0 +1,213 @@
+2024-02-19  William A. Hudson
+
+		Galvo Scanner Large numeral '3' -- ex2024_02_19_galvo/
+		-------------------------------
+
+Measurements taken by BME Team on 2024-02-19.
+Modified Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+
+Follows from:  ex2024_01_12_galvo/
+
+See:  red notebook  2-19-2024
+USB stick:  csu2024_02_19/  copied from Email
+
+Files:
+    BID_Test13Results.txt	raw, view of large numeral 3
+    BID_Test14Results.txt	raw, view numeral 8
+
+    d13.bidi_image.pdf		view numeral '3', Y negative ramp
+    d13.half_cyc_142028.pdf	intensity across middle of '3', line Y= -0.2755
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+
+Galvo scanner RCM as built by Jesse Wilson on 1-10-2024.
+    Using fiber scanner NI DAQ USB-6211 and 780 nm laser on fiber optic.
+
+    Modified raster_gal.m with gridbin() plotting added by Abbie.
+
+    Using the same sample rate and frequencies as before.  Probably:
+    FreqX_Hz      =    100.000
+    LineCycY_n    =    400.000
+    FrameCnt_n    =      1.000
+    OutAmpX_V     =      1.000
+    OutAmpY_V     =      1.000
+    sampRate      =   6.2500e+04
+
+----------------------------------------------------------------------------
+## Analysis  2024-02-22
+----------------------------------------------------------------------------
+
+BID_Test13Results.txt:  Analyze with R
+
+    Reformat raw data file to fixed-point colums:
+    % src/reformat_galvo < BID_Test13Results.txt > BID_Test13Results.text
+
+    df <- read.table( "BID_Test13Results.text", header=FALSE )
+
+    % names( df )
+	[1] "V1" "V2" "V3"
+    % dim(df)
+	[1] 250000      3
+
+    % names( df ) <- c( "Vsig_V", "Vx_V", "Vy_V" )
+
+    Intensity range:
+    % max( df$Vsig_V )
+	[1] 0.06837
+    % min( df$Vsig_V )
+	[1] 0.00558
+
+    iu <- (df$Vsig_V + 0.000 ) / 0.070
+	Gray scale intensity range 0..1
+	Black is no light, white is bright light.
+
+    plot( df$Vsig_V )
+	See 3 peaks, 2 valleys.
+
+    rn <- c(125000:126250)
+    plot( rn, df$Vsig_V[rn] )
+	Two cycles
+
+    rn <- c(125000:125625)
+    plot( rn, df$Vsig_V[rn] )
+	One cycle
+
+    rn <- c(62500:187500)
+	Negative Y ramp
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	Can see a numeral '3', with bidirectional X phase shift
+	Points pch=20 is a filled circle.
+
+	Note plotting with pch='.' is not as good as circle points, as
+	the missing pixels are too distracting.
+
+    locator(2)
+	$x
+	[1] -0.2898929 -0.1101916
+	$y
+	[1] -0.2755664 -0.2799343
+	Pick two points that are at the center edge of the numeral '3',
+	one point on each direction of the X sweep.  Thus Y is constant,
+	and delta-X represents the phase shift in X sweep directions.
+
+	DeltaX = -0.1101916 - (-0.2898929) = 0.180 V
+	Out of full range 2.0 V this is 9%.
+
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+    title( "d13 c(62500:187500)" )
+    abline( h=-0.2755, col='red' )
+ >  dev.copy2pdf( file="d13.bidi_image.pdf" )
+
+Find that point in the data:
+    % less BID_Test13Results.text
+	Search for Y value:  -0.2755
+	It occurs in two places:
+	Line 142220:   0.02169 -0.31141 -0.27550,  Y decreasing
+	Line 232777:   0.02202  0.35876 -0.27558,  Y increasing
+	Both occur in a transition region from bright signal 0.02 V to dark
+	signal 0.005 V.
+
+	The first patch is on the long negative ramp, and the second is
+	on the last positive ramp returning to zero.
+	We are looking at the first patch.
+
+    dn <- 625
+    cn <- 142220
+    rn <- c( (cn - dn):(cn+dn) )
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See two sine cycles.
+    plot( df$Vx_V[rn], df$Vsig_V[rn], pch=20, col=gray( iu[rn] ) )
+	See intensity plot for two cycles.
+
+    dn <- 312
+    cn <- 142220
+    rn <- c( (cn - dn):(cn+dn) )
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See one sine cycles.
+    plot( df$Vx_V[rn], df$Vsig_V[rn], pch=20, col=gray( iu[rn] ) )
+	See intensity plot for one cycles.
+
+    Look at data file:
+	Line 142028:   0.00657  0.99909 -0.27243
+	Line 142345:   0.00657 -1.00000 -0.27750
+	Negative slope of X covers the index of interest above. 
+
+    rn <- c(142028:142345)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See negative slope of X drive waveform.
+    plot( df$Vx_V[rn], df$Vsig_V[rn], pch=20, col=gray( iu[rn] ) )
+	See two sharp peaks
+    title( "d13 c(142028:142345)" )
+ >  dev.copy2pdf( file="d13.half_cyc_142028.pdf" )
+
+    Comparing to the full plot:  The slow ramp on either side looks like
+    the reflected zone on the mirror target (sample).  The dark area between
+    the two peaks is the numeral '3', which is clear (no mirror) on the target,
+    and so returns no light.  The fast transitions is the spot sweeping over
+    the edges of the numeral.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    The field of view FOV is quite large, drive OutAmpX_V= 1.000 V.
+    Estimate FOV around 2 mm to 4 mm, based on width of the numeral '3',
+    which is probably around 2 mm wide (from memory).
+    [2024-02-22  Measured numeral 1.5 mm wide, FOV ~3 mm wide.]
+
+    The image plot  d13.bidi_image.pdf  shows a numeral '3', with large
+    skew in the bidirectional X sweep.  Skew is about 9% of FOV.
+
+    The bright area is the region where reflected light (mirror target)
+    reaches the photodetector.  Outside that, the angle is too large to
+    be returned.
+
+    The line plot  d13.half_cyc_142028.pdf  shows intensity plotted vs
+    X position for a single negative slope of the X sine wave corresponding
+    to the red line in the image plot.
+    It clearly shows the boundary of the reflected zone with a fairly
+    gentle slope, contained within (-0.5 V < X < +0.5 V) sweep.
+    The dark (dip) between the two peaks is the center of the numeral '3',
+    which is transparent on the sample target and thus returns no light.
+    Transition across the edges of the numeral is quite sharp.
+
+    Note the dip does not go to complete black (0.006 V).  This could be
+    due to reflections off the first and second surfaces of the test target.
+
+    The spot size is probably quite small, since the transition time is
+    about 5 samples (5 / 62500 sample/s) = 80 us, compared to 5 ms for
+    transition across FOV (at 100 Hz).
+	80 us / 5 ms = 0.016   is 1.6% of the sinusoid FOV.
+	[Need better estimation here.]
+
+    The sharp transition to a relatively flat dark level suggests that the
+    spot size is smaller than the width of the numeral '3' center.
+
+Next:
+
+    Reduce drive amplitude such that the bright zone fills the FOV.
+    This increases magnification, and reduces FOV.
+    Perhaps OutAmpX_V= 0.500 V
+
+    Try to measure resolution:
+    Try scanning across edge of Ronchi ruling target (10 LPMM).
+    Perhaps half the scan on the Ronchi ruling, and half on the mirror,
+    in both X and Y directions (i.e. one corner of the Ronchi ruling).
+
+    Reduce FreqX_Hz to get better sample density on scan line.
+    Perhaps FreqX_Hz = 25 Hz, gives ((62500 samp/s) / 25 Hz) = 2500 samples
+    in one X cycle, and 1250 samples in one direction across FOV.
+
+    Arrange the micrometer stage in the Z-direction.
+    Measure spot size in 20 um steps to find the Rayleigh range (depth of
+    focus).
+
+    Try a paper sample with black ink.  Do we see a signal?
+
+    Find a way to plot uni-directional X-trace for all scan lines.
+    i.e. Skip half the scan lines, or unfold the scan lines.
+    May also want to adjust for skew between X directions, i.e. the phase
+    delay in mirror response.
+
