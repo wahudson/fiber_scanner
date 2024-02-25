@@ -211,6 +211,8 @@ clf(n)
     Clear figure window contents.
 
 plot( x, y );
+plot( x, y, '-o' );
+    Plot solid line with circle markers.  See LineSpec.
 plot( x, y1, x, y2 );
     Plot multiple lines in current figure.
 plot( matrix );
@@ -233,7 +235,11 @@ scatter(x,y,sz,c,'filled');
     Scatter plot can vary point colors.
     https://www.mathworks.com/help/matlab/ref/scatter.html
 
-gray(m);
+colormap(map)
+colormap( gray(256) )
+    Set the colormap for the current figure.
+
+gray(m)
     Gray scale color map.
     https://www.mathworks.com/help/matlab/ref/gray.html
 

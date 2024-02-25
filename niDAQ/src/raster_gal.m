@@ -23,13 +23,16 @@
     % input channel from photodetector
     chInSig = addinput( dq, 'Dev1', 'ai1', 'Voltage' ); % Intensity Signal
 
+    chInSig.Range = [-5,5];
+
     % input channels from PSD
  %  chInSum = addinput( dq, 'Dev1', 'ai2', 'Voltage' ); % PSD Sum Pin Signal
  %  chInX   = addinput( dq, 'Dev1', 'ai3', 'Voltage' ); % PSD X Pin Signal
  %  chInY   = addinput( dq, 'Dev1', 'ai5', 'Voltage' ); % PSD Y Pin Signal
 
- %  chInX.Range = [-5,5];
- %  chInY.Range = [-5,5];
+ %  chInSum.Range = [-5,5];
+ %  chInX.Range   = [-5,5];
+ %  chInY.Range   = [-5,5];
 
     % DAQ sample rate
     dq.Rate  = 62500;		% set samples per second
@@ -140,8 +143,8 @@
 
 %% Plot one line across center
 
-    periodX_n = int( periodX_s * dt_s );	% samples in one X sine cycle
-    center_ix = int( quarterY_n * 2 );		% index of first center (zero Y)
+    periodX_n = int32( periodX_s / dt_s );	% samples in one X sine cycle
+    center_ix = int32( quarterY_n * 2 );	% index of first center (zero Y)
     fprintf( 'periodX_n     = %10.3f\n', periodX_n     );
     fprintf( 'center_ix     = %10.3f\n', center_ix     );
 
@@ -149,15 +152,14 @@
 				% index range of two X cycles at center Y=0
 
     figure(2);  clf;
-    plot( rn, inScanData(rn) );
+   %plot( rn, inScanData(rn) );
+    plot( rn, inScanData(rn), '-o' );	% solid line, circle markers
     ylim([-0.010 0.090]);	% prevent auto-scale
 
-%% Plot XY results
+%% Plot XY intensity
 
     % scale intensity to fit in range 0..1
-    iu   = (inScanData + 0.005 ) / 0.150;	% intensity vector {0.0 .. 1.0}
-    cmap = gray( 256 );		% gray scale color map vector, 256 entries
-    col  = cmap( 256 * (1 - iu) );	% intensity color vector
+    iu = (inScanData + 0.005 ) / 0.150;		% intensity vector {0.0 .. 1.0}
 
     xx = outScanData(2,:);
     yy = outScanData(3,:);
@@ -165,7 +167,8 @@
 				% index range positive Y ramp
 
     figure(3);  clf;
-    scatter( xx(rm), yy(rm), [], col(rm), "filled );
+    colormap( gray(256) );
+    scatter( xx(rm), yy(rm), [], iu(rm), "filled" );
 
 	% [] is default point size in examples
 	% row vs column vectors??

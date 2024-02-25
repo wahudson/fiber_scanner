@@ -154,3 +154,11 @@ https://www.mathworks.com/help/daq/channel-properties.html
     # To view ranges allowed for each property (i.e. documentation)
     set( ch )
 
+----------------------------------------------------------------------------
+## Specifications USB-6211
+----------------------------------------------------------------------------
+
+Analog Input:
+    Input Ranges:  +-10, +-5, +-1, +-0.2 V
+    ADC resolution:  16 bits
+
