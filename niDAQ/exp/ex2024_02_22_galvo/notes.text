@@ -1,0 +1,311 @@
+2024-02-22  William A. Hudson
+
+		Galvo Scanner Ronchi ruling -- ex2024_02_22_galvo/
+		---------------------------
+
+Measurements taken by Bill on 2024-02-22, after BME team aligned target on
+part of the Ronchi ruling.
+Modified Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+
+Follows from:  ex2024_01_19_galvo/
+
+See:  red notebook  2-22-2024
+USB stick:  csu2024_02_22/
+
+Files:  (logical ordering)
+------
+ v  notes.text			this file
+
+ v  raster_gal.m		modified script collected this data
+    rss1.txt			raw data file
+    rss1.text			reformat to fixed-point columns
+    p_full_Y.pdf		full plot, X bidirectional, Y negative ramp
+
+		Single direction X scan line (+ slope), index c(156095:156407)
+ v  line_156095_Y.pdf		plot Y vs X, points intensity colored
+ v  line_156095_Sig.pdf		plot signal intensity, see Ronchi ruling
+ v  line_156095_Ronchi.pdf	expanded plot, measure X ~1300 um/V
+ v  line_156095_Index.pdf	expanded plot, intensity vs index
+
+		Regenerate unfolded X scan values:
+    rss1_gen.err		parameters from galvo_gen_data
+    rss1_gen.text		full data
+ v  unfold_156095_Sig.pdf	overlay plot of two unfolded cycles
+
+ v = in Git, large data files excluded
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+
+Galvo scanner RCM as built by Jesse Wilson on 1-10-2024.
+    Using fiber scanner NI DAQ USB-6211 and 780 nm laser on fiber optic.
+
+Sample:  Edmund Optics 10 LPMM Ronchi ruling target.
+
+    Running raster_gal.m with bug fixes.
+
+    Using the same sample rate and frequencies as before:
+    FreqX_Hz      =    100.000
+    LineCycY_n    =    400.000
+    FrameCnt_n    =      1.000
+    OutAmpX_V     =      1.000
+    OutAmpY_V     =      1.000
+    sampRate      =   6.2500e+04
+
+----------------------------------------------------------------------------
+## Analysis  2024-02-23
+----------------------------------------------------------------------------
+
+rss1.txt:  Analyze with R
+
+    Reformat raw data file to fixed-point columns:
+    % src/reformat_galvo < rss1.txt > rss1.text
+
+    df <- read.table( "rss1.text", header=FALSE )
+
+    names( df ) <- c( "Vsig_V", "Vx_V", "Vy_V" )
+
+    Intensity range:
+    max( df$Vsig_V )
+	[1] 0.02563
+    min( df$Vsig_V )
+	[1] 0.00591
+	This is fairly small, previously we had over 60 mV.
+
+    iu <- (df$Vsig_V + 0.000 ) / 0.030
+	Gray scale intensity range 0..1
+	Black is no light, white is bright light.
+
+    plot( df$Vsig_V )
+	See one big peak on right side.
+
+    rn <- c(125000:125625)
+    plot( rn, df$Vx_V[rn] )
+    plot( rn, df$Vsig_V[rn] )
+	One cycle, starting from X= 0.
+
+    rn <- c(62500:187500)
+    plot( rn, df$Vy_V[rn] )
+	Negative Y ramp
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+    title( "Full Field, bidirectional X, c(62500:187500)" )
+ >  dev.copy2pdf( file="p_full_Y.pdf" )
+	Note:  p_full_Y.pdf is 922708 bytes, some PDF viewers have trouble.
+
+	Can see Ronchi ruling above.  Bright zone in lower left corner.
+	See skew from bidirectional X scan.
+	Points pch=20 is a filled circle.
+
+	Line at Y=-0.5000 looks like a good X scan line to analyze.  It is
+	over center of the bright zone and well into the Ronchi ruling.
+	Bottom edge of ruling is at Y= -0.75 V.
+
+Find that point in the data:
+    % less rss1.text
+	Search for Y value:  -0.5000
+
+	Line 156095:   0.01314 -1.00000 -0.49750
+	Line 156251:   0.01775  0.00000 -0.50000,  Y decreasing
+	Line 156407:   0.00690  1.00000 -0.50250
+
+    dn <- 312
+    cn <- 156251
+    rn <- c( (cn - dn):(cn + dn) )
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See one sine cycle, intensity colored.  Can see ruling.
+    plot( df$Vx_V[rn], df$Vsig_V[rn], pch=20, col=gray( iu[rn] ), type='o' )
+	See intensity plot for one full cycle.  Retrace is confusing.
+
+    Change to only positive slope of X cycle from file inspection:
+
+    rn <- c(156095:156407)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+    title( "Scan line at Y=-0.5, index 156095" )
+ >  dev.copy2pdf( file="line_156095_Y.pdf" )
+
+        See only positive slope of X drive sine wave, monotonic increasing.
+	See light and dark bars of Ronchi ruling in the filled plot circles
+	that overlap.  Plot points are intensity colored.
+
+    plot( df$Vx_V[rn], df$Vsig_V[rn], pch=20, col=gray( iu[rn] ), type='o' )
+    title( "Signal at Y=-0.5, index 156095" )
+ >  dev.copy2pdf( file="line_156095_Sig.pdf" )
+
+        See one broad peak with lots of variation on top.
+	This is the Ronchi ruling!
+	The Ronchi lines show as ramps to sharp peaks, about 5 samples
+	per transition.
+
+	Note X position is NOT compensated for galvo phase delay (skew).
+	No fine focus was attempted.
+
+	The sharp peaks on ruling lines suggests that the spot size is
+	on the order of the ruling width, 50 um.
+	If the peaks had flat tops, then the spot diameter would be less
+	than 50 um.
+
+	Stretch the plot horizontally.  The signal is clearly under sampled,
+	with only ~10 samples per cycle of the signal, but good enough to
+	clearly see the Ronchi ruling.
+	Can see the effect of the sinusoidal X sweep on the number of cycles
+	per ruling line, which varies from ~8 samples near the middle, to
+	~20 samples near the left edge.
+
+	There is no skew compensation for left/right X sweep, so the edges
+	of the plot may have some retrace effects.  For example, the very
+	left signal cycle shows more point variation.
+
+    abline( v=-0.5 )
+    abline( v=+0.5 )
+    title( "Signal at Y=-0.5, index 156095" )
+    text( -0.3, 0.007, pos=4, "Ronchi 10 line/mm, gives 1300 um/V" )
+ >  dev.copy2pdf( file="line_156095_Ronchi.pdf" )
+
+	We count 13 signal cycles in range X= -0.5 to +0.5, half full scale.
+	At 100 um per Ronchi line pair, we get 1300 um/V.
+	Thus the X FOV is about 2600 um.
+
+    Same signal, but plot vs index:
+
+    plot( rn, df$Vsig_V[rn], pch=20, col=gray( iu[rn] ), type='o' )
+    title( "Signal at Y=-0.5, index 156095" )
+    abline( v=156095 )
+    text( 156095, 0.007, pos=4, "156095" )
+ >  dev.copy2pdf( file="line_156095_Index.pdf" )
+
+    	Now have uniform index on the X-axis and can see variation of sweep
+	speed across the uniform Ronchi ruling lines.
+	At the left edge especially see many more points per Ronchi line pair.
+
+	Quantization of the signal (vertical direction in plot) is very
+	visible and contributes to poor reconstruction of the signal.
+
+	There is no skew compensation.  It looks like the skew overlap may
+	appear at the right side of the plot, where signal intensity
+	(reflectivity) is low and so not visible.
+
+Unfold X:
+    galvo_gen_data < rss1.text > rss1_gen.text 2> rss1_gen.err
+	FreqX_Hz      =    100.000
+	LineCycY_n    =    400.000
+	FrameCnt_n    =      1.000
+	OutAmpX_V     =      1.000
+	OutAmpY_V     =      1.000
+	UnFold        =          1
+	totalTime_s   =      4.000
+	totalSamp_n   =     250000
+	sampRate      =      62500
+	dt_s          =     1.6000e-05
+	periodX_s     =     1.0000e-02
+	periodY_s     =     4.0000e+00
+	quarterY_s    =     1.0000e+00
+	quarterY_n    =      62500
+	dY_V          =     1.6000e-05
+	length_n      =     250000
+	TotalTime     =      4.000
+    Now X is unfolded:
+	X:  -1.0 to +1.0  is positive slope
+	X:  +1.0 to +3.0  is negative slope mirrored
+	Skew is not compensated, it just does not overlap everywhere.
+
+    df <- read.table( "rss1_gen.text", header=TRUE )
+
+    rn <- c(156095:(156095+625))
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See one unfolded sine cycle.
+    plot( rn, df$Vsig_V[rn], pch=20, col=gray( iu[rn] ), type='o' )
+	See signal plot of unfolded sine cycle.
+
+    Overlap the next scan line:
+    rn <- c((156095+625):(156095+1250))
+    points( (rn - 625), df$Vsig_V[rn], pch=20, col='red', type='o' )
+	Stretch the plot window to spread horizontal direction.
+
+	Dithering in the folded image plot is due to the low sample rate.
+	The peaks vary in adjacent lines as a sampling artifact.
+
+	Also note intensity is so low it is quantized, adding to the
+	dithering effect.
+
+    title( "Unfolded Signal at Y=-0.5, index 156095" )
+    text( 156350, 0.020, pos=4, col='gray', "rn <- c(156095:(156095+625))" )
+    text( 156350, 0.019, pos=4, col='red',  \
+	"rn <- c((156095+625):(156095+1250))" )
+    text( 156350, 0.018, pos=4, col='red',  \
+	"shifted left by plotting x = rn - 625" )
+ >  dev.copy2pdf( file="unfold_156095_Sig.pdf" )
+
+	See positive X slope on the left, and negative slope on the right.
+	Gray points are the first X sine wave cycle at index 156095, with
+	overlaid red points showing the next sine wave.  Essentially two
+	full unfolded cycles on top of each other.
+
+	We see good correspondence between the two cycles, especially in
+	the bright region of Ronchi ruling.  The signal is clearly
+	under sampled with only ~10 samples per cycle of the signal.
+
+    Plot full image of negative Y ramp only (unfolded X):
+    rn <- c(62500:187500)
+    plot( df$Vx_V[rn], df$Vy_V[rn], pch=20, col=gray( iu[rn] ) )
+	See mirrored positive/negative X scan lines.
+	Ronchi ruling looks about the same as in bi-directional plot,
+	probably dithering artifacts as above.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    The X scan sensitivity was ~1300 um/V.
+    The FOV was about 2.6 mm for +-1.0 V sweep.
+    Found By counting line pairs of the 10 line/mm Ronchi ruling in the
+    center +-0.5 V range of the X scan line.
+
+    Resolution is better than 50 um, since we easily resolve the 10 line/mm
+    Ronchi ruling.
+
+    In this case we have about 10 samples over each 100 um line pair at the
+    center of the scan, and only 3 or 4 samples occur on the transition of
+    each ruling line.
+    It seems like more samples across each line pair would help measure the
+    spot diameter.
+
+    It looks like the spot size may be ~50 um, as evidenced by the sharp
+    peaks on the Ronchi ruling lines.  A spot size less than the line
+    width (50 um) would result in flat peaks.  It seems very possible that
+    this is not the best focus and no attempt was made to adjust focus.
+
+    Signal intensity measurement is visibly quantized.  Maximum signal
+    level was ~25 mV, while 16 bit ADC on +-10V range has 0.3 mV resolution.
+    Need higher signal level and a lower ADC range.
+
+Next:  (similar to ex2024_01_19_galvo/)
+
+    Reduce galvo drive amplitude such that the bright zone fills the FOV.
+    This increases magnification, and reduces FOV.
+    It also increases samples per Ronchi ruling line pair.
+    Perhaps OutAmpX_V= 0.500 V
+
+    Reduce FreqX_Hz to get better sample density on scan line.
+    Perhaps FreqX_Hz = 25 Hz, gives ((62500 samp/s) / 25 Hz) = 2500 samples
+    in one X cycle, and 1250 samples in one direction across FOV.
+    Maybe try 50 Hz first.
+
+    Arrange the micrometer stage in the Z-direction.
+    Measure spot size in 20 um steps to find the Rayleigh range (depth of
+    focus).
+
+    Reduce ADC range to +-5 V for the photodetector signal.
+
+    Need a higher intensity signal.  Previously we had ~60 mV max.   Check
+    beam path for lost light.
+
+    Try a paper sample with black ink.  Do we see a signal?
+
+    Find a way to plot uni-directional X-trace for all scan lines.
+    i.e. Skip half the scan lines, or unfold the scan lines.
+    May also want to adjust for skew between X directions, i.e. the phase
+    delay in mirror response.
+
+    Try the improved plotting (fixed) in  raster_gal.m
+

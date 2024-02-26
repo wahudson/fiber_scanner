@@ -25,4 +25,5 @@ ex2023_10_12_cameron/	Cameron's improved scripts to take an image
 ex2023_12_14_daq/	DAQ Input Mode  dac_mode.m
 ex2024_01_12_galvo/	Galvo Scanner Raster Scan, first run
 ex2024_02_19_galvo/	Galvo Scanner, Large numeral '3'
+ex2024_02_22_galvo/	Galvo Scanner, Ronchi ruling, X scan ~1300 um/V
 
