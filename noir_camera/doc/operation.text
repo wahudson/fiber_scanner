@@ -268,8 +268,13 @@ Image Resolution:
 		Readout mirror image horizontally, and/or flip it vertically.
 		Rotation of 180 degrees is identical to --hflip --vflip.
 
-    --roi=X,Y,W,H
+    --roi=X,Y,Wf,Hf
 		Crop region of interest from the full field of view.
+		X,Y   = position of region upper left corner
+		Wf,Hf = fraction of full width image {0.0 .. 1.0}
+		e.g.  --roi=0,0,1,1  would have no effect at all.
+		Output image is scaled to uncropped resolution (probably not
+		really wanted).
 
     --hdr=MODE
 		Run camera in High Dynamic Range (HDR) mode.  Default 'off'.

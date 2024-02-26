@@ -1,0 +1,19 @@
+#! /bin/bash
+
+# Run Noir camera with rpicam-still.
+# Half size ROI and image of lower-right corner.
+
+export DISPLAY=:0
+
+set -x
+
+vcgencmd measure_temp
+
+rpicam-still  --hflip --vflip --gain=1.0 --awbgains=1.0,0.1 \
+    --roi=2304,1296,0.5,0.5 --width=2304 --height=1296 \
+    ${@}
+
+vcgencmd measure_temp
+
+# Full sensor:  2304x1296 pixel
+

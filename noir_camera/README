@@ -20,6 +20,8 @@ doc/		    Documentation
 exp/		    Experiments and Results
 
 src/		    Source code
-    icam		script to run camera
+    icam		run camera, -t 0 preview mode
+    rcam		run camera, -t 0, half ROI in lower right corner
+    rcamo		run camera, half ROI in lower right corner
     vctemp		measure processor core temperature
 
