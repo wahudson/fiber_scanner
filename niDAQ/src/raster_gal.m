@@ -40,6 +40,19 @@
 
 %% Parameters
 
+    % Caution!  Fill in correct comments BEFORE running script.
+
+    Comments = [		% output to log file
+	"# Sample:  UASF target"
+	"# Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm"
+	"# Laser:  Iset = 32 mA"
+	"# Pinhole:  0 mm"
+	"# Operator:  xxx"
+	"# Note:  "
+    ];
+
+    OfileBase = "out1";		% output file base-name (without suffix)
+
     FreqX_Hz   = 100;		% fast scan sine wave
     LineCycY_n = 200 * 2;	% number of X cycles in ramp cycle
     FrameCnt_n = 1;		% number of frames (Y ramp cycles)
@@ -53,9 +66,18 @@
     OutAmpX_V = 1.00;		% output amplitude, sine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
-    Ofile = "rss1.txt";		% output data file name
-
     % pi = 3.14159;
+
+%% Log Output
+
+    diary_file = OfileBase + ".log.txt";
+    diary( diary_file );
+
+    date = datetime( 'now' );
+    date.Format = 'yyyy-MM-dd HH:mm:ss';
+
+    fprintf( "%s\n", date );
+    fprintf( "%s\n", join( Comments, '\n' ) );
 
     fprintf( 'FreqX_Hz      = %10.3f\n', FreqX_Hz      );
     fprintf( 'LineCycY_n    = %10.3f\n', LineCycY_n    );
@@ -137,9 +159,16 @@
     fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
     fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
 
-    fprintf( 'Ofile         = %s\n', Ofile );
+    ofile = OfileBase + ".raw";
+    save( ofile, 'allScanData', '-ascii' );
 
-    save( Ofile, 'allScanData', '-ascii' );
+    fprintf( 'Ofile         = %s\n', ofile );
+
+    % formatted output
+    ofile2  = OfileBase + ".txt";
+    file_id = fopen( ofile2, 'w' );
+    fprintf( file_id, '%8.5f %7.4f %7.4f\n', allScanData );
+    fclose(  file_id );
 
 %% Plot one line across center
 
@@ -175,4 +204,7 @@
 
     % sz = zeros( 1, length( rm ) ) + 36;	% row vector
 	% in case point size needs to be a vector for scatter() color
+
+%% Close log file
+    diary off;
 
