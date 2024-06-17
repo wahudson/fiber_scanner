@@ -70,7 +70,7 @@
 
 %% Log Output
 
-    diary_file = OfileBase + ".log.txt";
+    diary_file = OfileBase + "-log.txt";
     diary( diary_file );
 
     date = datetime( 'now' );
@@ -159,13 +159,13 @@
     fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
     fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
 
-    ofile = OfileBase + ".raw";
+    ofile = OfileBase + "-daq.dat";
     save( ofile, 'allScanData', '-ascii' );
 
     fprintf( 'Ofile         = %s\n', ofile );
 
     % formatted output
-    ofile2  = OfileBase + ".txt";
+    ofile2  = OfileBase + "-daq.txt";
     file_id = fopen( ofile2, 'w' );
     fprintf( file_id, '%8.5f %7.4f %7.4f\n', allScanData );
     fclose(  file_id );
