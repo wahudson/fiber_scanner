@@ -48,11 +48,16 @@ MATLAB Operators and Special Characters
     ./   = A ./ B  = divide   array A by B, "element-wise"
 		Beware combining row/column vectors create matrix or scaler.
 
-Text in String and Character Arrays
-    +    = string concatenation
-    https://www.mathworks.com/help/matlab/matlab_prog/represent-text-with-character-and-string-arrays.html
+String and Character Arrays:
     'text'  - is a character array
     "text"  - is a string
+    https://www.mathworks.com/help/matlab/matlab_prog/represent-text-with-character-and-string-arrays.html
+
+String operations:
+    strcat()	normal concatenation;  cell arrays strip trailing white-space
+    append()	true concatenation, result is string if any input is string
+    +           alias operator for append()
+    https://www.mathworks.com/help/matlab/characters-and-strings.html
 
 colon, :
     v = a:b
@@ -185,6 +190,11 @@ diary - Log Command Window text to file
     diary off		turn off writing
     diary on		turn on  writing
 	Note - turn off diary to flush file buffer before viewing file.
+	Appends to file if it already exists.
+
+date = datetime( 'now' );	return a scalar array of current date and time
+date.Format = 'yyyy-MM-dd HH:mm:ss';
+    Date and time conversion.  Way too complicated!
 
 type - Display contents of a file in command window
     type file.txt
@@ -197,9 +207,13 @@ pause( n )		Stop Matlab execution temporarily.
     pause( 'on' )	enable sleep
     pause( 'off' )	disable sleep
 
-fprintf( formatSpec, vars, .. )		print to screen, or file
-sprintf( formatSpec, vars, .. )		return a string
+sprintf( formatSpec, vars, .. )			return a string
+fprintf( formatSpec, vars, .. )			print to screen
+fprintf( fileID, formatSpec, vars, .. )		print to file
+fileID = fopen( 'exp.txt', 'w' );		open file to write
+fclose( fileID );
     Similar to standard C.
+    https://www.mathworks.com/help/matlab/ref/fprintf.html
 
 Plotting:
 

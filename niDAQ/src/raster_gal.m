@@ -60,13 +60,16 @@
 %   FreqX_Hz   = 6250;		% DEBUG - 10 samples per cycle
 %   LineCycY_n = 4 * 2;
 
-    totalTime_s = FrameCnt_n * LineCycY_n / FreqX_Hz;
-    totalSamp_n = totalTime_s * sampRate;
-
     OutAmpX_V = 1.00;		% output amplitude, sine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
     % pi = 3.14159;
+
+    totalTime_s = FrameCnt_n * LineCycY_n / FreqX_Hz;
+    totalSamp_n = totalTime_s * sampRate;
+
+    uniXsamp_n = (sampRate / FreqX_Hz) / 2;	% uni-direction num samples
+    uniYsamp_n = LineCycY_n / 2;
 
 %% Log Output
 
@@ -84,6 +87,8 @@
     fprintf( 'FrameCnt_n    = %10.3f\n', FrameCnt_n    );
     fprintf( 'OutAmpX_V     = %10.3f\n', OutAmpX_V     );
     fprintf( 'OutAmpY_V     = %10.3f\n', OutAmpY_V     );
+    fprintf( 'uniXsamp_n    = %10.3f\n', uniXsamp_n    );
+    fprintf( 'uniYsamp_n    = %10.3f\n', uniYsamp_n    );
     fprintf( 'totalTime_s   = %10.3f\n', totalTime_s   );
     fprintf( 'totalSamp_n   = %10d\n',   totalSamp_n   );
 
@@ -118,8 +123,6 @@
 
     lengthY_n = length( outVecY );
 
-    nsampX_n = periodX_s / dt_s;
-
 %% X Waveform (fast sine wave)
 
     lengthX_n = lengthY_n;
@@ -139,12 +142,15 @@
     fprintf( 'quarterY_n    = %10d\n',   quarterY_n    );
     fprintf( 'dY_V          = %12.4e\n', dY_V          );
     fprintf( 'lengthY_n     = %10d\n',   lengthY_n     );
-    fprintf( 'nsampX_n      = %10.3f\n', nsampX_n      );
 
     % figure(1);  clf;
     % plot( tVec_s, outVecX, tVec_s, outVecY );
 
 %% Run the DAQ
+
+    % Force zero at end point, leave galvo at rest.
+    outVecX = [outVecX, 0.0];
+    outVecY = [outVecY, 0.0];
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
