@@ -114,6 +114,13 @@ Array Indexing
 	A(3,2:7)  is a row vector?
     https://www.mathworks.com/help/matlab/math/array-indexing.html
 
+reshape( A, [5,2] )
+    Reshape vector A into a 5 row by 2 column matrix.  Elements taken one
+    column at a time.
+reshape( A, Nr, Nc, .. )
+    Reshape vector A into a Nr row by Nc column matrix.  A single dimension
+    can be [], indicating auto calculated.
+
 times(), .* operator
     Vectors with different orientations (one row vector and one column vector)
     implicitly expand to form a matrix.
@@ -224,6 +231,10 @@ clf
 clf(n)
     Clear figure window contents.
 
+exportgraphics( fig, "ofile.jpg" )
+    Save the contents of graphics object, tightly cropped with a thin margin.
+    File suffix .jpg .png .tiff .gif .pdf
+
 plot( x, y );
 plot( x, y, '-o' );
     Plot solid line with circle markers.  See LineSpec.
@@ -256,6 +267,13 @@ colormap( gray(256) )
 gray(m)
     Gray scale color map.
     https://www.mathworks.com/help/matlab/ref/gray.html
+
+imshow(I)
+imshow( I, DisplayRange=[low high] )
+    Display grayscale image, I= matrix of grayscale values
+
+imwrite( A, "file.pgm" )
+    Write grayscale image A to .pgm file.
 
 DAQ Explanations:
 -----------------

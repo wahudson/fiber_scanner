@@ -45,7 +45,8 @@
     Comments = [		% output to log file
 	"# Sample:  UASF target"
 	"# Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm"
-	"# Laser:  Iset = 32 mA"
+	"# Laser:  Iset = 30 mA"
+	"# PD_Gain:  40 db"
 	"# Pinhole:  0 mm"
 	"# Operator:  xxx"
 	"# Note:  "
@@ -74,13 +75,13 @@
 %% Log Output
 
     diary_file = OfileBase + "-log.txt";
-    diary( diary_file );
+    diary( diary_file );	% appends to file if it already exists
 
     date = datetime( 'now' );
     date.Format = 'yyyy-MM-dd HH:mm:ss';
 
     fprintf( "%s\n", date );
-    fprintf( "%s\n", join( Comments, '\n' ) );
+    fprintf( "%s\n", Comments );	% for each element of vector
 
     fprintf( 'FreqX_Hz      = %10.3f\n', FreqX_Hz      );
     fprintf( 'LineCycY_n    = %10.3f\n', LineCycY_n    );
@@ -165,16 +166,24 @@
     fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
     fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
 
-    ofile = OfileBase + "-daq.dat";
-    save( ofile, 'allScanData', '-ascii' );
+    daq_file = OfileBase + "-daq.dat";
+    save( daq_file, 'allScanData', '-ascii' );
+	% Format %16.7e, total 3*(16 char) plus <CR><NL>
 
-    fprintf( 'Ofile         = %s\n', ofile );
+    fprintf( 'daq_file      = %s\n', daq_file );
 
+    % gzip( daq_file );
+
+if ( 1 ) {
     % formatted output
-    ofile2  = OfileBase + "-daq.txt";
-    file_id = fopen( ofile2, 'w' );
-    fprintf( file_id, '%8.5f %7.4f %7.4f\n', allScanData );
+    daq2_file = OfileBase + "-daq.txt";
+    file_id = fopen( daq2_file, 'w' );
+
+    fprintf( file_id, '%8.5f %8.5f %8.5f\n', transpose( allScanData ) );
+	% Vectors applied in column order (many ways to screw up).
+
     fclose(  file_id );
+}
 
 %% Plot one line across center
 
@@ -185,23 +194,45 @@
 
     rn = [(center_ix - periodX_n):(center_ix + periodX_n)];
 				% index range of two X cycles at center Y=0
-
+if ( 1 ) {
     figure(2);  clf;
    %plot( rn, inScanData(rn) );
     plot( rn, inScanData(rn), '-o' );	% solid line, circle markers
     ylim([-0.010 0.090]);	% prevent auto-scale
+}
+
+%% Raster Image
+
+    % Full non-linear raster image, one pixel per sample (no resolution loss).
+    fig3 = figure(3);  clf;
+
+    rasterIm = reshape( inScanData, [], periodX_n );	% raster matrix
+	% Nrow= [] deduced dimension, Ncol= periodX_n one full cycle
+
+    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
+	% display grayscale image of matrix in figure
+
+    raster_file = OfileBase + "-raw.jpg";
+    exportgraphics( fig3, raster_file );
+
+    fprintf( 'raster_file   = %s\n', raster_file );
+
+    % Save 8-bit grayscale image.  Need to scale float to [0.0 .. 1.0]?
+    % pgm_file = OfileBase + "-image.pgm";
+    % imwrite( rasterIm, "pgm_file" );
 
 %% Plot XY intensity
 
+if ( 1 ) {
     % scale intensity to fit in range 0..1
     iu = (inScanData + 0.005 ) / 0.150;		% intensity vector {0.0 .. 1.0}
 
-    xx = outScanData(2,:);
-    yy = outScanData(3,:);
+    xx = outScanData(:,1);		% column vectors
+    yy = outScanData(:,2);
     rm = [(center_ix - quarterY_n):(center_ix + quarterY_n)];
 				% index range positive Y ramp
 
-    figure(3);  clf;
+    figure(4);  clf;
     colormap( gray(256) );
     scatter( xx(rm), yy(rm), [], iu(rm), "filled" );
 
@@ -210,6 +241,7 @@
 
     % sz = zeros( 1, length( rm ) ) + 36;	% row vector
 	% in case point size needs to be a vector for scatter() color
+}
 
 %% Close log file
     diary off;
