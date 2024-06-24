@@ -174,7 +174,7 @@
 
     % gzip( daq_file );
 
-if ( 1 ) {
+if ( 1 )
     % formatted output
     daq2_file = OfileBase + "-daq.txt";
     file_id = fopen( daq2_file, 'w' );
@@ -183,7 +183,7 @@ if ( 1 ) {
 	% Vectors applied in column order (many ways to screw up).
 
     fclose(  file_id );
-}
+end
 
 %% Plot one line across center
 
@@ -194,19 +194,22 @@ if ( 1 ) {
 
     rn = [(center_ix - periodX_n):(center_ix + periodX_n)];
 				% index range of two X cycles at center Y=0
-if ( 1 ) {
+if ( 1 )
     figure(2);  clf;
    %plot( rn, inScanData(rn) );
     plot( rn, inScanData(rn), '-o' );	% solid line, circle markers
     ylim([-0.010 0.090]);	% prevent auto-scale
-}
+end
 
 %% Raster Image
 
     % Full non-linear raster image, one pixel per sample (no resolution loss).
     fig3 = figure(3);  clf;
 
-    rasterIm = reshape( inScanData, [], periodX_n );	% raster matrix
+    dimY_n = int32( lengthY_n / periodX_s );
+
+    rasterIb = inScanData( 1:lengthY_n );
+    rasterIm = reshape( rasterIb, [], periodX_n );	% raster matrix
 	% Nrow= [] deduced dimension, Ncol= periodX_n one full cycle
 
     imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
@@ -223,7 +226,7 @@ if ( 1 ) {
 
 %% Plot XY intensity
 
-if ( 1 ) {
+if ( 1 )
     % scale intensity to fit in range 0..1
     iu = (inScanData + 0.005 ) / 0.150;		% intensity vector {0.0 .. 1.0}
 
@@ -241,7 +244,7 @@ if ( 1 ) {
 
     % sz = zeros( 1, length( rm ) ) + 36;	% row vector
 	% in case point size needs to be a vector for scatter() color
-}
+end
 
 %% Close log file
     diary off;
