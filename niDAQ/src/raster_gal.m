@@ -206,23 +206,41 @@ end
     % Full non-linear raster image, one pixel per sample (no resolution loss).
     fig3 = figure(3);  clf;
 
-    dimY_n = int32( lengthY_n / periodX_s );
+    imageX_n = periodX_n;
+    imageY_n = int32( lengthY_n / periodX_n );
+    fprintf( 'imageX_n      = %10.3f\n', imageX_n      );
+    fprintf( 'imageY_n      = %10.3f\n', imageY_n      );
 
-    rasterIb = inScanData( 1:lengthY_n );
-    rasterIm = reshape( rasterIb, [], periodX_n );	% raster matrix
+    rasterIb = inScanData( 1:lengthY_n );		% remove final zero
+    rasterIm = reshape( rasterIb, imageX_n, imageY_n );	% raster matrix
 	% Nrow= [] deduced dimension, Ncol= periodX_n one full cycle
 
     imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
 	% display grayscale image of matrix in figure
+	% Probably remove auto-scale for image comparison.
 
-    raster_file = OfileBase + "-raw.jpg";
-    exportgraphics( fig3, raster_file );
+    fig_file = OfileBase + "-fig.jpg";
+    exportgraphics( fig3, fig_file );
+	% note pixel-per-bit is NOT preserved in output file
 
-    fprintf( 'raster_file   = %s\n', raster_file );
+    fprintf( 'fig_file      = %s\n', fig_file );
 
-    % Save 8-bit grayscale image.  Need to scale float to [0.0 .. 1.0]?
-    % pgm_file = OfileBase + "-image.pgm";
-    % imwrite( rasterIm, "pgm_file" );
+%% Save 8-bit grayscale image.
+
+    % Scale float to grayscale [0.0 .. 1.0] range for imwrite().
+    pngIm = (rasterIm - sigMin_V) / (sigMax_V - sigMin_V);
+
+    pgm_file = OfileBase + "-image.pgm";
+    imwrite( rasterIm, "pgm_file", Encoding,"ASCII", MaxValue,256 );
+	% imwrite() should scale [0.0 .. 1.0] data by 256, write 8-bit.
+	% Encoding,"rawbits" - for binary
+
+    fprintf( 'pgm_file      = %s\n', pgm_file );
+
+    % Read back to verify pgm image.
+    figure(4);  clf;
+    readIm = imread( pgm_file );
+    imshow( readIm );
 
 %% Plot XY intensity
 
@@ -235,7 +253,7 @@ if ( 1 )
     rm = [(center_ix - quarterY_n):(center_ix + quarterY_n)];
 				% index range positive Y ramp
 
-    figure(4);  clf;
+    figure(5);  clf;
     colormap( gray(256) );
     scatter( xx(rm), yy(rm), [], iu(rm), "filled" );
 
