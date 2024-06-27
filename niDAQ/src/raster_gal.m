@@ -153,6 +153,8 @@
     outVecX = [outVecX, 0.0];
     outVecY = [outVecY, 0.0];
 
+    outVecY = 0.0 - outVecY;	% galvo +voltage is downwards ??
+
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
 
@@ -174,7 +176,7 @@
 
     % gzip( daq_file );
 
-if ( 1 )
+if ( 0 )
     % formatted output
     daq2_file = OfileBase + "-daq.txt";
     file_id = fopen( daq2_file, 'w' );
@@ -198,7 +200,7 @@ if ( 1 )
     figure(2);  clf;
    %plot( rn, inScanData(rn) );
     plot( rn, inScanData(rn), '-o' );	% solid line, circle markers
-    ylim([-0.010 0.090]);	% prevent auto-scale
+    ylim([-0.010 2.500]);	% prevent auto-scale
 end
 
 %% Raster Image
@@ -212,8 +214,10 @@ end
     fprintf( 'imageY_n      = %10.3f\n', imageY_n      );
 
     rasterIb = inScanData( 1:lengthY_n );		% remove final zero
-    rasterIm = reshape( rasterIb, imageX_n, imageY_n );	% raster matrix
-	% Nrow= [] deduced dimension, Ncol= periodX_n one full cycle
+    rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
+	% raster matrix, upright image
+	% reshape( .., Nrow, Ncol ) walks output array by column (imageX_n),
+	% leaving the image transposed.
 
     imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
 	% display grayscale image of matrix in figure
@@ -234,6 +238,7 @@ end
     imwrite( rasterIm, pgm_file, "pgm", 'Encoding',"ASCII", 'MaxValue',256 );
 	% imwrite() should scale [0.0 .. 1.0] data by 256, write 8-bit.
 	% Encoding,"rawbits" - for binary
+	% Bug outputs incorrect values > MaxValue.
 
     fprintf( 'pgm_file      = %s\n', pgm_file );
 
@@ -246,7 +251,7 @@ end
 
 if ( 1 )
     % scale intensity to fit in range 0..1
-    iu = (inScanData + 0.005 ) / 0.150;		% intensity vector {0.0 .. 1.0}
+    iu = (inScanData + 0.005 ) / 2.500;		% intensity vector {0.0 .. 1.0}
 
     xx = outScanData(:,1);		% column vectors
     yy = outScanData(:,2);
