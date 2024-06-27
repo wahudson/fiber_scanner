@@ -231,7 +231,7 @@ end
     pngIm = (rasterIm - sigMin_V) / (sigMax_V - sigMin_V);
 
     pgm_file = OfileBase + "-image.pgm";
-    imwrite( rasterIm, "pgm_file", Encoding,"ASCII", MaxValue,256 );
+    imwrite( rasterIm, pgm_file, "pgm", 'Encoding',"ASCII", 'MaxValue',256 );
 	% imwrite() should scale [0.0 .. 1.0] data by 256, write 8-bit.
 	% Encoding,"rawbits" - for binary
 
