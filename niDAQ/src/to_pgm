@@ -1,0 +1,29 @@
+#! /usr/bin/perl -w
+# 2024-06-26  William A. Hudson
+
+# List input convert to PGM image file.
+#
+# usage:  to_pgm < daq.txt
+
+# Input:  1.9477678e+00   3.2489139e+00  -4.1134664e-01
+
+
+my $Nx      = 625;
+my $Ny      = 800;
+my $MaxVal  = 256;
+my $Off_V   = 0.1;	# offset voltage
+my $Full_V  = 2.4;	# full scale voltage
+
+my $scale = $MaxVal / ($Full_V - $Off_V);
+
+print( "P2\n" );
+printf( "%d %d %d\n", $Nx, $Ny, $MaxVal );
+
+while ( <> ) {
+    my ( $Vsig_V ) = split( ' ', $_ );
+
+    my $pixv = ($Vsig_V + $Off_V) * $scale;
+
+    printf( "%d\n", $pixv );
+}
+

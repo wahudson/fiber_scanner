@@ -153,6 +153,7 @@
     outVecX = [outVecX, 0.0];
     outVecY = [outVecY, 0.0];
 
+    outVecX = 0.0 - outVecX;	% put left-right sweep in middle of image
     outVecY = 0.0 - outVecY;	% galvo +voltage is downwards ??
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
