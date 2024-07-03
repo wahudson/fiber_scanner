@@ -81,14 +81,14 @@
 
 %% Y Waveform (slow ramp FOV)
 
-    dY_V = - OutAmpY_V / FrameY_n;	% Y ramp increment (negative)
+    frameSamp_n = FrameY_n * SampleX_n;		% total samples in FOV
 
-    frameSamp_n = FrameY_n * SampleX_n;	% total samples in FOV
+    dY_V = -2 * OutAmpY_V / frameSamp_n;	% Y ramp increment (negative)
 
     % vector of ramp Y from top to bottom
     waveY = ([ 0 : (frameSamp_n - 1) ] * dY_V) + OutAmpY_V;
 
-    if ( length( waveY ) != FrameY_n )
+    if ( not( length( waveY ) == FrameY_n ) )
 	fprintf( "Error:  FrameY_n != length( waveY ) = %d\n", length( waveY );
     end
 
@@ -138,11 +138,11 @@
     % Image Frame begins in upper-left corner, ends in lower-left corner.
     %     These transition vectors connect image frame to (0.0, 0.0)
 
-    preX  = OutAmpX_V * (transVec - 1.0);	% from 0 to -X
-    postX = OutAmpX_V * (0.0 - transVec);	% from -X to 0
+    preX  = OutAmpX_V * (transVec - 0.5);	% from 0 to -X
+    postX = OutAmpX_V * (-0.5 - transVec);	% from -X to 0
 
-    preY  = OutAmpY_V * (1.0 - transVec);	% from 0 to +Y
-    postY = OutAmpY_V * (0.0 - transVec);	% from -Y to 0
+    preY  = OutAmpY_V * ( 0.5 - transVec);	% from 0 to +Y
+    postY = OutAmpY_V * (-0.5 - transVec);	% from -Y to 0
 
     fprintf( 'trans_s       = %12.4e\n', trans_s       );
     fprintf( 'trans_n       = %10d\n',   trans_n       );
@@ -192,7 +192,7 @@
 
     % gzip( daq_file );
 
-if ( 0 )
+if ( 1 )
     % formatted output
     daq2_file = OfileBase + "-daq.txt";
     file_id = fopen( daq2_file, 'w' );
@@ -258,9 +258,9 @@ if ( 1 )
     %     Hopefully imshow() will preserve one display pixel per pixel.
 
     figure(4);  clf;
-    imshow( pngIm );
-    % readIm = imread( pgm_file );
-    % imshow( readIm );
+    % imshow( pgm_file );
+    readIm = imread( pgm_file );
+    imshow( readIm );
 end
 
 %% Close log file
