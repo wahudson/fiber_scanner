@@ -27,8 +27,8 @@
     OfileBase = "out1";		% output file base-name (without suffix)
 				%    File suffix is appended.
 
-    SampleX_n  = 1200;		% number of samples in an X cycle (even)
-    FrameY_n   = 800;		% number of X cycles in Y ramp
+    SampleX_n  = 2000;		% number of samples in an X cycle (even)
+    SampleY_n  = 400;		% number of X cycles in Y ramp
 
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
@@ -72,25 +72,26 @@
     freqX_Hz = 1 / (SampleX_n * dt_s);	% X frequency, cosine wave
 
     fprintf( 'SampleX_n     = %10d\n',   SampleX_n     );
-    fprintf( 'FrameY_n      = %10d\n',   FrameY_n      );
+    fprintf( 'SampleY_n     = %10d\n',   SampleY_n     );
     fprintf( 'OutAmpX_V     = %10.3f\n', OutAmpX_V     );
     fprintf( 'OutAmpY_V     = %10.3f\n', OutAmpY_V     );
-    fprintf( 'freqX_Hz      = %10.3f\n', freqX_Hz      );
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s          );
+    fprintf( 'freqX_Hz      = %10.3f\n', freqX_Hz      );
 
 %% Y Waveform (slow ramp FOV)
 
-    frameSamp_n = FrameY_n * SampleX_n;		% total samples in FOV
+    frameSamp_n = SampleY_n * SampleX_n;	% total samples in FOV
 
     dY_V = -2 * OutAmpY_V / frameSamp_n;	% Y ramp increment (negative)
 
     % vector of ramp Y from top to bottom
     waveY = ([ 0 : (frameSamp_n - 1) ] * dY_V) + OutAmpY_V;
 
-    if ( not( length( waveY ) == FrameY_n ) )
-	fprintf( "Error:  FrameY_n != length( waveY ) = %d\n", length( waveY );
+    if ( not( length( waveY ) == frameSamp_n ) )
+	fprintf( "Error:  SampleY_n != length( waveY ) = %d\n", length( waveY );
     end
+    %#!! probably not needed
 
     frameY_n = length( waveY );		% length of frame in samples
 
@@ -107,13 +108,17 @@
 
 
     periodX_s = SampleX_n / dt_s;	% period of one X cosine cycle
-    periodY_s = FrameY_n / dt_s;	% period of one Y ramp cycle
+    periodY_s = SampleY_n / dt_s;	% period of one Y ramp cycle
 
     frameX_n  = SampleX_n;		% width of frame in samples
 
+    dX0_V = OutAmpY_V * sin( wX * dt_s );	% X step size at X=0
+
+    fprintf( 'wX            = %12.4e\n', wX            );
     fprintf( 'frameSamp_n   = %10d\n',   frameSamp_n   );
     fprintf( 'periodX_s     = %12.4e\n', periodX_s     );
     fprintf( 'periodY_s     = %12.4e\n', periodY_s     );
+    fprintf( 'dX0_V         = %12.4e\n', dX0_V         );
     fprintf( 'dY_V          = %12.4e\n', dY_V          );
 
     % A frame is sweep right and sweep left over FOV.
@@ -215,16 +220,22 @@ end
 
     rasterIb = inScanData( 1:rawLen_n );		% remove final zero
     rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
-	% Raw raster matrix, upright image.
+	% Raw raster matrix, upright image, mirrored X.
 	% Function reshape( .., Nrow, Ncol ) walks output array by column
 	% (imageX_n), leaving the image transposed.
+
+    imageXu_n = int32( imageX_n / 2 );		% single sweep over FOV
+    rasterIu = rasterIm( [1:imageXu_n], : );
+	% Single FOV scaning left to right.
+
+    fprintf( 'imageXu_n     = %10.3f\n', imageXu_n     );
 
     % Note:  pre/post transitions are one image line at top/bottom.
 
 if ( 1 )
     fig3 = figure(3);  clf;
 
-    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
+    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
 	% display grayscale image of matrix in figure
 	% Probably remove auto-scale for image comparison.
 
@@ -233,6 +244,9 @@ if ( 1 )
 	% note pixel-per-bit is NOT preserved in output file
 
     fprintf( 'fig_file      = %s\n', fig_file );
+
+    fig4 = figure(4);  clf;
+    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
 end
 
 %% PGM 8-bit grayscale image
@@ -257,7 +271,7 @@ if ( 1 )
     % Read back for display.
     %     Hopefully imshow() will preserve one display pixel per pixel.
 
-    figure(4);  clf;
+    figure(5);  clf;
     % imshow( pgm_file );
     readIm = imread( pgm_file );
     imshow( readIm );
