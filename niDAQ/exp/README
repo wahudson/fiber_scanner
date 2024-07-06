@@ -4,8 +4,16 @@
 			-----------------
 Files:
 ------
-README			this file
-data/			Bulk data, not in Git.
+README		this file
+
+data/		Bulk data symlink, not in Git
+		-> /home/var/pro/fiber_scanner/niDAQ/data/
+			ex*/		real data named by experiment
+
+ex*/		Experiments
+    data/  -> ../data/ex*/		bulk data, remote symlink or local dir
+    notes.text				experiment report
+
 
 ex2022_07_14_piezo/	my very first run of Camerons Fourier script
 ex2022_08_02_piezo/	my copy saving Lissajous data
