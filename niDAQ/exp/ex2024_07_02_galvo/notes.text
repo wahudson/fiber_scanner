@@ -1,0 +1,137 @@
+2024-07-02  William A. Hudson
+
+		Galvo Scanner USAF Target -- ex2024_07-02_galvo/
+		--------------------------
+
+Measurements taken by Bill on 2024-07-02.
+Modified Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+
+Follows from:  ex2024_06_25_galvo/
+
+See:  red notebook  7-02-2024
+USB stick:  csu2024_07_02/
+Code:  src/rcm_uno.m  (2024-07-03, Git 002bb9f068) after fixes
+
+Files:  (logical ordering)
+------
+ v  notes.text			this file
+
+    out8-daq.dat		raw data
+    out8-daq.pgm		processed by to_pgm
+    out8-daq.txt
+    out8-fig.jpg
+ v  out8-line_group42.pdf	scan line across group 4.2
+    out8-log.txt
+    rcm_uno.m			run galvos
+
+ v = in Git, large data files excluded
+
+----------------------------------------------------------------------------
+## Data parameters  out8-log.txt
+----------------------------------------------------------------------------
+    2024-07-02 17:35:06
+    # Sample:  UASF target
+    # Stage:  Z= 11.70 mm, Y= 0?.275 inch, X=?13.50 mm
+    # Laser:  Iset = 30 mA
+    # PD_Gain:  40 db
+    # Pinhole:  1.0 mm			actually was wide open
+    # Operator:  Bill
+    # Note:  USAF 1951 Target
+    SampleX_n     =        625
+    FrameY_n      =        400
+    OutAmpX_V     =      1.000
+    OutAmpY_V     =      1.000
+    freqX_Hz      =    100.000
+    sampRate      =   6.2500e+04
+    dt_s          =   1.6000e-05
+    frameSamp_n   =     250000
+    periodX_s     =   3.9062e+07	wrong
+    periodY_s     =   2.5000e+07	wrong
+    dY_V          =  -8.0000e-06
+    trans_s       =   1.0000e-02
+    trans_n       =        625
+    frameX_n      =        625
+    frameY_n      =     250000
+    rawLen_n      =     251250
+    sigMax_V      =      1.739
+    sigMin_V      =      0.234
+    daq_file      = out8-daq.dat
+    imageX_n      =    625.000
+    imageY_n      =    402.000
+    fig_file      = out8-fig.jpg
+
+----------------------------------------------------------------------------
+## Analyze out8
+----------------------------------------------------------------------------
+
+View image:
+    % display out8-fig.jpg &
+	Image size 983x634 pixels.  (should be 625x400 plus a narrow boarder)
+	The out8-fig.jpg image produced by matlab is clearly distorted.
+	It has extrapolated pixels that show as blurry edges of pattern.
+	==> NOT useful!
+
+    % ~/pro/fiber_scanner/niDAQ/src/to_pgm  < out8-daq.dat > out8-daq.pgm
+    % display out8-daq.pgm &
+	Image 625x400.
+	This is much sharper with no pixel extrapolation.
+
+Run R:
+
+    df <- read.table( "out8-daq.dat", header=FALSE )
+
+    names( df ) <- c( "Vsig_V", "Vx_V", "Vy_V" )
+
+    Intensity range:
+    max( df$Vsig_V )
+	[1] 1.739336
+    min( df$Vsig_V )
+	[1] 0.2335622
+	This is good size at 40 db gain.
+
+    rn <- c(1:251251)
+    plot( rn, df$Vy_V[rn] )
+	Full dataset
+
+See transition regions:
+    rn <- c(1:1250)
+    plot( rn, df$Vy_V[rn] )
+    plot( rn, df$Vx_V[rn] )
+
+    rn <- c(250000:251251)
+    plot( rn, df$Vy_V[rn] )
+    plot( rn, df$Vx_V[rn] )
+
+    All look good transitions to 0,0
+
+On image pick good X scan:
+    243, 92
+
+    A = 92 * 625 = 57500	left edge
+    B = A + 625  = 58125
+
+    rn <- c(57500:58125)
+    plot( rn, df$Vsig_V[rn] )
+    plot( rn, df$Vsig_V[rn], type='o' )
+	Can see trace across group 4.2 and 5.1.
+	No sign of PD saturation.
+
+    title( "Scan line at Y=92 pixel, group 4.2" )
+ >  dev.copy2pdf( file="out8-line_group42.pdf" )
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+The .pgm image looks good, but out of focus.
+
+The JPEG image produced by matlab imshow() and exportgraphics() is clearly
+    distorted with added extrapolated pixels.
+
+Scan line intensity plot:
+    Clearly no saturation of PD at gain of 40 db.
+    Easily see group 4.2 pattern, followed by large dark square and group 5.1
+    pattern.
+
+Improvements to rcm_uno.m script.
+
