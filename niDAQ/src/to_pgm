@@ -1,0 +1,149 @@
+#! /usr/bin/perl -w
+# 2024-07-07  William A. Hudson
+
+# Convert numeric list input to a PGM image file.
+#
+# Input:  First column is signal value, one line per sample.
+#
+#---------------------------------------------------------------------------
+
+use strict;
+
+use Getopt::Long  ();
+use Pod::Usage    ( 'pod2usage' );
+
+our $ProgFile = $0;	# this program
+our $ProgName = $0;
+    $ProgName =~ s:^.*/:: ;
+
+#---------------------------------------------------------------------------
+## Program usage
+#---------------------------------------------------------------------------
+
+sub print_usage
+{
+    print( <<USAGE );
+    Convert numeric list input to a PGM image file.
+usage:  $ProgName  [options]  < list  > file.pgm 
+    --nx=N       X number of data pixels
+    --ny=M       Y number of data pixels
+    --min=0.1    minimum signal level (black clamp)
+    --max=1.0    maximum signal level (white clamp)
+    --help       show this usage
+USAGE
+}
+
+#---------------------------------------------------------------------------
+## Main program
+#---------------------------------------------------------------------------
+
+{
+
+# Option processing
+
+    my $op_nx           = 2;
+    my $op_ny           = 3;
+    my $op_min          = 0.0;
+    my $op_max          = 5.0;
+
+    my $op_verbose      = 0;
+
+    Getopt::Long::Configure(
+	'posix_default',
+	'no_ignore_case',
+    );
+
+    Getopt::Long::GetOptions(
+	"--nx=i"         => \$op_nx,
+	"--ny=i"         => \$op_ny,
+	"--min=f"        => \$op_min,
+	"--max=f"        => \$op_max,
+
+	"--help"         => sub { print_usage();      exit( 0 ) },
+	"--verbose|v"    => \$op_verbose,
+
+    ) || do {	# GetOptions() returns false on errors in option parsing.
+	Error( "Type '$ProgName --help' for usage.\n" );
+	exit( 2 );
+	# Do not show usage longer than 5 lines, let user see argument error.
+    };
+
+# Main body
+
+    my $MaxVal  = 255;		# max PGM value
+
+    my $scale = $MaxVal / ($op_max - $op_min);
+
+    my $Nxy = $op_nx * $op_ny;	# total pixels
+
+    printf( STDERR  "Nx       = %8d\n",   $op_nx    );
+    printf( STDERR  "Ny       = %8d\n",   $op_ny    );
+    printf( STDERR  "Npixel   = %8d\n",   $Nxy      );
+    printf( STDERR  "black_V  = %8.4f\n", $op_min   );
+    printf( STDERR  "white_V  = %8.4f\n", $op_max   );
+    printf( STDERR  "scale    = %12.4e\n", $scale    );
+
+    # PGM header
+    print( "P2\n" );
+    printf( "%d %d %d\n", $op_nx, $op_ny, $MaxVal );
+
+    my $max = 0;
+    my $min = 99999;
+    my $Ncnt = 0;
+
+    while ( <> ) {
+	my ( $Vsig_V ) = split( ' ', $_ );
+
+	if ( $Vsig_V > $max ) { $max = $Vsig_V }
+	if ( $Vsig_V < $min ) { $min = $Vsig_V }
+
+	my $pixv = ($Vsig_V - $op_min) * $scale;
+
+	if ( $pixv > $MaxVal ) { $pixv = $MaxVal }
+	if ( $pixv < 0       ) { $pixv = 0       }
+
+	$Ncnt ++;
+
+	if ( $Ncnt <= $Nxy ) {
+	    printf( "%d\n", $pixv );
+	}
+    }
+
+    printf( STDERR  "sigMax_V = %8.4f\n", $max      );
+    printf( STDERR  "sigMin_V = %8.4f\n", $min      );
+
+    if ( $Ncnt < $Nxy ) {
+	Error( "Missing data, Ncnt = $Ncnt\n" );
+    }
+    elsif ( $Ncnt > $Nxy ) {
+	Error( "Extra data, Ncnt = $Ncnt\n" );
+    }
+
+}
+
+exit( (Error()) ? 1 : 0 );
+
+#---------------------------------------------------------------------------
+## Error Handling
+#---------------------------------------------------------------------------
+
+our $Error_cnt = 0;	# (private)
+
+# Error message reporting.
+# call:
+#    Error( @text )	Print error message, increment error count.
+#    Error()		Get error count.
+# return:
+#    ()  = Error count, false if no errors were recorded.
+#
+sub Error
+{
+    if ( @_ ) {
+	warn( "Error:  ", @_ );
+	$Error_cnt ++;
+    }
+    return( $Error_cnt );
+}
+
+__END__
+
