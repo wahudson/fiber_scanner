@@ -27,7 +27,7 @@
     OfileBase = "out1";		% output file base-name (without suffix)
 				%    File suffix is appended.
 
-    SampleX_n  = 2000;		% number of samples in an X cycle (even)
+    SampleX_n  = 1250;		% number of samples in an X cycle (even)
     SampleY_n  = 400;		% number of X cycles in Y ramp
 
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
@@ -87,11 +87,6 @@
 
     % vector of ramp Y from top to bottom
     waveY = ([ 0 : (frameSamp_n - 1) ] * dY_V) + OutAmpY_V;
-
-    if ( not( length( waveY ) == frameSamp_n ) )
-	fprintf( "Error:  SampleY_n != length( waveY ) = %d\n", length( waveY );
-    end
-    %#!! probably not needed
 
     frameY_n = length( waveY );		% length of frame in samples
 
@@ -225,7 +220,7 @@ end
 	% (imageX_n), leaving the image transposed.
 
     imageXu_n = int32( imageX_n / 2 );		% single sweep over FOV
-    rasterIu = rasterIm( [1:imageXu_n], : );
+    rasterIu = rasterIm( :, [1:imageXu_n] );
 	% Single FOV scaning left to right.
 
     fprintf( 'imageXu_n     = %10.3f\n', imageXu_n     );
