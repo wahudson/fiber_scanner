@@ -1,0 +1,25 @@
+#! /bin/bash
+# 2024-06-26  William A. Hudson
+
+# Run  to_pgm  on a list of files.
+
+# usage:  to_pgmFile  command < list
+# usage:  ls *.dat | to_pgmFile  command
+#
+#    command = 'to_pgm' command executed with redirected stdin, stdout, sterr
+
+while read  ifile
+do
+    base=${ifile%\.*}		# file base name
+
+    ofile=${base}.pgm
+    efile=${base}.pgmerr
+
+    cmd="${@} < ${ifile} > ${base}.pgm 2> ${base}.pgmerr"
+
+    echo "+ ${cmd}"
+
+    eval ${cmd}
+
+done
+
