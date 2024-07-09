@@ -109,14 +109,19 @@ USAGE
 	}
     }
 
+    my $Ndiff = $Ncnt - $Nxy;
+
+    printf( STDERR  "Ndata    = %8d\n",   $Ncnt     );
     printf( STDERR  "sigMax_V = %8.4f\n", $max      );
     printf( STDERR  "sigMin_V = %8.4f\n", $min      );
 
-    if ( $Ncnt < $Nxy ) {
-	Error( "Missing data, Ncnt = $Ncnt\n" );
-    }
-    elsif ( $Ncnt > $Nxy ) {
-	Error( "Extra data, Ncnt = $Ncnt\n" );
+    if ( abs( $Ndiff ) > $op_nx ) {
+	if ( $Ndiff < 0 ) {
+	    Error( "Missing data, $Ndiff samples\n" );
+	}
+	elsif ( $Ndiff > 0 ) {
+	    Error( "Extra data, $Ndiff samples\n" );
+	}
     }
 
 }

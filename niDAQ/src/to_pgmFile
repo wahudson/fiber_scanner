@@ -1,21 +1,31 @@
 #! /bin/bash
-# 2024-06-26  William A. Hudson
+# 2024-07-07  William A. Hudson
 
-# Run  to_pgm  on a list of files.
+# Run 'Command' (i.e. to_pgm) on a list of files.
 
-# usage:  to_pgmFile  command < list
-# usage:  ls *.dat | to_pgmFile  command
+# usage:  to_pgmFile  Command < list
+# usage:  ls *.dat | to_pgmFile  Command
+# usage:  ls *.dat.gz | to_pgmFile  "gunzip | Command"
 #
-#    command = 'to_pgm' command executed with redirected stdin, stdout, sterr
+#    Command = command executed with redirected stdin, stdout and stderr.
+#        Can be a pipeline.
+
+#set -x
 
 while read  ifile
 do
-    base=${ifile%\.*}		# file base name
+    if [[ ${ifile} =~ " " ]]		# has a <space>
+    then
+	echo "Error:  whitespace in list:  ${ifile}" >&2
+	exit 1
+    fi
+
+    base=${ifile%%\.*}		# file base name, remove longest .suffix
 
     ofile=${base}.pgm
     efile=${base}.pgmerr
 
-    cmd="${@} < ${ifile} > ${base}.pgm 2> ${base}.pgmerr"
+    cmd="<'${ifile}'  ${@}  >'${base}.pgm'  2>'${base}.pgmerr'"
 
     echo "+ ${cmd}"
 

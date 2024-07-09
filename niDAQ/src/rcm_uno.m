@@ -17,14 +17,16 @@
     Comments = [		% output to log file
 	"# Sample:  UASF target"
 	"# Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm"
-	"# Laser:  Iset = 30 mA"
+	"# Objective:  5x"
 	"# PD_Gain:  40 db"
 	"# Pinhole:  0 mm"
+	"# Laser:  Iset = 30 mA"
+	"# WavePlate:  0 deg"
 	"# Operator:  xxx"
 	"# Note:  "
     ];
 
-    OfileBase = "out1";		% output file base-name (without suffix)
+    OfileBase = "out00";	% output file base-name (without suffix)
 				%    File suffix is appended.
 
     SampleX_n  = 1250;		% number of samples in an X cycle (even)
@@ -82,6 +84,7 @@
 %% Y Waveform (slow ramp FOV)
 
     frameSamp_n = SampleY_n * SampleX_n;	% total samples in FOV
+    frameSamp_s = frameSamp_n * dt_s;
 
     dY_V = -2 * OutAmpY_V / frameSamp_n;	% Y ramp increment (negative)
 
@@ -102,8 +105,9 @@
     waveX = -1 * OutAmpX_V * cos( wX * tVec_s );	% begin at left edge
 
 
-    periodX_s = SampleX_n / dt_s;	% period of one X cosine cycle
-    periodY_s = SampleY_n / dt_s;	% period of one Y ramp cycle
+    periodX_s = SampleX_n * dt_s;	% period of one X cosine cycle
+    periodY_s = SampleY_n * dt_s;	% period of one Y ramp cycle
+	%#!! not really
 
     frameX_n  = SampleX_n;		% width of frame in samples
 
@@ -111,6 +115,7 @@
 
     fprintf( 'wX            = %12.4e\n', wX            );
     fprintf( 'frameSamp_n   = %10d\n',   frameSamp_n   );
+    fprintf( 'frameSamp_s   = %10d\n',   frameSamp_s   );
     fprintf( 'periodX_s     = %12.4e\n', periodX_s     );
     fprintf( 'periodY_s     = %12.4e\n', periodY_s     );
     fprintf( 'dX0_V         = %12.4e\n', dX0_V         );
@@ -183,25 +188,7 @@
     fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
     fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
 
-    daq_file = OfileBase + "-daq.dat";
-    save( daq_file, 'allScanData', '-ascii' );
-	% Format %16.7e, total 3*(16 char) plus <CR><NL>
-	%#!! saving to USB drive is slow, perhaps after image plot
-
-    fprintf( 'daq_file      = %s\n', daq_file );
-
-    % gzip( daq_file );
-
-if ( 1 )
-    % formatted output
-    daq2_file = OfileBase + "-daq.txt";
-    file_id = fopen( daq2_file, 'w' );
-
-    fprintf( file_id, '%8.5f %8.5f %8.5f\n', transpose( allScanData ) );
-	% Vectors applied in column order (many ways to screw up).
-
-    fclose( file_id );
-end
+    % output saved below, after image display
 
 %% Raster Image
 
@@ -227,26 +214,68 @@ end
 
     % Note:  pre/post transitions are one image line at top/bottom.
 
-if ( 1 )
+if ( 1 )	% debug
     fig3 = figure(3);  clf;
 
     imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
 	% display grayscale image of matrix in figure
 	% Probably remove auto-scale for image comparison.
+end
 
-    fig_file = OfileBase + "-fig.jpg";
-    exportgraphics( fig3, fig_file );
-	% note pixel-per-bit is NOT preserved in output file
-
-    fprintf( 'fig_file      = %s\n', fig_file );
-
+if ( 1 )	% primary image
     fig4 = figure(4);  clf;
     imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
+
+    fig_file = OfileBase + "-fig.jpg";
+    exportgraphics( fig4, fig_file );
+	% Save pretty image, small file.
+	% Note pixel-per-bit is NOT preserved in output file.
+
+    fprintf( 'fig_file      = %s\n', fig_file );
+end
+
+%% Save data
+
+if ( 0 )	% raw full data output (debug)
+    daq_file = OfileBase + "-daq.dat";
+    save( daq_file, 'allScanData', '-ascii' );
+	% Format %16.7e, total 3*(16 char) plus <CR><NL>
+	%#!! saving to USB drive is slow
+
+    fprintf( 'daq_file      = %s\n', daq_file );
+
+    % gzip( daq_file );
+end
+
+if ( 1 )	% compact single-column output  -daq-x2500.dat
+    daq1_file = OfileBase + "-daq-x" + SampleX_n + ".dat";
+    file_id = fopen( daq1_file, 'w' );
+
+    fprintf( file_id, '%8.5f\n', inScanData );
+	% Vectors applied in column order.
+
+    fclose( file_id );
+
+    fprintf( 'daq1_file     = %s\n', daq1_file );
+    % gzip( daq1_file );
+end
+
+if ( 0 )
+    % formatted output
+    daq2_file = OfileBase + "-daq.txt";
+    file_id = fopen( daq2_file, 'w' );
+
+    fprintf( file_id, '%8.5f %8.5f %8.5f\n', transpose( allScanData ) );
+	% Vectors applied in column order (many ways to screw up).
+
+    fclose( file_id );
+
+    fprintf( 'daq2_file     = %s\n', daq2_file );
 end
 
 %% PGM 8-bit grayscale image
 
-if ( 1 )
+if ( 0 )
     % Write manual pgm file, since imwrite() is broken.
 
     % Scale to grayscale [0 .. 256] range for PGM file.
