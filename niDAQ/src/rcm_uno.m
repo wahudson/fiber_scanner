@@ -9,6 +9,7 @@
 %    X galvo is fast scan, -cos(wt) wave, starting t=0 at left edge.
 %    Y galvo is slow scan, ramp wave from top to bottom.
 %    Galvo position voltage is +- about zero.  Both start at zero at time 0.
+% Git:  https://github.com/wahudson/fiber_scanner/niDAQ/src
 
 %% Parameters, user edit:
 
@@ -26,14 +27,23 @@
 	"# Note:  "
     ];
 
+    PreView = 1;		% 1= preview loop, 0= high-res data capture
+
     OfileBase = "out00";	% output file base-name (without suffix)
 				%    File suffix is appended.
 
-    SampleX_n  = 1250;		% number of samples in an X cycle (even)
-    SampleY_n  = 400;		% number of X cycles in Y ramp
+    if ( PreView )
+	SampleX_n  = 1280;	% number of samples in an X cycle (even /4)
+	SampleY_n  = 400;	% number of X cycles (lines) in Y ramp
+    else
+	SampleX_n  = 2560;	% high-res
+	SampleY_n  = 800;
+    end
 
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
+
+    Version = "rcm_uno.m  2024-07-11";	% base script from Git
 
 %% Destroy previous objects??
 
@@ -49,13 +59,11 @@
 
     % input channel from photodetector
     chInSig = addinput( dq, 'Dev1', 'ai1', 'Voltage' ); % Reflected intensity
- %  chInB   = addinput( dq, 'Dev1', 'ai2', 'Voltage' ); % Transmitted
 
     chInSig.Range = [-5,5];
- %  chInB.Range   = [-5,5];
 
     % DAQ sample rate (4 ch 62500, 2 ch 125000, 1 ch 250000 max)
-    dq.Rate  = 62500;		% set samples per second
+    dq.Rate  = 125000;		% set samples per second
 
     sampRate = dq.Rate;		% actual sample rate from DAQ
     dt_s     = 1 / sampRate;	% sample interval
@@ -68,10 +76,13 @@
     date = datetime( 'now' );
     date.Format = 'yyyy-MM-dd HH:mm:ss';
 
-    fprintf( "%s\n", date );
+    fprintf( '##Date:       = %s\n',     date          );
     fprintf( "%s\n", Comments );	% for each element of vector
+    fprintf( "Version:      = %s\n',     Version       );
 
     freqX_Hz = 1 / (SampleX_n * dt_s);	% X frequency, cosine wave
+
+    periodX_s = SampleX_n * dt_s;	% period of one X cosine cycle
 
     fprintf( 'SampleX_n     = %10d\n',   SampleX_n     );
     fprintf( 'SampleY_n     = %10d\n',   SampleY_n     );
@@ -80,6 +91,7 @@
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s          );
     fprintf( 'freqX_Hz      = %10.3f\n', freqX_Hz      );
+    fprintf( 'periodX_s     = %12.4e\n', periodX_s     );
 
 %% Y Waveform (slow ramp FOV)
 
@@ -91,7 +103,7 @@
     % vector of ramp Y from top to bottom
     waveY = ([ 0 : (frameSamp_n - 1) ] * dY_V) + OutAmpY_V;
 
-    frameY_n = length( waveY );		% length of frame in samples
+    frameLen_n = length( waveY );		% length of frame in samples
 
 %% X Waveform (fast cosine wave FOV)
 
@@ -104,21 +116,14 @@
 
     waveX = -1 * OutAmpX_V * cos( wX * tVec_s );	% begin at left edge
 
-
-    periodX_s = SampleX_n * dt_s;	% period of one X cosine cycle
-    periodY_s = SampleY_n * dt_s;	% period of one Y ramp cycle
-	%#!! not really
-
-    frameX_n  = SampleX_n;		% width of frame in samples
-
     dX0_V = OutAmpY_V * sin( wX * dt_s );	% X step size at X=0
+    dY0_V = dY_V * SampleY_n;			% Y step size
 
     fprintf( 'wX            = %12.4e\n', wX            );
     fprintf( 'frameSamp_n   = %10d\n',   frameSamp_n   );
-    fprintf( 'frameSamp_s   = %10d\n',   frameSamp_s   );
-    fprintf( 'periodX_s     = %12.4e\n', periodX_s     );
-    fprintf( 'periodY_s     = %12.4e\n', periodY_s     );
+    fprintf( 'frameSamp_s   = %10.3f\n', frameSamp_s   );
     fprintf( 'dX0_V         = %12.4e\n', dX0_V         );
+    fprintf( 'dY0_V         = %12.4e\n', dY0_V         );
     fprintf( 'dY_V          = %12.4e\n', dY_V          );
 
     % A frame is sweep right and sweep left over FOV.
@@ -151,8 +156,6 @@
 
     fprintf( 'trans_s       = %12.4e\n', trans_s       );
     fprintf( 'trans_n       = %10d\n',   trans_n       );
-    fprintf( 'frameX_n      = %10d\n',   frameX_n      );
-    fprintf( 'frameY_n      = %10d\n',   frameY_n      );
 
 %% Assemble output XY drive
 
@@ -165,67 +168,69 @@
     outVecX = [outVecX, 0.0];
     outVecY = [outVecY, 0.0];
 
-    fprintf( 'rawLen_n      = %10d\n',   rawLen_n      );
+    % Note:  pre/post transitions are one image line at top/bottom.
 
-    % figure(2);  clf;
-    % len = length( outVecX );
-    % plot( [1:len], outVecX, [1:len], outVecY );
-
-%% Run the DAQ
-
-    outVecY = 0.0 - outVecY;	% galvo +voltage is downwards ??
+    outVecY = 0.0 - outVecY;	% galvo +voltage is downwards
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
 
-    inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
-
-    allScanData = [ inScanData, outScanData ];
-
-    % Range of chInSig, first column of inScanData
-    sigMax_V = max( allScanData(:,1) );
-    sigMin_V = min( allScanData(:,1) );
-    fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
-    fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
-
-    % output saved below, after image display
-
-%% Raster Image
-
-    % Full raw raster image, one pixel per sample (no resolution loss).
-
-    imageX_n = SampleX_n;
-    imageY_n = int32( rawLen_n / SampleX_n );
-
-    fprintf( 'imageX_n      = %10.3f\n', imageX_n      );
-    fprintf( 'imageY_n      = %10.3f\n', imageY_n      );
-
-    rasterIb = inScanData( 1:rawLen_n );		% remove final zero
-    rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
-	% Raw raster matrix, upright image, mirrored X.
-	% Function reshape( .., Nrow, Ncol ) walks output array by column
-	% (imageX_n), leaving the image transposed.
-
+    imageX_n  = SampleX_n;
+    imageY_n  = int32( rawLen_n / SampleX_n );
     imageXu_n = int32( imageX_n / 2 );		% single sweep over FOV
-    rasterIu = rasterIm( :, [1:imageXu_n] );
-	% Single FOV scaning left to right.
 
-    fprintf( 'imageXu_n     = %10.3f\n', imageXu_n     );
+    fprintf( 'frameLen_n    = %10d\n',   frameLen_n    );
+    fprintf( 'rawLen_n      = %10d\n',   rawLen_n      );
+    fprintf( 'imageX_n      = %10d\n',   imageX_n      );
+    fprintf( 'imageY_n      = %10d\n',   imageY_n      );
+    fprintf( 'imageXu_n     = %10d\n',   imageXu_n     );
 
-    % Note:  pre/post transitions are one image line at top/bottom.
+%% Run the DAQ/Image loop
 
-if ( 1 )	% debug
-    fig3 = figure(3);  clf;
+    Nrun = 1;
+    if ( PreView )
+	Nrun = 99;
+    end
 
-    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
-	% display grayscale image of matrix in figure
-	% Probably remove auto-scale for image comparison.
-end
+    for  ii = 1 : Nrun  %{
 
-if ( 1 )	% primary image
-    fig4 = figure(4);  clf;
-    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
+    %% Run the DAQ
 
+	inScanData = readwrite( dq, outScanData, "OutputFormat","Matrix" );
+
+	allScanData = [ inScanData, outScanData ];
+
+    %% Raster Image
+
+	% Full raw raster image, one pixel per sample (no resolution loss).
+
+	rasterIb = inScanData( 1:rawLen_n );		% remove final zero
+	rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
+	    % Raw raster matrix, upright image, mirrored X.
+	    % Function reshape( .., Nrow, Ncol ) walks output array by column
+	    % (imageX_n), leaving the image transposed.
+
+	rasterIu = rasterIm( :, [1:imageXu_n] );
+	    % Single FOV scaning left to right.
+
+	fig4 = figure(4);  clf;
+	%imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
+	imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
+	    %#!! autoscaled?
+
+	fprintf( '    image_ii  = %10d\n', ii              );
+
+	% Range of chInSig, first column of inScanData
+	sigMax_V = max( allScanData(:,1) );
+	sigMin_V = min( allScanData(:,1) );
+	fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
+	fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
+
+    end %}
+
+%% Save image
+
+if ( not( PreView ) )	% primary image
     fig_file = OfileBase + "-fig.jpg";
     exportgraphics( fig4, fig_file );
 	% Save pretty image, small file.
@@ -234,20 +239,10 @@ if ( 1 )	% primary image
     fprintf( 'fig_file      = %s\n', fig_file );
 end
 
+
 %% Save data
 
-if ( 0 )	% raw full data output (debug)
-    daq_file = OfileBase + "-daq.dat";
-    save( daq_file, 'allScanData', '-ascii' );
-	% Format %16.7e, total 3*(16 char) plus <CR><NL>
-	%#!! saving to USB drive is slow
-
-    fprintf( 'daq_file      = %s\n', daq_file );
-
-    % gzip( daq_file );
-end
-
-if ( 1 )	% compact single-column output  -daq-x2500.dat
+if ( not( PreView ) )	% compact single-column output  -daq-x2500.dat
     daq1_file = OfileBase + "-daq-x" + SampleX_n + ".dat";
     file_id = fopen( daq1_file, 'w' );
 
@@ -258,6 +253,15 @@ if ( 1 )	% compact single-column output  -daq-x2500.dat
 
     fprintf( 'daq1_file     = %s\n', daq1_file );
     % gzip( daq1_file );
+end
+
+if ( 0 )	% raw full data output (debug)
+    daq_file = OfileBase + "-daq.dat";
+    save( daq_file, 'allScanData', '-ascii' );
+	% Format %16.7e, total 3*(16 char) plus <CR><NL>
+
+    fprintf( 'daq_file      = %s\n', daq_file );
+    % gzip( daq_file );
 end
 
 if ( 0 )
@@ -271,34 +275,6 @@ if ( 0 )
     fclose( file_id );
 
     fprintf( 'daq2_file     = %s\n', daq2_file );
-end
-
-%% PGM 8-bit grayscale image
-
-if ( 0 )
-    % Write manual pgm file, since imwrite() is broken.
-
-    % Scale to grayscale [0 .. 256] range for PGM file.
-    pngIm = int32( 256 * (rasterIb - sigMin_V) / (sigMax_V - sigMin_V) );
-
-    pgm_file = OfileBase + "-image.pgm";
-    file_id = fopen( pgm_file, 'w' );
-
-    fprintf( file_id, "P2\n" );
-    fprintf( file_id, "%d %d %d\n", imageX_n, imageY_n, 256 );
-    fprintf( file_id, "%d\n", pngIm );		% one line per element
-
-    fclose(  file_id );
-
-    fprintf( 'pgm_file      = %s\n', pgm_file );
-
-    % Read back for display.
-    %     Hopefully imshow() will preserve one display pixel per pixel.
-
-    figure(5);  clf;
-    % imshow( pgm_file );
-    readIm = imread( pgm_file );
-    imshow( readIm );
 end
 
 %% Close log file
