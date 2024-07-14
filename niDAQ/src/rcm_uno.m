@@ -27,10 +27,9 @@
 	"# Note:  "
     ];
 
-    PreView = 1;		% 1= preview loop, 0= high-res data capture
+    PreView     = 1;		% 1= preview loop, 0= high-res data capture
 
-    OfileBase = "out00";	% output file base-name (without suffix)
-				%    File suffix is appended.
+    FilePrefix  = "out";	% output file name without number or suffixes
 
     if ( PreView )
 	SampleX_n  = 1280;	% number of samples in an X cycle (even /4)
@@ -43,7 +42,17 @@
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
-    Version = "rcm_uno.m  2024-07-11";	% base script from Git
+    Version = "rcm_uno.m  2024-07-14";	% base script from Git
+
+%% Update save counter
+
+    % Auto update or manually set initial value that will be incremented.
+    if ( not( exist( SaveNum ) ) )
+	SaveNum = 0;
+    end
+
+    SaveNum = SaveNum + 1;
+    OfileBase = FilePrefix + sprintf( "%02d", SaveNum );
 
 %% Destroy previous objects??
 
@@ -77,8 +86,8 @@
     date.Format = 'yyyy-MM-dd HH:mm:ss';
 
     fprintf( '##Date:       = %s\n',     date          );
-    fprintf( "%s\n", Comments );	% for each element of vector
-    fprintf( "Version:      = %s\n',     Version       );
+    fprintf( '%s\n', Comments );	% for each element of vector
+    fprintf( 'Version:      = %s\n',     Version       );
 
     freqX_Hz = 1 / (SampleX_n * dt_s);	% X frequency, cosine wave
 
@@ -127,9 +136,6 @@
     fprintf( 'dY_V          = %12.4e\n', dY_V          );
 
     % A frame is sweep right and sweep left over FOV.
-
-    % figure(1);  clf;
-    % plot( tVec_s, waveX, tVec_s, waveY );
 
 %% Transition/Preamble waveforms
 
@@ -200,6 +206,12 @@
 
 	allScanData = [ inScanData, outScanData ];
 
+	% Range of chInSig, first column of inScanData
+	sigMax_V = max( allScanData(:,1) );
+	sigMin_V = min( allScanData(:,1) );
+	fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
+	fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
+
     %% Raster Image
 
 	% Full raw raster image, one pixel per sample (no resolution loss).
@@ -213,18 +225,17 @@
 	rasterIu = rasterIm( :, [1:imageXu_n] );
 	    % Single FOV scaning left to right.
 
-	fig4 = figure(4);  clf;
+	if ( PreView )
+	    fig4 = figure(4);  clf;	% redraw same figure
+	else
+	    fig4 = figure();  clf;	% auto-increment figure numbers
+	end
+
 	%imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
 	imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
 	    %#!! autoscaled?
 
 	fprintf( '    image_ii  = %10d\n', ii              );
-
-	% Range of chInSig, first column of inScanData
-	sigMax_V = max( allScanData(:,1) );
-	sigMin_V = min( allScanData(:,1) );
-	fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
-	fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
 
     end %}
 
