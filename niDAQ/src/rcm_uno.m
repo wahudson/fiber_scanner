@@ -126,7 +126,7 @@
     waveX = -1 * OutAmpX_V * cos( wX * tVec_s );	% begin at left edge
 
     dX0_V = OutAmpY_V * sin( wX * dt_s );	% X step size at X=0
-    dY0_V = dY_V * SampleY_n;			% Y step size
+    dY0_V = dY_V * SampleX_n;			% Y step size at Y=0
 
     fprintf( 'wX            = %12.4e\n', wX            );
     fprintf( 'frameSamp_n   = %10d\n',   frameSamp_n   );
