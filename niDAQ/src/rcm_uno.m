@@ -42,7 +42,7 @@
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
-    Version = "rcm_uno.m  2024-07-14";	% base script from Git
+    Version = "rcm_uno.m  2024-07-18";	% base script from Git
 
 %% Update save counter
 

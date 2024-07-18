@@ -48,6 +48,10 @@ MATLAB Operators and Special Characters
     ./   = A ./ B  = divide   array A by B, "element-wise"
 		Beware combining row/column vectors create matrix or scaler.
 
+Variables:
+    exist( 'name' )	return 0= name does not exist, 1= a variable
+    whos		list all variables - name, size, type
+
 String and Character Arrays:
     'text'  - is a character array
     "text"  - is a string
@@ -103,7 +107,7 @@ Array vs. Matrix Operations
 Array Indexing
     Index starts from 1 (not zero).
     Index with () parenthesis, not [] square brackets.
-	A( row, col )
+	A( row, col )		i.e. A( Y, X )
     Special index value 'end' is the last index in that dimension.
 	A(end,end)  is last element in A
     A naked ':' colon indicates all elements in that dimension.
@@ -226,6 +230,9 @@ Plotting:
 
 figure(n)
     Create a new figure window.  n= figure number identifier
+figure()
+    Create a new figure window, incrementing the figure number.
+    If not cleared, figures accumulate.
 
 clf
 clf(n)
@@ -274,6 +281,20 @@ imshow( I, DisplayRange=[low high] )
 
 imwrite( A, "file.pgm" )
     Write grayscale image A to .pgm file.
+
+gridbin( x,y,v, xq,yq )
+    Return mean values of data points v(x,y) falling in each bin (xq,yq).
+    by Chad Greene.  See "Functions" tab for definition.
+    Is a good example of Matlab.  Put copy of gridbin.m on search path.
+    https://www.mathworks.com/matlabcentral/fileexchange/98239-gridbin
+    https://github.com/chadagreene/gridbin
+
+Filesystem:
+-----------
+mkdir( expDir )
+copyfile( "rcm_uno.m", expDir )
+cd( expDir )	change directory of Matlab editor
+open( file )	in Matlab editor
 
 DAQ Explanations:
 -----------------
