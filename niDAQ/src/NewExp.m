@@ -17,8 +17,9 @@
 
     date = datetime( 'now' );
     date.Format = 'yyyy-MM-dd;
+    datestr = sprintf( "%s", date );
 
-    expDir = "../ex" + date + "_" + ExpName + "/";
+    expDir = strcat( "../ex" , datestr , "_" , ExpName , "/" );
 
     fprintf( "New Directory:  %s\n", expDir );
 

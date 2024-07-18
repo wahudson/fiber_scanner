@@ -47,7 +47,7 @@
 %% Update save counter
 
     % Auto update or manually set initial value that will be incremented.
-    if ( not( exist( SaveNum ) ) )
+    if ( not( exist( 'SaveNum' ) ) )
 	SaveNum = 0;
     end
 
