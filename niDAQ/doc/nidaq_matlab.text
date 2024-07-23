@@ -52,6 +52,11 @@ Variables:
     exist( 'name' )	return 0= name does not exist, 1= a variable
     whos		list all variables - name, size, type
 
+Type conversions:
+    int32()
+    double()
+    Caution!  int_array * float => int_array	- Most unexpected!
+
 String and Character Arrays:
     'text'  - is a character array
     "text"  - is a string

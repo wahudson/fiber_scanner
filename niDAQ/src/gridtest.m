@@ -2,6 +2,10 @@
 %
 % Test gridbin() to linearize sinusoidal raster scan.
 %    Development only, NOT a tool.
+%
+% Status:  Not correct.
+%    Produces a skewed image, with overlayed right/left scans.
+%    Development on hold in favor of other methods.  2024-07-23
 
 %% Parameters
 
@@ -60,8 +64,9 @@
     ngX = int32( OutAmpX_V / dX0_V );	% half amplitude
     ngY = int32( OutAmpY_V / dY0_V );
 
-    gridX = [-ngX:ngX] * dX0_V;
-    gridY = [-ngY:ngY] * dY0_V;
+    gridX = double( [-ngX:ngX] ) * dX0_V;
+    gridY = double( [-ngY:ngY] ) * dY0_V;
+	% unbeliveable matlab:  int_array * float => int_array
 
     imageX_n = length( gridX );
     imageY_n = length( gridY );
