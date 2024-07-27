@@ -1,0 +1,348 @@
+2024-07-09  William A. Hudson
+
+		Linearize Sinusoidal Scan - sinebin Design
+		------------------------------------------
+
+See:  Paper notes 7-9-2024 (on green Engineering paper)
+
+Weighted arithmetic mean
+    https://en.wikipedia.org/wiki/Weighted_arithmetic_mean
+
+----------------------------------------------------------------------------
+## Problem Statement
+----------------------------------------------------------------------------
+
+    Galvo scan is sinusoidal to avoid perturbations at the turn-around
+    points.
+
+    Need to linearize the samples into uniform pixel bins.
+
+    Drive waveform:
+
+	X(t) = - cos( wX * t )		X position, as X(t)
+
+	    wX = angular frequency X-axis
+	    t  = time
+
+    Sampled positions at sample i, i.e. the response:
+
+	Xi = - cos( (wX * Ti) + Pd )
+
+	    Xi = X position at sample i
+	    Ti = time t at sample i
+	    Pd = phase delay of response
+
+	Nxi = number of samples in one cycle of Xi
+		Require evenly divide by 4, so all 4 cardinal points of one
+		cycle are sampled.  i.e. cosine {-1, 0, +1, 0}
+		The last cardinal point is actually at i=Nxi, the start of
+		the next cycle.
+
+	Ti = i * dt
+
+	    dt = 1 / SampleRate		= the sample period
+
+	Xi[i] = - cos( (wX * (i * dt)) + Pd )
+
+	    for i = { 0 .. (Nxi - 1) }
+
+    The Xi is the X-axis position of the laser spot, NOT the photodetector
+    intensity.
+
+    In this case we only care about the samples in one cycle, the actual
+    sample rate is unimportant.
+    Amplitude is unimportant, the range of cos() is -1 to +1, which is
+    divided into samples Xi.
+
+    The phase delay Pd translates into a sample delay, which can be
+    measured by the X position difference of the same object in the image
+    left and right half cycle scan.
+
+    The Xi samples are not evenly spaced across the FOV, and are much
+    closer together near the left and right edges than in the center.
+    Thus the edges appear stretched out and blurred horizontally.
+
+----------------------------------------------------------------------------
+## Binning Idea Theory
+----------------------------------------------------------------------------
+
+    The idea is the laser spot is continuous while moving in the X direction,
+    and sampled at regular time intervals.  (Now thinking of the photodetector
+    signal.)
+
+    Thus adjacent spots in the sample series should be well correlated.
+    The laser spot has a spatial extent that it is sampling, i.e. the spot
+    diameter.
+
+    We assume the distance between adjacent Xi samples is around the same
+    size as the spot diameter.
+    If smaller, then resolution is not limited by sampling.
+    If larger, then we can interpolate between samples, and the sampling
+    is limiting resolution, i.e. creating a smoothing effect.
+
+    The linearizing idea is to lay an array of uniform width bins (pixels)
+    along the X-axis.  The bins touch each other, so there are no gaps.
+    Assume the spot diameter is the same as the bin width.
+    Now each sample (spot) will overlap two bins.
+    Accumulate (take the mean of) the proportion of each PD signal sample
+    that falls in each bin.
+    When multiple samples contribute to a bin, their contributions are
+    averaged.
+
+    The largest spacing between Xi samples is near the origin, where the
+    cosine is changing the fastest.  Choose this for the bin size bx.
+    Now each bin is guaranteed to have contribution from at least one sample.
+    i.e. There will be no empty pixels.
+
+    How to create an algorithm?  Start with how we want to use the bin maps
+    to help decide what is really needed.
+
+Signal Processing Algorithm:
+
+    sigV = photodetector voltage signal, i.e. signal at sample i
+
+    Want only minimal arrays, i.e. for one cycle of cosine wave.
+    [Which could be shortened to one quarter-cycle by symmetry.]
+
+    Processing is a data flow, with an arbitrarily long input sample stream
+    of Xi sample cycles.  Output is produced as each bin is completed.
+    Effectively the input stream is coalesced to produce a shorter output
+    stream.
+
+    Nx = number of samples in one X-cycle
+
+    Bp.Vsum = 0;	# current bin accumulated signal value
+    Bq.Vsum = 0;	# next    bin accumulated signal value
+
+    jj = 0;		# input map index within one cycle, {0 .. Nx-1}
+    np = 0;		# current bin number of Bp
+
+    while read sigV		# signal value at sample jj
+    {
+	n = Xmap[jj].Nbin;	# map sample jj into bin number n
+
+	if ( n > np ) {		# advance to next bin when n changes
+	    # Normalize, Binx[] = array of bin objects
+	    Vnew = Bp.Vsum * Binx[np].ScaleF;
+		#!! scale factor could be included in Frac.
+
+	    # Write out value.
+	    printf( Vnew );
+
+	    # Shift to new bin.
+	    Bp = Bq;		i.e. Bp.Vsum = Bq.Vsum;
+	    Bq = new();		i.e. Bq.Vsum = 0;
+	    np = n;
+	}
+	#!! Can (n < np)?  Should have (np - n) belong to set {0,1}.
+
+	# accumulate proportional signal value in bins
+
+	Bp.Vsum = Bp.Vsum + (sigV *      Xmap[jj].Frac );	# current
+	Bq.Vsum = Bq.Vsum + (sigV * (1 - Xmap[jj].Frac));	# next
+
+	# Next input cycle index
+	jj++;
+	if ( jj >= Nx ) {	# wrap around for next cycle
+	    jj = 0;
+	    np = 0;
+	}
+    }
+
+    Input sample map:  (also called BinMap)
+	Xmap[jj].Nbin	= bin number that input sample jj first fall into
+	Xmap[jj].Frac	= fraction of input sigV that falls into this bin
+
+	index jj= {0 .. Nx}  over one full cosine X-cycle
+
+    Binx array:
+	Binx[np].ScaleF	= normalizing scale factor for this bin
+
+	index np = {0 .. Nbin} bins monotonically increase with Xmap index
+
+    Note the scale factor could be replicated in Xmap[].ScaleF, and eliminate
+    the need for Binx[].  May be simpler, but more storage.
+    Duplicating ScaleF, which should always correlate with Nbin (bin number)
+    seems risky.
+
+>>    #!! Normalize the weights, then no need for final normalization.
+
+    The transition to the next half cycle is special:
+    We want the first {-1 to +1} and second {+1 to -1} half cycles to
+    separate (not share bins), because the scans are going in opposite
+    directions and thus poorly correlated.
+    This can naturally occur with a full cycle length BinMap[] to a double
+    long Binx[] array (as is shown above).
+
+Generate the BinMap[i] and Binx[n] arrays:
+
+    Very similar approach to the data processing algorithm above.
+
+    Bp = current bin accumulation object
+    Bq = next    bin accumulation object
+	.FracSum	scale fraction sum
+	.Xbin		position of bin center
+	.NumSamp	number of samples contributing
+	.ScaleF		final scale factor  = 1 / FracSum
+
+	These objects need not be the same as in the signal data flow.
+	i.e. They care about different attributes.
+
+    Binx[n] = bin array  (output)
+	.ScaleF		final scale factor
+
+    Xmap[i].Nbin = bin map array, mapping sample i into bin Nbin  (output)
+		This array is normally indexed.
+
+    bx = given width of one bin, where bins span {-1 to +1}, i.e. cos().
+	    Is based on max Xi sample spacing.
+
+    Want:
+	A central bin at (x = 0), with the same number of bins on each side.
+	This is a cardinal point in the cosine sample cycle.
+
+	Nq = number of bins on each side of zero, in a quarter cosine cycle
+		Not including the bin at x=0 (the axis).
+
+	Nq = int( 1 / bx );	number of bins in one quarter cycle
+				Round up.
+
+	Total number of bins in one full cycle is then:
+
+	Nb = (1 + (2 * Nq)) * 2
+		Each half cycle has one on-axis bin.
+
+	Nb = 2 + (4 * Nq)
+
+    Generate one quarter-cycle of cosine bins:
+	Start at time zero, where Xi = -1 at i=0.
+	n = {-Nq .. 0}
+
+	Want samples on the 4 cardinal points of the cosine cycle.
+	i  = {0 .. Iq+1}
+	Iq = SampleX_n / 4;	require even divisible by 4
+	    SampleX_n = number of samples in one full X cycle
+
+	The interval {0 .. Iq+1} includes cosine cardinal points at each end.
+	i.e. at    0:  Xi = -1   = - cos( 0 )
+	     at Iq+1:  Xi = 0    = - cos( Pi/2 )
+
+    Algorithm for one quarter-cycle:  (positive slope)
+
+	Bnx[n] = array of bins, index n = {-Nq to + Nq}
+
+		We want n=0  to be the on-axis bin, for obvious X position
+		calculation.  Handle normal array indexing later.
+
+	np = -Nq;		# current bin number of Bp (integer)
+
+	Bp.Xbin     = np * bx;		# current bin
+	Bp.FracSum  = 0;
+	Bp.NumSamp  = 0;
+
+	Bq.Xbin     = (np + 1) * bx;	# next bin
+	Bq.FracSum  = 0;
+	Bq.NumSamp  = 0;
+
+	for each i in one quarter cycle  i={0 .. Iq+1}
+	{
+	    Xi = - cos( wx * (dt * i) );	# current Xi position
+
+	    ds = Xi - Bp.Xbin;		# distance from bin Bp
+
+	    if ( ds > bx ) {	# advance to next bin
+		# Output array.  Normalize the bin fraction.
+		Bnx[np].ScaleF  = Bp.FracSum / Bp.NumSamp;	# output
+		Bnx[np].FracSum = Bp.FracSum;			# debug ...
+		Bnx[np].NumSamp = Bp.NumSamp;			# debug
+		Bnx[np].Xbin    = Bp.Xbin;			# debug
+
+		# Shift to new bins.
+		np++;		# index of new Bp
+		Bp = Bq;
+
+		Bq = new();
+		Bq.Xbin     = (np + 1) * bx;	# next bin
+		Bq.FracSum  = 0;
+		Bq.NumSamp  = 0;
+
+		ds = Xi - Bp.Xbin;		# require (-1 < ds < +1)
+	    }
+
+	    # accumulate bin fractions
+	    Bp.FracSum  += ds;
+	    Bp.NumSamp  += 1;
+
+	    Bq.FracSum  += (1 - ds);
+	    Bq.NumSamp  += 1;
+
+	    Xmap[i].Nbin = np;		# bin map entry (output)
+	    Xmap[i].Frac = ds;		# fraction that falls into this bin
+	}
+
+	#!! offset Bnx[] index for normal arrays.
+
+    Now mirror the 4 quarters into a full cycle array.
+
+	Assuming n is already offset.
+	Also include the unfolding of bi-directional scan.
+		i.e. adjusting the BinMap index n.
+
+	for i={0 .. Iq}
+	{
+	    OutBinMap[i]        = BinMap[   i];
+	    OutBinMap[(1*Iq)+i] = BinMap[Ni-i] + Nq;
+	}
+
+	for i={0 .. Iq}		# second half mirrors first half
+	    OutBinMap[(2*Iq)+i] = BinMap[   i] + (2*Nq);
+	    OutBinMap[(3*Iq)+i] = BinMap[Ni+i] + (2*Nq);
+	}
+		We replicate quarter cycle into a full cycle only for
+		ease/speed of lookup.
+		We could use an accessor function to do the lookup.
+
+	Bin final scale factors.  Just fold each quarter cycle.
+	for n={0 .. Nq}
+	{
+	    OutBn[n]        = Bnx[   n].ScaleF;	# scan right
+	    OutBn[(1*Nq)+n] = Bnx[Nq-n].ScaleF;
+
+	    OutBn[(2*Nq)+n] = Bnx[   n].ScaleF;	# scan left
+	    OutBn[(4*Nq)+n] = Bnx[Nq-n].ScaleF;
+	}
+	#!! Does Bnx need a full cycle array?
+	    It is the scale factor, not the signal data.
+	    Essentially a double array lookup, e.g.
+		Bnx[ BinMap[i] ].ScaleF
+	    Thus a quarter-cycle would be sufficient.  No replication needed!
+	    Mapping is then really in BinMap[i].
+
+	Possibly just extend the existing array.
+
+	In operation, n is used to select the bin, and the bin has the
+	scale factor.
+
+
+    Need a detailed manual example to see if algorithm is correct.
+
+    The evolution of my thinking might be interesting, but hard to make
+    sense of it.  Probably better to just capture the final result.
+
+    Swap fractions (ds) and (1-ds) for second half-cycle?
+
+----------------------------------------------------------------------------
+## Code Implementation
+----------------------------------------------------------------------------
+
+    The concepts and algorithms are not particularly tricky, but the
+    details and corner cases are.
+    The code should be designed for complete testability.
+
+
+============================================================================
+## First Thoughts
+
+    The cosine wave (data X positions) is known in advance.
+    Thus the mapping of Xi into bins Bn is the same for all cycles.
+
