@@ -42,12 +42,32 @@
 %% Load data
     daq_file = "out16-daq.txt";
     allScanData = load( daq_file, '-ascii' );
-    %allScanData = transpose( load( daq_file, '-ascii' ) );
-	%#!! probably loads transposed?
+	% is a 3-column array, as expected
 
-    sigVec  = allScanData( : , 1 );
-    outVecX = allScanData( : , 2 );
-    outVecY = allScanData( : , 3 );
+%% Extract foreward scan data
+    % For each scan cycle keep only the first half cycle.
+
+    halfCycle_n = SampleX_n / 2;	% number of samples in half cycle
+
+    ix_vec = [1 : halfCycle_n];		% index range of a half cycle
+
+    fwdScanData = zeros( (SampleY_n * halfCycle_n), 3 );
+
+    for  iy = [0:(SampleY_n - 1)]	% each scan line
+    %{
+	istride = iy * SampleY_n;	% input  index stride, full cycle
+	ostride = iy * halfCycle_n;	% output index stride, half cycle
+
+	fwdScanData((ostride + ix_vec),:) = allScanData((istride + ix_vec),:);
+    end  %}
+
+    fprintf( 'halfCycle_n   = %10d\n', halfCycle_n     );
+
+% Extract column vectors
+
+    sigVec  = fwdScanData( : , 1 );
+    outVecX = fwdScanData( : , 2 );
+    outVecY = fwdScanData( : , 3 );
 
     sigMax_V = max( sigVec );
     sigMin_V = min( sigVec );
@@ -82,6 +102,11 @@
 	% returns two arrays
 	% length of input vectors is unimportant.
 	%#!! May want to strip pre/post transistion.
+
+    % pixel map to see gridbin output organization
+    pix_n = imageX_n * imageY_n;
+    % [gridV, gridN] = gridbin( outVecX, outVecY, [1:pix_n], gridX, gridY );
+    % [gridV, gridN] = gridbin( outVecX, outVecY, outVecX,   gridX, gridY );
 
     whos	% list all variables:  name, size, type
 
