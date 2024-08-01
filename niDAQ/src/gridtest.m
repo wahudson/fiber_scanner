@@ -112,12 +112,13 @@
 
 %% Show image
 
-    rasterIm = reshape( gridV, imageX_n, imageY_n );
+    %rasterIm = reshape( gridV, imageX_n, imageY_n );
     %rasterIm = transpose( reshape( gridV, imageX_n, imageY_n ) );
 	%#!! gridV is probably right side up?
+	%#!! gridV already is an array
 
     fig1 = figure(1);  clf;
-    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% double FOV
+    imshow( gridV, DisplayRange=[sigMin_V, sigMax_V] );
 
     fig1_file = OfileBase + "-fig1.jpg";
     exportgraphics( fig1, fig1_file );
