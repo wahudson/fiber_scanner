@@ -3,9 +3,11 @@
 % Test gridbin() to linearize sinusoidal raster scan.
 %    Development only, NOT a tool.
 %
-% Status:  Not correct.
-%    Produces a skewed image, with overlayed right/left scans.
-%    Development on hold in favor of other methods.  2024-07-23
+% Status:  Functional with issues.
+%    It actually made a linearized image!
+%    Has NaN in some bins near X=0.
+%    Pre/Post transition traces overlap the image.
+%    Development on hold in favor of other methods.  2024-08-02
 
 %% Parameters
 
@@ -54,12 +56,12 @@
     fwdScanData = zeros( (SampleY_n * halfCycle_n), 3 );
 
     for  iy = [0:(SampleY_n - 1)]	% each scan line
-    %{
-	istride = iy * SampleY_n;	% input  index stride, full cycle
+    % {
+	istride = iy * SampleX_n;	% input  index stride, full cycle
 	ostride = iy * halfCycle_n;	% output index stride, half cycle
 
 	fwdScanData((ostride + ix_vec),:) = allScanData((istride + ix_vec),:);
-    end  %}
+    end  % }
 
     fprintf( 'halfCycle_n   = %10d\n', halfCycle_n     );
 
@@ -104,21 +106,27 @@
 	%#!! May want to strip pre/post transistion.
 
     % pixel map to see gridbin output organization
-    pix_n = imageX_n * imageY_n;
-    % [gridV, gridN] = gridbin( outVecX, outVecY, [1:pix_n], gridX, gridY );
-    % [gridV, gridN] = gridbin( outVecX, outVecY, outVecX,   gridX, gridY );
+    pix_n = length( outVecX );
+    numVec = transpose( [1:pix_n] );	% column vector
+
+    % [gridV, gridN] = gridbin( outVecX, outVecY, numVec,  gridX, gridY );
+    % [gridV, gridN] = gridbin( outVecX, outVecY, outVecX, gridX, gridY );
+	% outVecX is column vector 250000x1
 
     whos	% list all variables:  name, size, type
 
-%% Show image
+	% Matrix dimension:  is (Nrow x Ncol), Nrow is vertical Y dimension.
+	%
+	% outVecX    250000x1		col vector
+	% gridV		401x399
+	% gridX		  1x399		row vector
+	% gridY		  1x401
 
-    %rasterIm = reshape( gridV, imageX_n, imageY_n );
-    %rasterIm = transpose( reshape( gridV, imageX_n, imageY_n ) );
-	%#!! gridV is probably right side up?
-	%#!! gridV already is an array
+%% Show image
 
     fig1 = figure(1);  clf;
     imshow( gridV, DisplayRange=[sigMin_V, sigMax_V] );
+	% Display each row horizontally, i.e. matrix is right-side-up.
 
     fig1_file = OfileBase + "-fig1.jpg";
     exportgraphics( fig1, fig1_file );
@@ -128,14 +136,14 @@
 
     gridV_file = OfileBase + "-grid-x" + SampleX_n + ".dat";
     file_id = fopen( gridV_file, 'w' );
-    fprintf( file_id, '%8.5f\n', gridV );
+    fprintf( file_id, '%8.5f\n', transpose( gridV ) );
 	% Vectors applied in column order.
     fclose( file_id );
     fprintf( 'gridV_file     = %s\n', gridV_file );
 
     gridN_file = OfileBase + "-grin-x" + SampleX_n + ".dat";
     file_id = fopen( gridN_file, 'w' );
-    fprintf( file_id, '%4d\n', gridN );
+    fprintf( file_id, '%4d\n', transpose( gridN ) );
 	% Vectors applied in column order.
     fclose( file_id );
     fprintf( 'gridN_file     = %s\n', gridN_file );
