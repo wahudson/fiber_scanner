@@ -84,10 +84,25 @@ Weighted arithmetic mean
     along the X-axis.  The bins touch each other, so there are no gaps.
     Assume the spot diameter is the same as the bin width.
     Now each sample (spot) will overlap two bins.
-    Accumulate (take the mean of) the proportion of each PD signal sample
-    that falls in each bin.
-    When multiple samples contribute to a bin, their contributions are
-    averaged.
+    Accumulate (take the weighted mean of) the proportion of each PD signal
+    sample that falls in each bin.
+    Let the weight of each sample be proportional to the overlap of the
+    spot diameter and the bin width (both equal bx), and be normalized such
+    that they sum up to 1 for that bin.
+
+    When exactly two samples contribute to a bin, the bin value should be the
+    linear interpolation of the two samples.
+
+    Let
+	bx = width of each bin, and width of the spot
+	ds = separation between spot and bin
+
+	dov = bx - ds;		overlap of spot and bin
+
+    The contribution of Sample i to Bin n is approximated as linear, i.e.
+    proportional to their overlap.  The sample spot is a circle (a disk
+    with a radial intensity distribution), so even more refinement could be
+    applied, but this linear approximation is good enough at the pixel level.
 
     The largest spacing between Xi samples is near the origin, where the
     cosine is changing the fastest.  Choose this for the bin size bx.
@@ -97,7 +112,9 @@ Weighted arithmetic mean
     How to create an algorithm?  Start with how we want to use the bin maps
     to help decide what is really needed.
 
-Signal Processing Algorithm:
+----------------------------------------------------------------------------
+## Signal Processing Algorithm:
+----------------------------------------------------------------------------
 
     sigV = photodetector voltage signal, i.e. signal at sample i
 
@@ -111,35 +128,32 @@ Signal Processing Algorithm:
 
     Nx = number of samples in one X-cycle
 
-    Bp.Vsum = 0;	# current bin accumulated signal value
-    Bq.Vsum = 0;	# next    bin accumulated signal value
+    pVsum = 0;		# current bin accumulated signal value
+    qVsum = 0;		# next    bin accumulated signal value
 
     jj = 0;		# input map index within one cycle, {0 .. Nx-1}
-    np = 0;		# current bin number of Bp
+    np = 0;		# current bin number of pVsum
 
     while read sigV		# signal value at sample jj
     {
 	n = Xmap[jj].Nbin;	# map sample jj into bin number n
 
 	if ( n > np ) {		# advance to next bin when n changes
-	    # Normalize, Binx[] = array of bin objects
-	    Vnew = Bp.Vsum * Binx[np].ScaleF;
-		#!! scale factor could be included in Frac.
 
-	    # Write out value.
-	    printf( Vnew );
+	    # Write out the final value (already normalized).
+	    printf( pVsum );
 
 	    # Shift to new bin.
-	    Bp = Bq;		i.e. Bp.Vsum = Bq.Vsum;
-	    Bq = new();		i.e. Bq.Vsum = 0;
+	    pVsum = qVsum;
+	    qVsum = 0;
 	    np = n;
 	}
-	#!! Can (n < np)?  Should have (np - n) belong to set {0,1}.
+	#!! Can (n < np)?  Should have (np - n) belonging to set {0,1}.
 
-	# accumulate proportional signal value in bins
+	# accumulate weighted signal value in bins
 
-	Bp.Vsum = Bp.Vsum + (sigV *      Xmap[jj].Frac );	# current
-	Bq.Vsum = Bq.Vsum + (sigV * (1 - Xmap[jj].Frac));	# next
+	pVsum = pVsum + (sigV * Xmap[jj].Wp);		# current
+	qVsum = qVsum + (sigV * Xmap[jj].Wq);		# next
 
 	# Next input cycle index
 	jj++;
@@ -150,49 +164,65 @@ Signal Processing Algorithm:
     }
 
     Input sample map:  (also called BinMap)
-	Xmap[jj].Nbin	= bin number that input sample jj first fall into
-	Xmap[jj].Frac	= fraction of input sigV that falls into this bin
+	Xmap[jj].Nbin	= lowest bin number that input sample jj falls into
+	Xmap[jj].Wp	= sigV weight for this bin
+	Xmap[jj].Wq	= sigV weight for next bin
 
-	index jj= {0 .. Nx}  over one full cosine X-cycle
+	jj = {0 .. Nx-1}  index over one full cosine X-cycle
 
-    Binx array:
-	Binx[np].ScaleF	= normalizing scale factor for this bin
-
-	index np = {0 .. Nbin} bins monotonically increase with Xmap index
-
-    Note the scale factor could be replicated in Xmap[].ScaleF, and eliminate
-    the need for Binx[].  May be simpler, but more storage.
-    Duplicating ScaleF, which should always correlate with Nbin (bin number)
-    seems risky.
-
->>    #!! Normalize the weights, then no need for final normalization.
+	np = {0 .. Nbin}  bin number, monotonically increase with Xmap index jj
 
     The transition to the next half cycle is special:
     We want the first {-1 to +1} and second {+1 to -1} half cycles to
     separate (not share bins), because the scans are going in opposite
     directions and thus poorly correlated.
-    This can naturally occur with a full cycle length BinMap[] to a double
-    long Binx[] array (as is shown above).
+    This can naturally occur with a full cycle length Xmap[] to a full cycle
+    bin array (as is shown above).
 
-Generate the BinMap[i] and Binx[n] arrays:
+Comparison of methods:
+    A) Fractional sum, normalize after summing (Binx[] array).
+	# Summation:  single stored fraction
+	    Bp.Vsum = Bp.Vsum + (sigV *      Xmap[jj].Frac );	# current
+	    Bq.Vsum = Bq.Vsum + (sigV * (1 - Xmap[jj].Frac));	# next
+	# Final value:  another array lookup for normalization
+	    Vnew = Bp.Vsum * Binx[np].ScaleF;
+	+ The fraction (Frac) is the split of the signal value between bins.
+	+ Computation (1 - Frac) instead of element lookup.
+	- Needs a second bin array to hold normalization ScaleF.
+
+    B) Weighted sum, weights are pre-normalized to 1.
+	# Summation:  two stored weights
+	    Bp.Vsum = Bp.Vsum + (sigV * Xmap[jj].Wp);		# current
+	    Bq.Vsum = Bq.Vsum + (sigV * Xmap[jj].Wq);		# next
+	# Final value:  no additional lookup
+	    Vnew = Bp.Vsum;
+	+ No final bin array
+	- More total storage, weights recorded in each Xmap[].
+	+ A single Xmap[] array is much simpler to understand and use.
+
+    Where:
+	Xmap[jj].Frac	= fraction of input sigV that falls into this bin
+	Binx[np].ScaleF	= normalizing scale factor for this bin
+
+    I currently favor (B) Weighted sum for simpler use.  2024-07-28
+
+----------------------------------------------------------------------------
+## Generate the Xmap[] Array
+----------------------------------------------------------------------------
 
     Very similar approach to the data processing algorithm above.
 
+    Xmap[ii] = bin map array, mapping sample i into bin Nbin above  (output)
+	 ii  = {0 .. Nx-1}  index over one full cosine X-cycle
+
     Bp = current bin accumulation object
     Bq = next    bin accumulation object
-	.FracSum	scale fraction sum
 	.Xbin		position of bin center
+	.FracSum	scale fraction sum
 	.NumSamp	number of samples contributing
-	.ScaleF		final scale factor  = 1 / FracSum
 
 	These objects need not be the same as in the signal data flow.
 	i.e. They care about different attributes.
-
-    Binx[n] = bin array  (output)
-	.ScaleF		final scale factor
-
-    Xmap[i].Nbin = bin map array, mapping sample i into bin Nbin  (output)
-		This array is normally indexed.
 
     bx = given width of one bin, where bins span {-1 to +1}, i.e. cos().
 	    Is based on max Xi sample spacing.
@@ -217,9 +247,10 @@ Generate the BinMap[i] and Binx[n] arrays:
     Generate one quarter-cycle of cosine bins:
 	Start at time zero, where Xi = -1 at i=0.
 	n = {-Nq .. 0}
+	#!!
 
 	Want samples on the 4 cardinal points of the cosine cycle.
-	i  = {0 .. Iq+1}
+	ii = {0 .. Iq+1}
 	Iq = SampleX_n / 4;	require even divisible by 4
 	    SampleX_n = number of samples in one full X cycle
 
@@ -229,10 +260,9 @@ Generate the BinMap[i] and Binx[n] arrays:
 
     Algorithm for one quarter-cycle:  (positive slope)
 
-	Bnx[n] = array of bins, index n = {-Nq to + Nq}
-
-		We want n=0  to be the on-axis bin, for obvious X position
-		calculation.  Handle normal array indexing later.
+	np = {-Nq to + Nq}	# bin index, half cycle
+	    We want np=0  to be the on-axis bin, for obvious X position
+	    calculation.
 
 	np = -Nq;		# current bin number of Bp (integer)
 
@@ -244,18 +274,32 @@ Generate the BinMap[i] and Binx[n] arrays:
 	Bq.FracSum  = 0;
 	Bq.NumSamp  = 0;
 
-	for each i in one quarter cycle  i={0 .. Iq+1}
-	{
-	    Xi = - cos( wx * (dt * i) );	# current Xi position
+	# index for normalization of weights
+	inorm = 0;	# first index ii for bin Bp
 
-	    ds = Xi - Bp.Xbin;		# distance from bin Bp
+	for each ii in one half cycle  ii={ 0 .. (2*Iq)+1 }
+	{
+	    Xi = - cos( wx * (dt * ii) );	# current Xi position
+
+		dt = sample interval, in seconds
+
+	    ds = Xi - Bp.Xbin;		# distance from bin Bp behind
+		    and so (bx - ds)	= distance to   bin Bq in front
+
+	    dov = bx - ds		# overlap with bin Bp behind
+					is proportion contributing to bin Bp
+
+	    df = dov / bx;		# fraction in bin Bp behind
+	       = 1 - (ds / bx)
+		    and so (1 - df)	= fraction in bin Bq in front
 
 	    if ( ds > bx ) {	# advance to next bin
-		# Output array.  Normalize the bin fraction.
-		Bnx[np].ScaleF  = Bp.FracSum / Bp.NumSamp;	# output
-		Bnx[np].FracSum = Bp.FracSum;			# debug ...
-		Bnx[np].NumSamp = Bp.NumSamp;			# debug
-		Bnx[np].Xbin    = Bp.Xbin;			# debug
+
+		# Normalize the bin fractions in output array.
+		for ( j=inorm;  j<ii;  j++ )
+		{
+		    Xmap[j].Wp = Xmap[j].Wp / Bp.FracSum;
+		}
 
 		# Shift to new bins.
 		np++;		# index of new Bp
@@ -266,23 +310,28 @@ Generate the BinMap[i] and Binx[n] arrays:
 		Bq.FracSum  = 0;
 		Bq.NumSamp  = 0;
 
-		ds = Xi - Bp.Xbin;		# require (-1 < ds < +1)
+		ds = Xi - Bp.Xbin;
+		df = 1 - (ds / bx);	# require (-1 < df < +1)
+
+		inorm = ii;		# save for normalization
 	    }
 
 	    # accumulate bin fractions
-	    Bp.FracSum  += ds;
+	    Bp.FracSum  += df;
 	    Bp.NumSamp  += 1;
 
-	    Bq.FracSum  += (1 - ds);
+	    Bq.FracSum  += (1 - df);
 	    Bq.NumSamp  += 1;
 
-	    Xmap[i].Nbin = np;		# bin map entry (output)
-	    Xmap[i].Frac = ds;		# fraction that falls into this bin
+	    # accumulate bin fractions in output array
+	    Xmap[ii].Nbin = np;		# bin map entry (output)
+	    Xmap[ii].Wp   = df;		# fraction for this bin
+	    Xmap[ii].Wq   = (1 - df);	# fraction for next bin
+					    Weights not yet normalized.
 	}
 
-	#!! offset Bnx[] index for normal arrays.
-
     Now mirror the 4 quarters into a full cycle array.
+	#!! needs work
 
 	Assuming n is already offset.
 	Also include the unfolding of bi-directional scan.
