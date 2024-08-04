@@ -1,0 +1,230 @@
+#! /usr/bin/perl -w
+# 2024-08-02  William A. Hudson
+
+# Linearize cosine scan data with a bin map.
+#
+# Input:  First column is signal value, one line per sample.
+#     Assume fast scan in the X-direction.
+#
+#---------------------------------------------------------------------------
+
+use strict;
+
+use Getopt::Long  ();
+use Pod::Usage    ( 'pod2usage' );
+
+our $ProgFile = $0;	# this program
+our $ProgName = $0;
+    $ProgName =~ s:^.*/:: ;
+
+#---------------------------------------------------------------------------
+## Program usage
+#---------------------------------------------------------------------------
+
+sub print_usage
+{
+    print( <<USAGE );
+    Linearize sinusoidal scan data.
+usage:  $ProgName  [options]  < in_file  > out_file
+    --nxi=N      number of input samples in one X-cycle
+    --nxb=N      number of bins across X FOV
+    --map        show bin map on stdout
+    -n           dry-run to show parameters, no input read
+    --help       show this usage
+USAGE
+}
+
+#---------------------------------------------------------------------------
+## Main program
+#---------------------------------------------------------------------------
+
+{
+
+# Option processing
+
+    my $op_nxi          = 40;
+    my $op_nxb          = 20;
+    my $op_map          = 0;
+    my $op_n            = 0;
+
+    my $op_verbose      = 0;
+
+    Getopt::Long::Configure(
+	'posix_default',
+	'no_ignore_case',
+    );
+
+    Getopt::Long::GetOptions(
+	"--nxi=i"        => \$op_nxi,
+	"--nxb=i"        => \$op_nxb,
+	"--map"          => \$op_map,
+	"-n"             => \$op_n,
+
+	"--help"         => sub { print_usage();      exit( 0 ) },
+	"--verbose|v"    => \$op_verbose,
+
+    ) || do {	# GetOptions() returns false on errors in option parsing.
+	Error( "Type '$ProgName --help' for usage.\n" );
+	exit( 2 );
+	# Do not show usage longer than 5 lines, let user see argument error.
+    };
+
+# Check inputs
+
+    unless ( int( $op_nxi / 4 ) == $op_nxi / 4 ) {
+#!!	Error( "Require --nxi divisible by 4:  $op_nxi\n" );
+    }
+
+    unless ( int( $op_nxb / 4 ) == $op_nxb / 4 ) {
+	Error( "Require --nxb divisible by 4:  $op_nxb\n" );
+    }
+
+    if ( Error() ) { exit 1; }
+
+# Compute Xmap[] array
+
+    my $Pi    = 3.1415926535;
+    my $TwoPi = 2 * $Pi;
+
+    my @Xmap;		# output map array
+			# Xmap[jj] = bin number that input jj falls into
+
+    my $Nxi  = $op_nxi;		# number of samples in one cycle of Xi
+    my $Nxb  = $op_nxb;		# number of output bins across X FOV
+
+    my $Nxi2 = int( $Nxi / 2);	# round toward zero
+
+    printf( STDERR  "Nxi      = %8d\n",   $Nxi      );
+    printf( STDERR  "Nxi2     = %8d\n",   $Nxi2     );
+    printf( STDERR  "Nxb      = %8d\n",   $Nxb      );
+    printf( STDERR  "op_map   = %8d\n",   $op_map   );
+    printf( STDERR  "op_n     = %8d\n",   $op_n     );
+
+    my $nn = 0;
+
+    my $Xi = 0.0;	# X position of input sample ii=0
+    my $Xb = -1.0;	# X position of output bin   nn=0
+
+    print( STDERR  " ii   nn     Xi        Xb\n" );
+
+    for ( my $ii=0;  $ii <= $Nxi2;  $ii++ )	# half cycle
+    {
+	$Xi = - cos( $Pi * ($ii / $Nxi2) );
+
+	if ( $Xi > $Xb ) {	# advance to next bin
+
+	    $nn++;
+	    $Xb = (2 * ($nn / $Nxb) ) - 1;
+	}
+	# This slew-rate limits when Xi skips a bin, i.e. bin numbers
+	# increment by 1.  This makes no missing bin numbers, but result
+	# is distorted.
+
+	$Xmap[$ii] = $nn;		# save bin map
+
+	printf( STDERR  "%3d  %3d  %8.4f  %8.4f\n", $ii, $nn, $Xi, $Xb );
+    }
+    #!! Note Xmap is not symmetric about X=0.
+
+# Mirror for a full-cycle map:  (negative cosine slope)
+
+    for ( my $ii=0;  $ii <= $Nxi2;  $ii++ )	# half cycle
+    {
+	$Xmap[$Nxi2 + $ii] = $Xmap[$Nxi2 - $ii];
+
+	#printf( "%4d  %4d\n", $ii + $Nxi2, $Nxi2 - $ii );
+    }
+
+    if ( $op_map ) {		# show Xmap[] on stdout
+	print( "\n" );
+	print( "   ii  Xmap[ii]\n" );
+
+	for ( my $ii=0;  $ii <= $Nxi;  $ii++ )	# full cycle
+	{
+	    printf( "%5d %5d\n", $ii, $Xmap[$ii] );
+	}
+    }
+
+    if ( $op_n ) {
+	last;
+    }
+
+# Main body
+
+    my $jj    = 0;	# input map index within one cycle, {0 .. Nxi-1}
+    my $np    = 0;	# current bin number of pVsum
+    my $pVsum = 0;	# current bin accumulated signal value
+    my $pcnt  = 0;	# current bin count of samples accumulated
+
+    my $nout  = 0;	# count outputs in each cycle
+
+    $np = $Xmap[0];	# initial value to accumulate first bin
+
+    while ( <> )
+    {
+	my ( $sig_V ) = split( ' ', $_ );	# signal value at sample jj
+
+	my $ni = $Xmap[$jj];		# map sample jj into bin number ni
+
+	if ( $ni != $np ) {		# advance to next bin when ni changes
+
+	    my $normv = 0;		# mean value for this bin
+	    if ( $pcnt != 0 ) {
+		$normv = $pVsum / $pcnt;
+	    }
+
+#	    printf( "%8.4f\n", $normv );
+	    printf( "%4d  %4d  %8.4f\n", $jj, $pcnt, $normv );
+
+	    $nout++;
+
+	    $pVsum = 0;
+	    $pcnt  = 0;
+	    $np    = $ni;
+	}
+
+	$pVsum = $pVsum + $sig_V;	# accumulate signal value
+	$pcnt++;
+
+	# Next input cycle index
+	$jj++;
+	if ( $jj >= $Nxi ) {	# wrap around for next cycle
+#!!
+#	    printf( "nout= %6d  jj= %6d\n", $nout, $jj );
+#	    printf( "nout = %8d\n", $nout );
+	    $nout = 0;
+
+	    $jj = 0;
+	    $np = $Xmap[0];
+	}
+	#!! Note (nout != Nxb), generally off by 1
+    }
+
+}
+
+exit( (Error()) ? 1 : 0 );
+
+#---------------------------------------------------------------------------
+## Error Handling
+#---------------------------------------------------------------------------
+
+our $Error_cnt = 0;	# (private)
+
+# Error message reporting.
+# call:
+#    Error( @text )	Print error message, increment error count.
+#    Error()		Get error count.
+# return:
+#    ()  = Error count, false if no errors were recorded.
+#
+sub Error
+{
+    if ( @_ ) {
+	warn( "Error:  ", @_ );
+	$Error_cnt ++;
+    }
+    return( $Error_cnt );
+}
+
+__END__
+

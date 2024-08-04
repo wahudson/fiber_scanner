@@ -1,0 +1,141 @@
+2024-08-02  William A. Hudson
+
+		Linearize Sinusoidal Scan - numbin Design
+		-----------------------------------------
+
+See:  sinebin_design.text
+
+    A simpler model than my sinebin idea, but also less precise.
+
+    Start with this, then refine with sinebin.
+    Maybe simple enough to implement as a first-pass solution in Matlab.
+
+----------------------------------------------------------------------------
+## Binning Idea Theory
+----------------------------------------------------------------------------
+
+    Make an integer map of sample number i to bin number n.
+
+    Walk the input stream by cycle and accumulate (sum) signal values for
+    each bin, taking the mean of all values that fall in the bin.
+
+    Assume bin number increases monotonically thru each cycle.
+
+    Processing is a data flow, with an arbitrarily long input sample stream
+    of Xi sample cycles.  Output is produced as each bin is completed.
+    Effectively the input stream is coalesced to produce a shorter output
+    stream.
+
+    Algorithms are psudo C-language.
+
+----------------------------------------------------------------------------
+## Signal Processing Algorithm:
+----------------------------------------------------------------------------
+
+    Nxi       = number of input samples in one X-cycle
+    Xmap[jj]  = bin number that input sample jj falls into
+
+    jj    = 0;		# input map index within one cycle, {0 .. Nxi-1}
+    np    = 0;		# current bin number of pVsum
+    pVsum = 0;		# current bin accumulated signal value
+    pcnt  = 0;		# current bin count of samples accumulated
+
+    np = Xmap[0];	# initial value to accumulate first bin
+
+    while read sigV		# signal value at sample jj
+    {
+	ni = Xmap[jj];		# map sample jj into bin number ni
+
+	if ( ni != np ) {		# advance to next bin when ni changes
+
+	    normv = pVsum / pcnt;	# normalize value
+					    if ( pcnt != 0 )
+
+	    printf( normv );		# output the final value
+
+	    pVsum = 0;
+	    pcnt  = 0;
+	    np    = ni;
+	}
+
+	pVsum = pVsum + sigV;	# accumulate signal value
+	pcnt++;
+
+	# Next input cycle index
+	jj++;
+	if ( jj >= Nxi ) {	# wrap around for next cycle
+	    jj = 0;
+	    np = Xmap[0];
+	}
+    }
+
+----------------------------------------------------------------------------
+## Generate the Xmap[] Array
+----------------------------------------------------------------------------
+
+    Linearize the cosine X-axis scan of our galvo scanner.  i.e. Essentially
+    divide the cosine range {-1 .. +1} into equal sized bins.
+
+    Here X position is over range of cos(), -1 to +1.
+
+    Sampled positions at sample i, i.e. the response:
+
+	Xi[i] = - cos( 2*Pi * (i / Nxi) )	signal sample positions
+
+	    Xi    = X position at sample i
+	    2*Pi  = one cycle in radians
+
+	    i = { 0 .. (Nxi - 1) }  index within one cycle
+
+	    Nxi = number of samples in one cycle of Xi
+		Require evenly divide by 4, so all 4 cardinal points of one
+		cycle are sampled.  i.e. cosine = {-1, 0, +1, 0}
+		The last cardinal point is actually at i=Nxi, the start of
+		the next cycle.
+
+	    Essentially divide one cycle into Nxi parts (i / Nxi).
+	    Ignore phase delay of response for now.
+
+    Bin positions over range of cos() -1 to +1:
+
+	Xb[n] = (2 * (n / Nxb) ) - 1		position of bin n
+
+	    n = { 0 .. Nxb }			bin index
+
+	    Nxb   = number of bins across FOV, range of cos()
+		    Require evenly divide by 4 to match cos() cardinal points.
+
+	    Essentially divide the range of cos() into Nxb parts.
+
+
+    Algorithm for one half-cycle:  (positive slope)
+
+	nn = 0;
+	Xb = -1.0;	# first bin at nn=0
+
+	for each  ii={ 0 .. Nxi/2 }  half cycle
+	{
+	    Xi = - cos( 2*Pi * (ii / Nxi) );
+
+	    if ( Xi > Xb ) {	# advance to next bin
+
+		nn++;
+		Xb = (2 * (nn / Nxb) ) - 1;
+	    }
+
+	    Xmap[ii] = nn;	# save bin map
+	}
+
+    Mirror half cycle map for a full-cycle:  (negative cosine slope)
+
+	Nxi2 = Nxi / 2;
+
+	for each  ii={ 0 .. Nxi2 }  one half cycle
+	{
+	    Xmap[ Nxi2 + ii ] = Xmap[ Nxi2 - ii ]
+	}
+
+	Note:  The index range of a full cycle is properly {0 .. (Nxi-1)}.
+	Including index Nxi essentially includes the first cardinal point
+	of the next cycle, which is fine here.
+
