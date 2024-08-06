@@ -76,7 +76,7 @@ USAGE
     }
 
     unless ( int( $op_nxb / 4 ) == $op_nxb / 4 ) {
-	Error( "Require --nxb divisible by 4:  $op_nxb\n" );
+#!!	Error( "Require --nxb divisible by 4:  $op_nxb\n" );
     }
 
     if ( Error() ) { exit 1; }
@@ -94,9 +94,13 @@ USAGE
 
     my $Nxi2 = int( $Nxi / 2);	# round toward zero
 
+    my $bx2  = 1 / $Nxb;	# half width of a bin
+
     printf( STDERR  "Nxi      = %8d\n",   $Nxi      );
     printf( STDERR  "Nxi2     = %8d\n",   $Nxi2     );
     printf( STDERR  "Nxb      = %8d\n",   $Nxb      );
+    printf( STDERR  "bx2      = %8.4f\n", $bx2      );
+
     printf( STDERR  "op_map   = %8d\n",   $op_map   );
     printf( STDERR  "op_n     = %8d\n",   $op_n     );
 
@@ -105,13 +109,18 @@ USAGE
     my $Xi = 0.0;	# X position of input sample ii=0
     my $Xb = -1.0;	# X position of output bin   nn=0
 
-    print( STDERR  " ii   nn     Xi        Xb\n" );
+    print( STDERR  " ii     Xi        Xbt       Xb      nn\n" );
 
     for ( my $ii=0;  $ii <= $Nxi2;  $ii++ )	# half cycle
     {
 	$Xi = - cos( $Pi * ($ii / $Nxi2) );
 
-	if ( $Xi > $Xb ) {	# advance to next bin
+	my $Xbt = $Xb - $bx2;	# X position threshold
+
+#	printf( STDERR  "%3d  %8.4f  %8.4f", $ii, $Xi, $Xbt );
+	printf( STDERR  "%3d  %8.4f  %8.4f  %8.4f", $ii, $Xi, $Xbt, $Xb );
+
+	if ( $Xi > $Xbt ) {	# advance to next bin
 
 	    $nn++;
 	    $Xb = (2 * ($nn / $Nxb) ) - 1;
@@ -122,8 +131,13 @@ USAGE
 
 	$Xmap[$ii] = $nn;		# save bin map
 
-	printf( STDERR  "%3d  %3d  %8.4f  %8.4f\n", $ii, $nn, $Xi, $Xb );
+#	printf( STDERR  "%3d  %8.4f  %8.4f  %8.4f  %3d\n", $ii, $Xi, $Xbt, $Xb, $nn );
+
+#	printf( STDERR  "  %8.4f  %3d\n", $Xb, $nn, );
+	printf( STDERR  "  %3d\n", $nn, );
+
     }
+    #!! Offset by half a bin width makes Xmap symmetric about X=0.
     #!! Note Xmap is not symmetric about X=0.
 
 # Mirror for a full-cycle map:  (negative cosine slope)
@@ -149,7 +163,7 @@ USAGE
 	last;
     }
 
-# Main body
+# Main data loop
 
     my $jj    = 0;	# input map index within one cycle, {0 .. Nxi-1}
     my $np    = 0;	# current bin number of pVsum
@@ -189,8 +203,14 @@ USAGE
 	# Next input cycle index
 	$jj++;
 	if ( $jj >= $Nxi ) {	# wrap around for next cycle
+
+	    if ( ! Error() ) {
+		if ( $nout != (2 * $Nxb) ) {
+		    Error( "scan number != Nxb:  $nout\n" );
+		}
+	    }
 #!!
-#	    printf( "nout= %6d  jj= %6d\n", $nout, $jj );
+	    printf( "nout= %6d  jj= %6d\n", $nout, $jj );
 #	    printf( "nout = %8d\n", $nout );
 	    $nout = 0;
 
