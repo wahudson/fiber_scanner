@@ -67,6 +67,8 @@ String operations:
     append()	true concatenation, result is string if any input is string
     +           alias operator for append()
     https://www.mathworks.com/help/matlab/characters-and-strings.html
+    num2str( A, precision )	convert number into char array
+    num2str( A, format )	convert number into char array
 
 colon, :
     v = a:b
@@ -283,6 +285,10 @@ gray(m)
 imshow(I)
 imshow( I, DisplayRange=[low high] )
     Display grayscale image, I= matrix of grayscale values
+
+    If you pass XData and YData to imshow() then it fits the image into those
+    coordinates, same as if you had used image() or imagesc().
+    https://www.mathworks.com/support/search.html/answers/1622955-how-to-prevent-imshow-from-resizing-the-figure.html
 
 imwrite( A, "file.pgm" )
     Write grayscale image A to .pgm file.

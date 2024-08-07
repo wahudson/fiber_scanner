@@ -15,10 +15,11 @@
 
     % Caution!  Fill in correct comments BEFORE running script.
 
+    Objective_mag = 5;		% objective magnification (compute FOV)
+
     Comments = [		% output to log file
 	"# Sample:  UASF target"
 	"# Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm"
-	"# Objective:  5x"
 	"# PD_Gain:  40 db"
 	"# Pinhole:  0 mm"
 	"# Laser:  Iset = 30 mA"
@@ -42,7 +43,10 @@
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
 
-    Version = "rcm_uno.m  2024-07-18";	% base script from Git
+    Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
+				% (JWW and WH 2024-08-06)
+
+    Version = "rcm_uno.m  2024-08-07";	% base script from Git
 
 %% Update save counter
 
@@ -89,14 +93,21 @@
     fprintf( '%s\n', Comments );	% for each element of vector
     fprintf( 'Version:      = %s\n',     Version       );
 
+    fovX_um  = OutAmpX_V * Cal5x_um_per_V * (Objective_mag / 5);
+    fovY_um  = OutAmpY_V * Cal5x_um_per_V * (Objective_mag / 5);
+
     freqX_Hz = 1 / (SampleX_n * dt_s);	% X frequency, cosine wave
 
     periodX_s = SampleX_n * dt_s;	% period of one X cosine cycle
 
+    fprintf( 'Objective_mag = %10d\n',   Objective_mag );
     fprintf( 'SampleX_n     = %10d\n',   SampleX_n     );
     fprintf( 'SampleY_n     = %10d\n',   SampleY_n     );
     fprintf( 'OutAmpX_V     = %10.3f\n', OutAmpX_V     );
     fprintf( 'OutAmpY_V     = %10.3f\n', OutAmpY_V     );
+    fprintf( 'Cal5x_um_per_V= %10.3f\n', Cal5x_um_per_V);
+    fprintf( 'fovX_um       = %10.3f\n', fovX_um       );
+    fprintf( 'fovY_um       = %10.3f\n', fovY_um       );
     fprintf( 'sampRate      = %12.4e\n', sampRate      );
     fprintf( 'dt_s          = %12.4e\n', dt_s          );
     fprintf( 'freqX_Hz      = %10.3f\n', freqX_Hz      );
@@ -226,6 +237,7 @@
 	    % Single FOV scaning left to right.
 
 	if ( PreView )
+	    fprintf( '    image_ii  = %10d\n', ii              );
 	    fig4 = figure(4);  clf;	% redraw same figure
 	else
 	    fig4 = figure();  clf;	% auto-increment figure numbers
@@ -233,9 +245,17 @@
 
 	%imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
 	imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
-	    %#!! autoscaled?
 
-	fprintf( '    image_ii  = %10d\n', ii              );
+	% imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V],
+	%     XData=[0, fovX_um], YData=[0, fovY_um] );		% single FOV
+	    % Specifying YData re-scales image loosing pixel accuracy.
+
+	subtitle( "FOV = " + num2str( fovY_um, 3) + " um" );
+	axis on;
+	ylabel( "pixel" );
+	xlabel( "pixel" );
+
+	%#!! autoscaled intensity?
 
     end %}
 
