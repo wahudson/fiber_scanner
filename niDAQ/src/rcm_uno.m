@@ -33,8 +33,8 @@
     FilePrefix  = "out";	% output file name without number or suffixes
 
     if ( PreView )
-	SampleX_n  = 1280;	% number of samples in an X cycle (even /4)
-	SampleY_n  = 400;	% number of X cycles (lines) in Y ramp
+	SampleX_n  = 640;	% number of samples in an X cycle (even /4)
+	SampleY_n  = 200;	% number of X cycles (lines) in Y ramp
     else
 	SampleX_n  = 2560;	% high-res
 	SampleY_n  = 800;
@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-07b";	% base script from Git
+    Version = "rcm_uno.m  2024-08-08";	% base script from Git
 
 %% Update save counter
 

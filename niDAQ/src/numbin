@@ -26,8 +26,8 @@ sub print_usage
     print( <<USAGE );
     Linearize sinusoidal scan data.
 usage:  $ProgName  [options]  < in_file  > out_file
-    --nxi=N      number of input samples in one X-cycle
-    --nxb=N      number of bins across X FOV
+    --nxi=N      number of input samples in one X-cycle (bi-direction)
+    --nxb=N      number of bins across X FOV (uni-direction scan)
     --map        show bin map on stdout
     -n           dry-run to show parameters, no input read
     --help       show this usage
@@ -99,7 +99,7 @@ USAGE
     printf( STDERR  "Nxi      = %8d\n",   $Nxi      );
     printf( STDERR  "Nxi2     = %8d\n",   $Nxi2     );
     printf( STDERR  "Nxb      = %8d\n",   $Nxb      );
-    printf( STDERR  "bx2      = %8.4f\n", $bx2      );
+    printf( STDERR  "bx2      = %8.5f\n", $bx2      );
 
     printf( STDERR  "op_map   = %8d\n",   $op_map   );
     printf( STDERR  "op_n     = %8d\n",   $op_n     );
@@ -109,7 +109,9 @@ USAGE
     my $Xi = 0.0;	# X position of input sample ii=0
     my $Xb = -1.0;	# X position of output bin   nn=0
 
-    print( STDERR  " ii     Xi        Xbt       Xb      nn\n" );
+    if ( $op_map ) {		# show generation
+	print( " ii     Xi        Xbt       Xb      nn\n" );
+    }
 
     for ( my $ii=0;  $ii <= $Nxi2;  $ii++ )	# half cycle
     {
@@ -117,8 +119,10 @@ USAGE
 
 	my $Xbt = $Xb - $bx2;	# X position threshold
 
-#	printf( STDERR  "%3d  %8.4f  %8.4f", $ii, $Xi, $Xbt );
-	printf( STDERR  "%3d  %8.4f  %8.4f  %8.4f", $ii, $Xi, $Xbt, $Xb );
+	if ( $op_map ) {		# show generation
+#	    printf( "%3d  %8.4f  %8.4f",        $ii, $Xi, $Xbt );
+	    printf( "%3d  %8.4f  %8.4f  %8.4f", $ii, $Xi, $Xbt, $Xb );
+	}
 
 	if ( $Xi > $Xbt ) {	# advance to next bin
 
@@ -131,14 +135,15 @@ USAGE
 
 	$Xmap[$ii] = $nn;		# save bin map
 
-#	printf( STDERR  "%3d  %8.4f  %8.4f  %8.4f  %3d\n", $ii, $Xi, $Xbt, $Xb, $nn );
-
-#	printf( STDERR  "  %8.4f  %3d\n", $Xb, $nn, );
-	printf( STDERR  "  %3d\n", $nn, );
+	if ( $op_map ) {		# show generation
+#	    printf( "%3d  %8.4f  %8.4f  %8.4f  %3d\n", $ii, $Xi, $Xbt, $Xb, $nn );
+#	    printf( "  %8.4f  %3d\n", $Xb, $nn, );
+	    printf( "  %3d\n", $nn, );
+	}
 
     }
     #!! Offset by half a bin width makes Xmap symmetric about X=0.
-    #!! Note Xmap is not symmetric about X=0.
+    #!! When Nxb is even.
 
 # Mirror for a full-cycle map:  (negative cosine slope)
 
@@ -187,8 +192,8 @@ USAGE
 		$normv = $pVsum / $pcnt;
 	    }
 
-#	    printf( "%8.4f\n", $normv );
-	    printf( "%4d  %4d  %8.4f\n", $jj, $pcnt, $normv );
+	    printf( "%8.4f\n", $normv );
+#	    printf( "%4d  %4d  %8.4f\n", $jj, $pcnt, $normv );
 
 	    $nout++;
 
@@ -209,15 +214,14 @@ USAGE
 		    Error( "scan number != Nxb:  $nout\n" );
 		}
 	    }
-#!!
-	    printf( "nout= %6d  jj= %6d\n", $nout, $jj );
-#	    printf( "nout = %8d\n", $nout );
+
+#	    printf( "nout= %6d  jj= %6d\n", $nout, $jj );
 	    $nout = 0;
 
 	    $jj = 0;
 	    $np = $Xmap[0];
 	}
-	#!! Note (nout != Nxb), generally off by 1
+	#!! What makes (nout == 2*Nxb) ?  Can be off by 1.
     }
 
 }

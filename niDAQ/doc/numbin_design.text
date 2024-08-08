@@ -26,7 +26,7 @@ See:  sinebin_design.text
     Effectively the input stream is coalesced to produce a shorter output
     stream.
 
-    Algorithms are psudo C-language.
+    Algorithms are pseudo C-language.
 
 ----------------------------------------------------------------------------
 ## Signal Processing Algorithm:
@@ -110,17 +110,21 @@ See:  sinebin_design.text
 
     Algorithm for one half-cycle:  (positive slope)
 
-	nn = 0;
-	Xb = -1.0;	# first bin at nn=0
+	bx2  = 1 / Nxb;		# half width of a bin
+
+	nn  = 0;
+	Xb  = -1.0;		# first bin at nn=0
+	Xbt = Xb - bx2;		# X position threshold
 
 	for each  ii={ 0 .. Nxi/2 }  half cycle
 	{
 	    Xi = - cos( 2*Pi * (ii / Nxi) );
 
-	    if ( Xi > Xb ) {	# advance to next bin
+	    if ( Xi > Xbt ) {	# advance to next bin
 
 		nn++;
-		Xb = (2 * (nn / Nxb) ) - 1;
+		Xb  = (2 * (nn / Nxb) ) - 1;
+		Xbt = Xb - bx2;
 	    }
 
 	    Xmap[ii] = nn;	# save bin map
@@ -138,4 +142,55 @@ See:  sinebin_design.text
 	Note:  The index range of a full cycle is properly {0 .. (Nxi-1)}.
 	Including index Nxi essentially includes the first cardinal point
 	of the next cycle, which is fine here.
+
+----------------------------------------------------------------------------
+## Thoughts
+----------------------------------------------------------------------------
+
+    Example command:
+    % numbin -n --map --nxi=60 --nxb=10 2>&1 | less
+
+    Advancing to the next bin:  (Xi > Xbt)
+    Comparing input position Xi to bin position threshold Xbt is more correct
+    where Xi and Xb represent the centers of the spot and bin.
+
+    The initial value of Xbt is always less than Xi, so the very first
+    iteration always advances the bin number, so bin nn=0 is not used.
+    This seems just fine.
+
+    The number of bins in a half cycle ends up being (Nxb + 1).
+
+    When Nxb is even, then the distribution of bin numbers is symmetric
+    about Xi=0 in a half cycle.
+
+    We see many samples fall in the bins at the end of the scan, and fewer
+    in the middle at Xi=0, as expected.
+
+    The full map is mirrored, so nn increases {1, .. Nxb+1} in the first
+    half cycle, then decreases {Nxb+1, .. 1} in the second half cycle.
+    Thus the beginning (ii=0) and end (ii=Nxi) bin numbers are the same.
+    Thus there is no change in nn at the scan turn-around points and no
+    corresponding output of a bin value.  This is how the number of binned
+    values in a full cycle is (2*Nxb) and not (2*Nxb + 2).
+
+    We assume Nxb << Nxi, so that every bin would have an input sample.
+    i.e. Bin width is greater than maximum input sample width.
+
+    Note the bin generation algorithm essentially just increments nn
+    if an input Xi skips a bin (i.e. bins are too far apart).  This
+    incrementing occurs until nn catches up, essentially slew rate limited
+    as it moves toward Xi.
+    This effectively guarantees that there are no missing bins for each Xi,
+    i.e. each Xi is guaranteed to have a abin.
+    This is a distortion, but arrises only when the assumption is violated.
+
+    The response phase delay is not applied.  It is only a small distortion
+    at the scan turn-around points, and is mostly not noticed in a
+    uni-directional scan image.
+    [I recommend against using bi-directional scan in an image.]
+
+Status:  2024-08-07
+
+    The algorithm implemented in numbin seems to be working well, and
+    good enough for an initial application in rcm_uno.m .
 
