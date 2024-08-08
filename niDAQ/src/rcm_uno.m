@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-07";	% base script from Git
+    Version = "rcm_uno.m  2024-08-07b";	% base script from Git
 
 %% Update save counter
 
@@ -261,13 +261,38 @@
 
 %% Save image
 
-if ( not( PreView ) )	% primary image
+if ( not( PreView ) )		% primary figure
     fig_file = OfileBase + "-fig.jpg";
     exportgraphics( fig4, fig_file );
 	% Save pretty image, small file.
 	% Note pixel-per-bit is NOT preserved in output file.
 
     fprintf( 'fig_file      = %s\n', fig_file );
+end
+
+if ( not( PreView ) )		% image normalized over signal range
+	% Directly useable image, but loss of accuracy.
+    image_file = OfileBase + "-image.pgm";
+
+    sigRange_V = sigMax_V - sigMin_V;
+    image_im = uint8( (rasterIu - sigMin_V) * double( 256 / sigRange_V ) );
+	    % scale +-5 V signal to 8-bit unsigned
+
+    imwrite( image_im, image_file );	% default Encoding="rawbits"
+
+    fprintf( 'image_file      = %s\n', image_file );
+end
+
+if ( not( PreView ) )		% 16-bit grayscale data for further processing
+	% Preserve DAQ accuracy, but not directly useable.
+    gray_file = OfileBase + "-gray.pgm";
+
+    gray_im = uint16( (rasterIu + 5.0) * double( (64 * 1024) / 10.0 ) );
+	    % scale +-5 V signal to 16-bit unsigned
+
+    imwrite( gray_im, gray_file );	% default Encoding="rawbits"
+
+    fprintf( 'gray_file      = %s\n', gray_file );
 end
 
 
@@ -283,7 +308,7 @@ if ( not( PreView ) )	% compact single-column output  -daq-x2500.dat
     fclose( file_id );
 
     fprintf( 'daq1_file     = %s\n', daq1_file );
-    % gzip( daq1_file );
+    gzip( daq1_file );
 end
 
 if ( 0 )	% raw full data output (debug)
