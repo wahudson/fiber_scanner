@@ -19,7 +19,7 @@
 
     Comments = [		% output to log file
 	"# Sample:  UASF target"
-	"# Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm"
+	"# Stage:  Z= 0.00 mm, Y= 0.00 mm, X=0.00 mm"
 	"# PD_Gain:  40 db"
 	"# Pinhole:  0 mm"
 	"# Laser:  Iset = 30 mA"
@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-08";	% base script from Git
+    Version = "rcm_uno.m  2024-08-10";	% base script from Git
 
 %% Update save counter
 
@@ -250,7 +250,7 @@
 	%     XData=[0, fovX_um], YData=[0, fovY_um] );		% single FOV
 	    % Specifying YData re-scales image loosing pixel accuracy.
 
-	subtitle( "FOV = " + num2str( fovY_um, 3) + " um" );
+	subtitle( sprintf( "FOV = %3f um", fovY_um ) );
 	axis on;
 	ylabel( "pixel" );
 	xlabel( "pixel" );
@@ -280,7 +280,7 @@ if ( not( PreView ) )		% image normalized over signal range
 
     imwrite( image_im, image_file );	% default Encoding="rawbits"
 
-    fprintf( 'image_file      = %s\n', image_file );
+    fprintf( 'image_file    = %s\n',     image_file    );
 end
 
 if ( not( PreView ) )		% 16-bit grayscale data for further processing
@@ -292,7 +292,7 @@ if ( not( PreView ) )		% 16-bit grayscale data for further processing
 
     imwrite( gray_im, gray_file );	% default Encoding="rawbits"
 
-    fprintf( 'gray_file      = %s\n', gray_file );
+    fprintf( 'gray_file     = %s\n',     gray_file     );
 end
 
 
@@ -307,7 +307,7 @@ if ( not( PreView ) )	% compact single-column output  -daq-x2500.dat
 
     fclose( file_id );
 
-    fprintf( 'daq1_file     = %s\n', daq1_file );
+    fprintf( 'daq1_file     = %s\n',     daq1_file     );
     gzip( daq1_file );
 end
 
