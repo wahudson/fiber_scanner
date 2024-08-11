@@ -1,0 +1,7 @@
+    Linearize sinusoidal scan data.
+usage:  numbin  [options]  < in_file  > out_file
+    --nxi=N      number of input samples in one X-cycle (bi-direction)
+    --nxb=N      number of bins across X FOV (uni-direction scan)
+    --map        show bin map on stdout
+    -n           dry-run to show parameters, no input read
+    --help       show this usage

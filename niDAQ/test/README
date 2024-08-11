@@ -1,0 +1,87 @@
+2024-08-10  William A. Hudson
+
+		fiber_scanner/niDAQ -- Testing
+		------------------------------
+
+Self-checking regression tests.
+
+Files:  (2024-08-10)
+------
+Makefile	run all test suites
+README		this file
+
+.gitignore	Git ignore transient files
+
+bin/		commands for Test
+    numbin -> ../../src/numbin
+
+lib/		Test library
+    TestLib2.pm		Library for testing programs (perl).
+
+obj/		compiled .o from src/
+src/		test library source code
+
+t_*/		Generic test suite contents
+    Makefile		run/compile the test
+    ref/		reference input/output of the test
+    test.cpp		test program (C++)
+    test.exe		compiled test (may be removed)
+    test.pl		test program (perl)
+    tmp/		where the test program is executed, removed each time
+
+
+Test suites:  (2024-08-10)
+------------
+?       = not committed
+  b     = uses bin/
+   l    = uses lib/
+     s  = uses src/
+ u      = Unit test (C++)        utLib1.cpp
+ m      = Module test (perl)     TestLib2.pm
+ p      = Program test (command)
+------  --------------
+ pbl    t_numbin/	numbin		Linearize scan data with a bin map
+
+
+Test Setup:
+-----------
+    The individual test  t_*/Makefile  has dependency on the test framework,
+    but will not rebuild the test framework.
+
+    Build the test framework and helper tools:
+    % cd  src/
+    % make
+
+    Tests do NOT rebuild the object being tested (or the framework).
+    This way the object under test does not change due to testing.
+
+Run Tests:
+----------
+    # Run all tests from this directory.  Also build test framework.
+    % make test
+
+    # Run a specific test
+    % cd t_<dir>/
+    % make test
+
+    Pass if output numbered lines show "OK", fail if "NOT OK".
+
+Strategy:
+---------
+    Program testing - test.pl
+    The idea is to stimulate the program under test with options and input,
+    capture the output, and compare against known good output.
+
+    Makefile is the common interface to all test suits, regardless of the
+    kind of test.
+
+Git:
+----
+    The .gitignore file has entries to ignore the transient files in each
+    test directory:
+    t_*/test.exe
+    t_*/tmp
+
+Issues:
+-------
+

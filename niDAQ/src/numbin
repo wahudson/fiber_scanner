@@ -71,15 +71,15 @@ USAGE
 
 # Check inputs
 
-    unless ( int( $op_nxi / 4 ) == $op_nxi / 4 ) {
-#!!	Error( "Require --nxi divisible by 4:  $op_nxi\n" );
+    unless ( int( $op_nxi / 2 ) == $op_nxi / 2 ) {
+	Error( "Require --nxi divisible by 2:  $op_nxi\n" );
     }
 
     unless ( int( $op_nxb / 4 ) == $op_nxb / 4 ) {
 #!!	Error( "Require --nxb divisible by 4:  $op_nxb\n" );
     }
 
-    if ( Error() ) { exit 1; }
+#    if ( Error() ) { exit 1; }
 
 # Compute Xmap[] array
 
@@ -100,9 +100,6 @@ USAGE
     printf( STDERR  "Nxi2     = %8d\n",   $Nxi2     );
     printf( STDERR  "Nxb      = %8d\n",   $Nxb      );
     printf( STDERR  "bx2      = %8.5f\n", $bx2      );
-
-    printf( STDERR  "op_map   = %8d\n",   $op_map   );
-    printf( STDERR  "op_n     = %8d\n",   $op_n     );
 
     my $nn = 0;
 
