@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-10";	% base script from Git
+    Version = "rcm_uno.m  2024-08-11";	% base script from Git
 
 %% Update save counter
 
@@ -206,7 +206,7 @@
 
     Nrun = 1;
     if ( PreView )
-	Nrun = 99;
+	Nrun = 9999;
     end
 
     for  ii = 1 : Nrun  %{
@@ -237,41 +237,63 @@
 	    % Single FOV scaning left to right.
 
 	if ( PreView )
+	    % Quick and dirty view, not linearized.
 	    fprintf( '    image_ii  = %10d\n', ii              );
 	    fig4 = figure(4);  clf;	% redraw same figure
-	else
-	    fig4 = figure();  clf;	% auto-increment figure numbers
-	end
 
-	%imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );	% dual FOV
-	imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );	% single FOV
+	    % imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );
 
-	% imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V],
-	%     XData=[0, fovX_um], YData=[0, fovY_um] );		% single FOV
+	    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V],
+	        XData=[0, fovX_um], YData=[0, fovY_um] );
 	    % Specifying YData re-scales image loosing pixel accuracy.
 
-	subtitle( sprintf( "FOV = %3f um", fovY_um ) );
-	axis on;
-	ylabel( "pixel" );
-	xlabel( "pixel" );
-
-	%#!! autoscaled intensity?
+	    subtitle( sprintf( "FOV = %3f um", fovY_um ) );
+	    axis on;
+	    ylabel( "pixel" );
+	    xlabel( "pixel" );
+	end
 
     end %}
 
-%% Save image
+%% Show primary image, autoscaled
 
-if ( not( PreView ) )		% primary figure
+    fig4 = figure();  clf;	% auto-increment figure numbers
     fig_file = OfileBase + "-fig.jpg";
+
+    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );
+
+    subtitle( sprintf( "FOV = %3f um", fovY_um ) );
+    axis on;
+    ylabel( "pixel" );
+    xlabel( "pixel" );
+
     exportgraphics( fig4, fig_file );
 	% Save pretty image, small file.
 	% Note pixel-per-bit is NOT preserved in output file.
 
     fprintf( 'fig_file      = %s\n', fig_file );
-end
 
-if ( not( PreView ) )		% image normalized over signal range
-	% Directly useable image, but loss of accuracy.
+%% Save data, full scan
+    % compact single-column output  -daq-x2500.dat
+
+    daq1_file = OfileBase + "-daq-x" + SampleX_n + ".dat";
+    file_id = fopen( daq1_file, 'w' );
+
+    fprintf( file_id, '%8.5f\n', inScanData );
+	% Vectors applied in column order.
+
+    fclose( file_id );
+
+    fprintf( 'daq1_file     = %s\n',     daq1_file     );
+
+    gzip(   daq1_file );
+    delete( daq1_file );
+	% Stupid matlab gzip keeps original file also!!
+
+
+%% Save 8-bit image normalized over signal range
+    % Directly useable image, but loss of accuracy.
+if ( 1 )
     image_file = OfileBase + "-image.pgm";
 
     sigRange_V = sigMax_V - sigMin_V;
@@ -283,8 +305,10 @@ if ( not( PreView ) )		% image normalized over signal range
     fprintf( 'image_file    = %s\n',     image_file    );
 end
 
-if ( not( PreView ) )		% 16-bit grayscale data for further processing
-	% Preserve DAQ accuracy, but not directly useable.
+
+%% Save 16-bit grayscale image for further processing
+    % Preserve DAQ accuracy, but not directly useable.
+if ( 1 )
     gray_file = OfileBase + "-gray.pgm";
 
     gray_im = uint16( (rasterIu + 5.0) * double( (64 * 1024) / 10.0 ) );
@@ -296,20 +320,7 @@ if ( not( PreView ) )		% 16-bit grayscale data for further processing
 end
 
 
-%% Save data
-
-if ( not( PreView ) )	% compact single-column output  -daq-x2500.dat
-    daq1_file = OfileBase + "-daq-x" + SampleX_n + ".dat";
-    file_id = fopen( daq1_file, 'w' );
-
-    fprintf( file_id, '%8.5f\n', inScanData );
-	% Vectors applied in column order.
-
-    fclose( file_id );
-
-    fprintf( 'daq1_file     = %s\n',     daq1_file     );
-    gzip( daq1_file );
-end
+%% Debug
 
 if ( 0 )	% raw full data output (debug)
     daq_file = OfileBase + "-daq.dat";
