@@ -101,10 +101,11 @@ USAGE
     printf( STDERR  "Nxb      = %8d\n",   $Nxb      );
     printf( STDERR  "bx2      = %8.5f\n", $bx2      );
 
-    my $nn = 0;
-
-    my $Xi = 0.0;	# X position of input sample ii=0
-    my $Xb = -1.0;	# X position of output bin   nn=0
+    # Initial values ensure nn=0 is skipped in the map.
+    my $nn  = 0;		# output bin index
+    my $Xi  = 0.0;		# X position of input sample ii=0
+    my $Xb  = -1.0;		# X position of output bin   nn=0
+    my $Xbt = $Xb - $bx2;	# X position threshold
 
     if ( $op_map ) {		# show generation
 	print( " ii     Xi        Xbt       Xb      nn\n" );
@@ -114,8 +115,6 @@ USAGE
     {
 	$Xi = - cos( $Pi * ($ii / $Nxi2) );
 
-	my $Xbt = $Xb - $bx2;	# X position threshold
-
 	if ( $op_map ) {		# show generation
 #	    printf( "%3d  %8.4f  %8.4f",        $ii, $Xi, $Xbt );
 	    printf( "%3d  %8.4f  %8.4f  %8.4f", $ii, $Xi, $Xbt, $Xb );
@@ -124,7 +123,8 @@ USAGE
 	if ( $Xi > $Xbt ) {	# advance to next bin
 
 	    $nn++;
-	    $Xb = (2 * ($nn / $Nxb) ) - 1;
+	    $Xb  = (2 * ($nn / $Nxb) ) - 1;
+	    $Xbt = $Xb - $bx2;
 	}
 	# This slew-rate limits when Xi skips a bin, i.e. bin numbers
 	# increment by 1.  This makes no missing bin numbers, but result
