@@ -53,9 +53,19 @@ Variables:
     whos		list all variables - name, size, type
 
 Type conversions:
-    int32()
-    double()
+    double(), float()
+    int32()	float to int, round to nearest integer, away from zero
+    fix()	float to int, round toward zero, i.e. truncate
     Caution!  int_array * float => int_array	- Most unexpected!
+
+Arithmetic:  CAUTION!  Matlab is insane here.
+    Arithmetic on integers and floating-point always result in an integer.
+    https://www.mathworks.com/help/matlab/matlab_prog/integers.html
+    Arithmetic on single and double is single.
+    https://www.mathworks.com/help/matlab/matlab_prog/floating-point-numbers.html
+Numeric arrays:  CAUTION!
+    A constructed array is the type of the left-most integer, even with float.
+    https://www.mathworks.com/help/matlab/numeric-types.html
 
 String and Character Arrays:
     'text'  - is a character array
@@ -299,6 +309,12 @@ gridbin( x,y,v, xq,yq )
     Is a good example of Matlab.  Put copy of gridbin.m on search path.
     https://www.mathworks.com/matlabcentral/fileexchange/98239-gridbin
     https://github.com/chadagreene/gridbin
+
+scatteredInterpolant()	2D, 3D only
+griddedInterpolant()
+    Gridded data interpolation in 1D, 2D, ...
+    Interpolates, not aggregate samples in bins.
+    Could do crude scan linearizing?  (using only nearest neighbors)
 
 Filesystem:
 -----------
