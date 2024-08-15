@@ -209,7 +209,7 @@
 	Nrun = 9999;
     end
 
-    for  ii = 1 : Nrun  %{
+    for  ii = [1 : Nrun]	% {
 
     %% Run the DAQ
 
@@ -243,17 +243,17 @@
 
 	    % imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );
 
-	    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V],
+	    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V], ...
 	        XData=[0, fovX_um], YData=[0, fovY_um] );
 	    % Specifying YData re-scales image loosing pixel accuracy.
 
-	    subtitle( sprintf( "FOV = %3f um", fovY_um ) );
+	    subtitle( sprintf( "FOV = %3.0f um", fovY_um ) );
 	    axis on;
 	    ylabel( "pixel" );
 	    xlabel( "pixel" );
 	end
 
-    end %}
+    end  % }
 
 %% Show primary image, autoscaled
 
@@ -262,7 +262,7 @@
 
     imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );
 
-    subtitle( sprintf( "FOV = %3f um", fovY_um ) );
+    subtitle( sprintf( "FOV = %3.0f um", fovY_um ) );
     axis on;
     ylabel( "pixel" );
     xlabel( "pixel" );
