@@ -48,7 +48,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "scm_uno.m  2024-08-12";	% base script from Git
+    Version = "scm_uno.m  2024-08-14";	% base script from Git
 
 %% Update save counter
 
@@ -270,7 +270,7 @@
 
 %% Save linVec
 
-    lin2_file = OfileBase + "-lin2-x" + (2*LinX_n) + ".dat";
+    lin2_file = OfileBase + "-lin-x" + (2*LinX_n) + ".dat";
     file_id = fopen( lin2_file, 'w' );
 
     fprintf( file_id, '%8.5f\n', linVec );
@@ -389,21 +389,26 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     %
     % outVec =  output data column vector, cycle (2*Nxb)
     % inVec  =  input  data column vector, cycle Nxi
-    % Nxi    =  number of samples in one cycle of Xi
-    % Nxb    =  number of output bins across X FOV, Nxb << Nxi
+    % Nxi    =  number of samples in one cycle of Xi (i.e. 2*FOV)
+    % Nxb    =  number of output bins across X FOV, Nxb << Nxi/2
 
     Nxi2 = int32( Nxi / 2 );			% round toward zero??
     bx2  = double( 1.0 ) / double( Nxb );	% half width of a bin
 
+    inVec_n = length( inVec );
+    outN_n  = (inVec_n * (2 * Nxb)) / Nxi;	% estimate output length
+
+    fprintf( '   scanbin()\n' );
     fprintf( 'Nxi           = %10d\n',   Nxi           );
     fprintf( 'Nxb           = %10d\n',   Nxb           );
     fprintf( 'Nxi2          = %10d\n',   Nxi2          );
     fprintf( 'bx2           = %10.6f\n', bx2           );
+    fprintf( 'outN_n        = %10d\n',   outN_n        );
 
     %% Compute Xmap[] array
 
     Xmap   = int32(  zeros(    Nxi,  1 ) );	% map column vector
-    outVec = double( zeros( (2*Nxb), 1 ) );	% output column vector
+    outVec = double( zeros( outN_n,  1 ) );	% output column vector
 
     % Initial values ensure nn=0 is skipped in the map.
     nn  = 0;			% output bin index
@@ -430,7 +435,7 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
 
     for  ii = [0:Nxi2]		% half cycle
 
-        Xmap(Nxi2 + ii) = Xmap(Nxi2 - ii);
+        Xmap(Nxi2 + ii + 1) = Xmap(Nxi2 - ii + 1);
     end
 
     %% Linearize signal vector:
@@ -441,13 +446,13 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     pcnt  = 0;		% current bin count of samples accumulated
     kk    = 0;		% output outVec index
 
-    for  ix = [1:Nxi]		% { each signal value index
+    for  ix = [1:inVec_n]	% { each signal value index
 
-	kk = kk + 1;
 	ni = Xmap(jj+1);
 
-	if ( ni != np )
+	if ( ni ~= np )		% not equal !=
 
+	    kk = kk + 1;
 	    outVec(kk) = double( pVsum ) / double( pcnt );
 
 	    pVsum = double( 0.0 );

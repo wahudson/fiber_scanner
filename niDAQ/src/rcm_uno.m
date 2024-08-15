@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-11";	% base script from Git
+    Version = "rcm_uno.m  2024-08-14";	% base script from Git
 
 %% Update save counter
 
