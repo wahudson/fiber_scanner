@@ -51,7 +51,9 @@
     linVec_n = length( linVec );
     fprintf( 'linVec_n      = %10d\n',   linVec_n      );
 
-    rasterIm = transpose( reshape( linVec, Lin2X_n, linY_n ) );
+    tmpVec = linVec([1 : (Lin2X_n * LinY_n)]);	% truncate for image only
+
+    rasterIm = transpose( reshape( tmpVec, Lin2X_n, LinY_n ) );
 	% Raw raster matrix, upright image, mirrored X.
 	% Function reshape( .., Nrow, Ncol ) generates output array by column,
 	% leaving the image transposed.
@@ -91,7 +93,7 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     bx2  = double( 1.0 ) / double( Nxb );	% half width of a bin
 
     inVec_n = length( inVec );
-    outN_n  = (inVec_n * (2 * Nxb)) / Nxi;	% estimate output length
+    outN_n  = int32( (inVec_n * (2 * Nxb)) / Nxi );	% estimate output length
 
     fprintf( '   scanbin()\n' );
     fprintf( 'Nxi           = %10d\n',   Nxi           );

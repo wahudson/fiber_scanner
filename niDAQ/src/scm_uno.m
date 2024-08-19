@@ -48,7 +48,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "scm_uno.m  2024-08-14";	% base script from Git
+    Version = "scm_uno.m  2024-08-18";	% base script from Git
 
 %% Update save counter
 
@@ -250,8 +250,8 @@
 
 	    subtitle( sprintf( "FOV = %3.0f um", fovY_um ) );
 	    axis on;
-	    ylabel( "pixel" );
-	    xlabel( "pixel" );
+	    ylabel( "um" );
+	    xlabel( "um" );
 	end
 
     end  % }
@@ -282,7 +282,10 @@
 
 %% Raster Image
 
-    rasterIm = transpose( reshape( linVec, (2*LinX_n), LinY_n ) );
+    tmpVec = linVec([1 : ((2*LinX_n) * LinY_n)]);
+	% truncate for image only
+
+    rasterIm = transpose( reshape( tmpVec, (2*LinX_n), LinY_n ) );
 	% Raw raster matrix, upright image, mirrored X.
 	% Function reshape( .., Nrow, Ncol ) walks output array by column
 	% leaving the image transposed.
@@ -396,7 +399,7 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     bx2  = double( 1.0 ) / double( Nxb );	% half width of a bin
 
     inVec_n = length( inVec );
-    outN_n  = (inVec_n * (2 * Nxb)) / Nxi;	% estimate output length
+    outN_n  = int32( (inVec_n * (2 * Nxb)) / Nxi );  % estimate output length
 
     fprintf( '   scanbin()\n' );
     fprintf( 'Nxi           = %10d\n',   Nxi           );

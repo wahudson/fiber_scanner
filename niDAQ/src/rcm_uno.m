@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-14";	% base script from Git
+    Version = "rcm_uno.m  2024-08-18";	% base script from Git
 
 %% Update save counter
 
@@ -249,8 +249,8 @@
 
 	    subtitle( sprintf( "FOV = %3.0f um", fovY_um ) );
 	    axis on;
-	    ylabel( "pixel" );
-	    xlabel( "pixel" );
+	    ylabel( "um" );
+	    xlabel( "um" );
 	end
 
     end  % }
