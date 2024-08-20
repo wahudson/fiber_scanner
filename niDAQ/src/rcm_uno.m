@@ -46,7 +46,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-18";	% base script from Git
+    Version = "rcm_uno.m  2024-08-19";	% base script from Git
 
 %% Update save counter
 
@@ -187,7 +187,8 @@
 
     % Note:  pre/post transitions are one image line at top/bottom.
 
-    outVecY = 0.0 - outVecY;	% galvo +voltage is downwards
+    % outVecY = 0.0 - outVecY;	% galvo +voltage is downwards
+	% Objective mirror cube reverses the image.
 
     outScanData = [transpose( outVecX ), transpose( outVecY )];
 	    % transpose into column vectors, then concatenate rows
