@@ -1,0 +1,128 @@
+2024-06-23  William A. Hudson
+
+		Image Display in raster_gal.m
+		-----------------------------
+
+----------------------------------------------------------------------------
+## Setup as of 2024-06-20
+----------------------------------------------------------------------------
+
+Galvo scanner.  No objective lens.
+Just testing raster_gal.m script.
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Snippet of raster_gal.m:  as run on 2024-06-20
+
+    fig3 = figure(3);  clf;
+
+    dimY_n = int32( lengthY_n / periodX_s );
+
+    rasterIb = inScanData( 1:lengthY_n );
+    rasterIm = reshape( rasterIb, [], periodX_n );      % raster matrix
+        % Nrow= [] deduced dimension, Ncol= periodX_n one full cycle
+
+    imshow( rasterIm, DisplayRange=[sigMin_V, sigMax_V] );
+        % display grayscale image of matrix in figure
+
+    raster_file = OfileBase + "-raw.jpg";
+    exportgraphics( fig3, raster_file );
+
+    fprintf( 'raster_file   = %s\n', raster_file );
+
+Result files:
+    -rw------- 1 wah wah 12500050 Jun 20 14:30 out2-daq.dat
+    -rw------- 1 wah wah  6750027 Jun 20 14:30 out2-daq.txt
+    -rw------- 1 wah wah      819 Jun 20 14:30 out2-log.txt
+    -rw------- 1 wah wah   353587 Jun 20 14:30 out2-raw.jpg
+
+out2-log.txt:
+
+    2024-06-20 14:30:09
+    # Sample:  UASF target
+    # Stage:  Z= 0.00 mm, Y= 0.000 inch, X=0.00 mm
+    # Laser:  Iset = 30 mA
+    # PD_Gain:  40 db
+    # Pinhole:  0 mm
+    # Operator:  xxx
+    # Note:  all off
+    FreqX_Hz      =    100.000
+    LineCycY_n    =    400.000
+    FrameCnt_n    =      1.000
+    OutAmpX_V     =      1.000
+    OutAmpY_V     =      1.000
+    uniXsamp_n    =    312.500
+    uniYsamp_n    =    200.000
+    totalTime_s   =      4.000
+    totalSamp_n   =     250000
+    sampRate      =   6.2500e+04
+    dt_s          =   1.6000e-05
+    periodX_s     =   1.0000e-02
+    periodY_s     =   4.0000e+00
+    quarterY_s    =   1.0000e+00
+    quarterY_n    =      62500
+    dY_V          =   1.6000e-05
+    lengthY_n     =     250000
+    sigMax_V      =      0.000
+    sigMin_V      =     -0.001
+    daq_file      = out2-daq.dat
+    periodX_n     =    625.000
+    center_ix     = 125000.000
+    raster_file   = out2-raw.jpg
+
+out2-raw.jpg
+    Analyze.
+
+    % display out2-raw.jpg &
+	Miscellany -> Image Info
+
+	  depth: 24
+	  colormap size: 256
+	  geometry: 983x631
+	  Channel depth:
+	      gray: 8-bit
+	  Channel statistics:
+	    min: 0 (0)
+	    max: 255 (1)
+
+    Looks like the expected 8-bit grayscale type image.
+    Geometry is way to large:  983x631 = 620,273
+	Should have been:  625x400
+    Is NOT the one pixel per sample that was desired!
+    Matlab doing some arbitrary interpolation in the data.
+
+    Seems like display magnification is:
+	X:  983 / 625  = 1.573
+	Y:  631 / 400  = 1.578 
+    Border was about 2 pixels:
+	X:  979 / 625  = 1.5664
+	Y:  627 / 400  = 1.5674
+
+    This is a figure dump of the matlab display with a narrow border.
+    We want actual data pixels, no interpolation.
+
+    We want the script to display the image automatically.
+    Don't really care about saving the image, because we will post process
+    anyway.
+
+Thoughts:
+    A) imshow() XData, YData axis limit?
+
+    B) imshow() InitialMagnification?
+	InitialMagnification=100 is default, (one screen pixel for each
+	image pixel).
+	Is not what we see.
+
+ >> C) Possibly exportgraphics() is source of corruption?
+	This seems very likely.
+	If the live Matlab display is correct, we are done.
+
+    D) imwrite()  pgm file.
+	Maybe imshow() will show pgm without distortion.
+
+    E) Live with stupid scaling.
+
+    F) Manually resize figure window to get 100% scale?
+
