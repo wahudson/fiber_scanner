@@ -1,0 +1,306 @@
+2024-07-05  William A. Hudson
+
+		Galvo Scanner USAF Target -- ex2024_07_05_galvo/
+		--------------------------
+
+Measurements taken by Bill on 2024-07-05.
+First Z-sweep.
+First double resolution scan.
+Modified Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+
+Follows from:  ex2024_07_02_galvo/
+
+See:  red notebook  7-05-2024
+USB stick:  csu2024_07_05/
+Code:  src/rcm_uno.m  (2024-07-07, Git c840b23205)  with fixes
+
+Files:  (logical ordering)
+------
+ v  notes.text			this file
+ v  out17-line_group42.pdf	Scan line at Y=280 pixel, group 4.2 and 5.1
+
+ v  out9-log.txt		log files from rcm_uno.m
+ v  out10-log.txt
+    ...
+ v  out18-log.txt
+
+    rcm_uno.m			run galvos
+
+ v = in Git, large data files excluded
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+
+    Pinhole:  Was ~2 mm for out9 .. out18.
+
+    Tried adjusting Pinhol in earlier datasets, with not much luck.
+    At minimum size, too much light was lost (off center pinhole).
+    See an off-axis alignment problem in image brightness variation top
+    to bottom.
+
+----------------------------------------------------------------------------
+## Data parameters
+----------------------------------------------------------------------------
+out16-log.txt		Best focus
+    2024-07-05 16:18:15
+    # Sample:  UASF target
+    # Stage:  Z= 11.90 mm, Y= 0.695 inch, X=12.20 mm
+    # Laser:  Iset = 30 mA
+    # PD_Gain:  40 db
+    # Pinhole:  2 mm
+    # Operator:  Bill
+    # Note:  
+    SampleX_n     =       1250
+    SampleY_n     =        400
+    OutAmpX_V     =      1.000
+    OutAmpY_V     =      1.000
+    sampRate      =   6.2500e+04
+    dt_s          =   1.6000e-05
+    freqX_Hz      =     50.000
+    wX            =   3.1416e+02
+    frameSamp_n   =     500000
+    periodX_s     =   7.8125e+07
+    periodY_s     =   2.5000e+07
+    dX0_V         =   5.0265e-03
+    dY_V          =  -4.0000e-06
+    trans_s       =   2.0000e-02
+    trans_n       =       1250
+    frameX_n      =       1250
+    frameY_n      =     500000
+    rawLen_n      =     502500
+    sigMax_V      =      1.012
+    sigMin_V      =      0.077
+    daq_file      = out16-daq.dat
+    imageX_n      =   1250.000
+    imageY_n      =    402.000
+    imageXu_n     =    625.000
+    fig_file      = out16-fig.jpg
+
+Sweep Z-position:
+	SampleX_n     =       1250
+	SampleY_n     =        400
+
+    File   Z(mm)   sigMax_V  sigMin_V
+    -----  -----   --------  --------
+    out9   12.30   0.933     0.085
+    out10  12.10   0.970     0.068
+    out11  11.90   1.015     0.077       best focus
+    out12  11.70   1.022     0.095
+    out13  11.50   1.064     0.100
+    out14  11.30   1.086     0.123
+    out15  11.10   1.148     0.163
+    out16  11.90   1.012     0.077       best focus, same as out11
+
+Increase samples:  (at best focus Z= 11.90 mm)
+	# Stage:  Z= 11.90 mm, Y= 0.695 inch, X=12.20 mm
+	SampleX_n     =       2500
+	SampleY_n     =        800
+
+    out17  11.90   1.014     0.076   sampRate= 62500    freqX_Hz= 25.000
+    out18  11.90   1.012     0.076   sampRate= 125000   freqX_Hz= 50.000
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Outline plan:
+ v  New to_pgm script.
+	Options for parameters.
+	file.pgm  file.pgmerr
+
+    Generate images
+ v	Choose intensity range, no auto-scale.
+	    1.148  0.068
+ x	Explore effect of narrowing/widening intensity range.
+
+    General observations
+
+ v  Plot horizontal line thru square between group 4 and 5.
+    Plot vertical line thru group 4 bars.
+
+    Z depth-of-field
+	Compute mean over whole image.
+	Compute mean over X scan line.
+	Expect out-of-focus should have less light overall.
+
+    High-res image
+	Plot vertical line thru bars - see
+	    Intensity fade top to bottom.
+	    Artifact 3 pixel rows below each bar.
+
+    How to measure Z depth?  Out-of-focus rejection?
+
+    Measure spot size at each Z position.
+
+    Choose data files to save.
+
+Generate images:  out9 to out18
+
+    Over all data sets, signal range is:
+	1.148  0.068  max, min
+	1.150  0.060  round off
+
+    Note all *-daq.txt data files have one extra sample to zero the galvos.
+
+    %  wc -l out*-daq.txt
+       502501 out9-daq.txt
+       502501 out10-daq.txt
+       502501 out11-daq.txt
+       502501 out12-daq.txt
+       502501 out13-daq.txt
+       502501 out14-daq.txt
+       502501 out15-daq.txt
+       502501 out16-daq.txt
+      2005001 out17-daq.txt
+      2005001 out18-daq.txt
+
+    % ls out9-daq.txt |
+	to_pgmFile  to_pgm --min=0.060 --max=1.150 --nx=1250 --ny=402
+
+    % ls out1[0-6]-daq.txt |
+	to_pgmFile  to_pgm --min=0.060 --max=1.150 --nx=1250 --ny=402
+
+    % ls out1[78]-daq.txt |
+	to_pgmFile  to_pgm --min=0.060 --max=1.150 --nx=2500 --ny=802
+
+Display images in order:
+
+    % display out9-daq.pgm  out1?-daq.pgm &
+	<space> = next file, <backspace> = previous file
+
+    out16:  Best focus, lower resolution.
+	Image  1250x402  double FOV.
+	Can resolve Group 7.2, is 3.48 um line width.
+	The "shadow" artifact below horizontal dark areas eliminates some
+	of the Group 7 horizontal bars (resolution artifact).
+
+    out17:  Best focus, high resolution.
+	Image  2500x802  double FOV.
+	Can resolve Group 7.4, is 2.76 um line width.
+	More pixels improves the resolution.
+
+    Image looks very sharp with good resolution.
+    Looks like even more pixels could resolve Group 7.6 (2.10 um line width).
+
+    Images are shaded top to bottom, brighter on top, darker on bottom, by
+    over 2x intensity difference.
+
+    Image out17 and out18 are the same high resolution and look very much the
+    same, but out18 is shifted to the right slightly. Scan frequency is
+    doubled for out18, which would have a higher galvanometer phase delay.
+
+    Z-position (Z sectioning ability) seems poor.  We would expect the
+    out-of-focus images to be darker, but they are not.
+    Stage Z was stepped 20 um between images, which showed large focus
+    change.  Pinhole was ~2 mm.
+
+    Blurring (Z-focus) is mostly left-right, suggesting the out-of-focus
+    spot is not symmetrical.
+    Blurry images are not that great to look at.
+
+Generate single-column (reduced) data files:
+    Suffix -x2500.dat  is the SampleX_n (X number of samples) needed to
+    reconstruct an image.  The file name helps keep track, has no effect
+    on data in the file.
+
+    % reformat_col < out16-daq.txt  > out16-daq-x1250.dat
+    % reformat_col < out17-daq.txt  > out17-daq-x2500.dat
+    ...
+
+Analyze with R:
+    out17-log.txt
+	imageX_n      =   2500.000
+	imageY_n      =    802.000
+
+    df <- read.table( "data/out17-daq-x2500.dat", header=FALSE )
+	Big, sharp data.
+
+    names( df ) <- c( "Vsig_V" )
+
+    Intensity range:
+    max( df$Vsig_V )
+	[1] 1.01449
+    min( df$Vsig_V )
+	[1] 0.07616
+
+On image pick a good X scan:
+    +885 +280		thru group 5.1 middle horizontal bar
+
+    A = 280 * 2500 = 700000	left edge
+    B = A   + 2500 = 702500
+
+    rn <- c(700000:702500)
+    plot( rn, df$Vsig_V[rn], type='o' )
+	Can see trace across group 4.2 white bar and 5.1 black horizontal bar.
+	No sign of PD saturation.
+
+    rn <- c(700300:701000)
+    plot( rn, df$Vsig_V[rn], type='o' )
+    title( "Scan line at Y=280 pixel, group 4.2 and 5.1" )
+ >  dev.copy2pdf( file="out17-line_group42.pdf" )
+	See dark valleys of:  (left to right)
+	The numeral '2', Group 4.2 white horizontal bar, three dark
+	vertical bars, dark square, Group 5.1 three dark vertical bars,
+	middle dark horizontal bar, numeral '1'.
+
+----------------------------------------
+Extract a vertical line of image:
+    +478 +664		Center of Group 4.6 middle horizontal bar.
+    +450 +684		Left edge Group 4.6 bottom horizontal bar.
+
+    Want vertical range:  230 to 720,  delta= 490
+
+    From:  fiber_scanner/camera/src/pgm_swatch.cpp
+
+    % pgm_swatch --help
+	Extract a swatch of pixels in table format.
+    usage:  pgm_swatch [options..]  [FILE.pgm]
+	FILE.pgm            input file, '-' or default is stdin
+      required:
+	--geo=WxH+X+Y       region to extract
+      options:
+	--help              show this usage
+	-v, --verbose       verbose output
+      (options with GNU= only)
+	Array indexes (x,y) with (0,0) at upper left, +X (column) to right,
+	and +Y (row) down.
+
+    % pgm_swatch --geo=5x490+476+230  < data/out17-daq.pgm | less
+	  Jy  476 477 478 479 480	heading is X index
+	 230  169 168 169 169 169
+	 231  168 169 168 168 167
+	...
+
+	Easily see the dark horizontal bars and the underlining shadow.
+
+    % pgm_swatch --geo=30x490+435+230  < data/out17-daq.pgm | less
+	See halo of darkness around left edge of horizontal bars.
+	The "shadow" below bars exists only below the bar.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    More pixels gives better resolution.
+    A 2 Mega-pixel scan looks pretty good, but even more would probably be
+    better.
+
+    Did not see expected dimming with Z-sectioning (out-of-focus).
+
+    Big files:  out18-daq.dat  is 100 Mbyte.
+    Data size management is needed.
+
+    Possibly the "shadow" effect below each horizontal dark area is an
+    off-axis corner reflection on the thickness of chrome and the glass plate.
+
+Next:
+
+    Correct for sinusoidal scan.
+
+    Measure galvo phase delay.
+
+    Better pinhole alignment.
+
+    Measure Z-sectioning.
+

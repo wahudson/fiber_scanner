@@ -1,0 +1,33 @@
+2024-07-05 16:27:40
+# Sample:  UASF target
+# Stage:  Z= 11.90 mm, Y= 0.695 inch, X=12.20 mm
+# Laser:  Iset = 30 mA
+# PD_Gain:  40 db
+# Pinhole:  2 mm
+# Operator:  Bill
+# Note:  
+SampleX_n     =       2500
+SampleY_n     =        800
+OutAmpX_V     =      1.000
+OutAmpY_V     =      1.000
+sampRate      =   1.2500e+05
+dt_s          =   8.0000e-06
+freqX_Hz      =     50.000
+wX            =   3.1416e+02
+frameSamp_n   =    2000000
+periodX_s     =   3.1250e+08
+periodY_s     =   1.0000e+08
+dX0_V         =   2.5133e-03
+dY_V          =  -1.0000e-06
+trans_s       =   2.0000e-02
+trans_n       =       2500
+frameX_n      =       2500
+frameY_n      =    2000000
+rawLen_n      =    2005000
+sigMax_V      =      1.012
+sigMin_V      =      0.076
+daq_file      = out18-daq.dat
+imageX_n      =   2500.000
+imageY_n      =    802.000
+imageXu_n     =   1250.000
+fig_file      = out18-fig.jpg

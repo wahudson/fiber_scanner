@@ -34,4 +34,7 @@ ex2023_12_14_daq/	DAQ Input Mode  dac_mode.m
 ex2024_01_12_galvo/	Galvo Scanner Raster Scan, first run
 ex2024_02_19_galvo/	Galvo Scanner, Large numeral '3'
 ex2024_02_22_galvo/	Galvo Scanner, Ronchi ruling, X scan ~1300 um/V
+ex2024_06_20_imshow/	raster_gal.m, imshow() problems
+ex2024_07_02_galvo/	scan line plot, matlab exportgraphics() distortion
+ex2024_07_05_galvo/	out16 best focus, Z sweep, high res, sampRate
 
