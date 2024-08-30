@@ -1,4 +1,4 @@
-%% 2024-07-12  William A. Hudson
+%% 2024-08-29  William A. Hudson
 %
 % Bootstrap Matlab into a new experiment directory.
 %    Make new directory  ../exYYYY_MM_DD_name
@@ -16,7 +16,7 @@
 %% Automation
 
     date = datetime( 'now' );
-    date.Format = 'yyyy-MM-dd;
+    date.Format = 'yyyy_MM_dd;
     datestr = sprintf( "%s", date );
 
     expDir = strcat( "../ex" , datestr , "_" , ExpName , "/" );

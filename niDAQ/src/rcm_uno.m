@@ -39,6 +39,7 @@
 	SampleX_n  = 2560;	% high-res
 	SampleY_n  = 800;
     end
+	% for a square linearized FOV, set (SampleX_n <= 3.2 * SampleY_n)
 
     OutAmpX_V = 1.00;		% output amplitude, cosine wave voltage peak
     OutAmpY_V = 1.00;		% output amplitude, ramp voltage peak
@@ -46,7 +47,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-20";	% base script from Git
+    Version = "rcm_uno.m  2024-08-29";	% base script from Git
 
 %% Update save counter
 
@@ -395,6 +396,7 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     % inVec  =  input  data column vector, cycle Nxi
     % Nxi    =  number of samples in one cycle of Xi (i.e. 2*FOV)
     % Nxb    =  number of output bins across X FOV, Nxb << Nxi/2
+    %     Require at least (Nxi >= 3.2 * Nxb)
 
     Nxi2 = int32( Nxi / 2 );			% round toward zero??
     bx2  = double( 1.0 ) / double( Nxb );	% half width of a bin
