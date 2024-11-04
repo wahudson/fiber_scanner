@@ -47,7 +47,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-08-29";	% base script from Git
+    Version = "rcm_uno.m  2024-11-03";	% base script from Git
 
 %% Update save counter
 
@@ -94,8 +94,8 @@
     fprintf( '%s\n', Comments );	% for each element of vector
     fprintf( 'Version:      = %s\n',     Version       );
 
-    fovX_um  = OutAmpX_V * Cal5x_um_per_V * (Objective_mag / 5);
-    fovY_um  = OutAmpY_V * Cal5x_um_per_V * (Objective_mag / 5);
+    fovX_um  = OutAmpX_V * Cal5x_um_per_V * (5 / Objective_mag);
+    fovY_um  = OutAmpY_V * Cal5x_um_per_V * (5 / Objective_mag);
 
     freqX_Hz = 1 / (SampleX_n * dt_s);	% X frequency, cosine wave
 
@@ -404,12 +404,14 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
     inVec_n = length( inVec );
     outN_n  = int32( (inVec_n * (2 * Nxb)) / Nxi );  % estimate output length
 
-    fprintf( '   scanbin()\n' );
-    fprintf( 'Nxi           = %10d\n',   Nxi           );
-    fprintf( 'Nxb           = %10d\n',   Nxb           );
-    fprintf( 'Nxi2          = %10d\n',   Nxi2          );
-    fprintf( 'bx2           = %10.6f\n', bx2           );
-    fprintf( 'outN_n        = %10d\n',   outN_n        );
+    if ( 0 )	% debug output
+	fprintf( '   scanbin()\n' );
+	fprintf( 'Nxi           = %10d\n',   Nxi           );
+	fprintf( 'Nxb           = %10d\n',   Nxb           );
+	fprintf( 'Nxi2          = %10d\n',   Nxi2          );
+	fprintf( 'bx2           = %10.6f\n', bx2           );
+	fprintf( 'outN_n        = %10d\n',   outN_n        );
+    end
 
     %% Compute Xmap[] array
 
@@ -481,7 +483,7 @@ function [ outVec ] = scanbin( inVec, Nxi, Nxb )  % {
 
     end  % }
 
-    whos	% list all variables:  name, size, type
+    % whos	% list all variables:  name, size, type
 
 end  % } function
 
