@@ -1,0 +1,143 @@
+#!/usr/bin/Rscript --vanilla
+# 2024-11-08  William A. Hudson
+
+# Compute Mean and SD for a file data vector.
+
+# inFile:
+#     Single-column numeric data - Photodetector signal voltage.
+# output:
+#     sigMax_V  sigMin_V sigRange_V sigMean_V sigSD_V  File
+#
+#---------------------------------------------------------------------------
+
+show_usage <- function()
+{
+    cat(
+	"Signal stats Mean, SD for single-column numeric data.",
+	"usage:  sig_stats  [options]  inFile ..",
+	"    inFile = input data file (plain or .gz), or literal 'stdin'",
+	" options:",
+	"   --Nlimit            max number of input lines (efficiency)",
+	"   --table             output in table format",
+	"   --cont              continue, no heading for table",
+	sep="\n"
+    );
+}
+
+# Option processing
+    ok <- TRUE
+
+    op_verbose      <- TRUE
+    op_TESTMODE     <- FALSE
+    op_table        <- FALSE
+    op_Nlimit       <- 2100000
+
+    argv <- commandArgs( trailingOnly=TRUE )
+
+    for ( ag in argv )
+    {
+	if ( ! grepl( "^-", ag ) ) { break }	# not an option
+
+	if ( "-" %in% ag ) { break }		# single "-" is an arg value
+
+	argv <- argv[-1]		# pop off the option
+
+	av <- sub( "^.+?=", "",  ag )	# value   part
+	ag <- sub( "=.+$",  "=", ag )	# --opt=  part, or the original
+
+	if      ( "-v"              %in% ag ) { op_verbose      <- TRUE }
+	else if ( "--Nlimit="       %in% ag ) { op_Nlimit       <- av   }
+	else if ( "--cont"          %in% ag ) { op_cont         <- TRUE }
+	else if ( "--table"         %in% ag ) { op_table        <- TRUE }
+	else if ( "--"              %in% ag ) { break }     # end of options
+	else if ( "--help"          %in% ag ) { show_usage(); quit() }
+	else if ( "--TESTMODE"      %in% ag ) { op_TESTMODE     <- TRUE }
+	else {
+	    stop( "unknown option:  ", ag )
+	}
+    }
+
+    Nlimit     <- as.numeric( op_Nlimit  )
+
+    if ( op_Nlimit <= 0 ) {
+	warning( "Error:  require --Nlimit=N" )
+	ok <- FALSE
+    }
+
+    if ( op_TESTMODE ) {
+	cat( sep='', "op_verbose     =", op_verbose,     "=\n" )
+	cat( sep='', "op_table       =", op_table,       "=\n" )
+	cat( sep='', "Nlimit         =", Nlimit,         "=\n" )
+	print( argv )
+	quit( status=0 )
+    }
+
+# Check input files
+    if ( argv[1] != "stdin" ) {
+	for ( inFile in argv )
+	{
+	    if ( file.access( inFile, mode=4 ) ) {
+		warning( "Error:  file not found: ", inFile )
+		ok <- FALSE
+	    }
+	}
+
+	if ( ! ok ) { quit( status=1 ) }
+    }
+
+# Output heading for table
+    if ( op_table ) {
+	cat( " sigMax_V  sigMin_V sigRange_V sigMean_V sigSD_V  File\n" )
+    }
+
+# Compute results for each file
+
+    for ( inFile in argv )
+    {
+    # Read in data vector
+
+	if ( grepl( "\\.gz$", inFile ) ) {
+	    inCon <- gzfile( inFile, "r" )
+	    # cat( "gzip\n" )
+	}
+	else {
+	    inCon <- file( inFile, "r" )
+	    # cat( "file\n" )
+	}
+
+	dv <- scan( file=inCon, n=Nlimit, quiet=TRUE )
+
+	close( inCon )
+
+	if ( length( dv ) >= Nlimit ) {
+	    warning( "Error:  hit Nlimit=", Nlimit )
+	}
+
+	sigMax_V   <- max( dv )
+	sigMin_V   <- min( dv )
+	sigRange_V <- sigMax_V - sigMin_V
+	sigMean_V  <- mean( dv )
+	sigSD_V    <- sd( dv )
+
+    # Output results
+	if ( ! op_table ) {
+	    cat( sep='',  "inFile     = ", inFile, "\n" )
+	    cat( sprintf( "sigMax_V   = %8.5f\n", sigMax_V   ) );
+	    cat( sprintf( "sigMin_V   = %8.5f\n", sigMin_V   ) );
+	    cat( sprintf( "sigRange_V = %8.5f\n", sigRange_V ) );
+	    cat( sprintf( "sigMean_V  = %8.5f\n", sigMean_V  ) );
+	    cat( sprintf( "sigSD_V    = %8.5f\n", sigSD_V    ) );
+	}
+	else {
+	    cat( sep='  ',
+		sprintf( "%8.5f", sigMax_V  ),
+		sprintf( "%8.5f", sigMin_V  ),
+		sprintf( "%8.5f", sigRange_V ),
+		sprintf( "%8.5f", sigMean_V  ),
+		sprintf( "%8.5f", sigSD_V    ),
+		inFile, "\n"
+	    )
+	}
+
+    } # for inFile
+
