@@ -1,0 +1,43 @@
+##Date:       = 2024-11-05 13:38:55
+# Sample:  Ground glass DG10-220
+# Stage:  Z= 16.30 mm, Y= 0.00 mm, X=0.00 mm
+# PD_Gain:  20 db
+# Pinhole:  300 um
+# Laser:  Iset = 30 mA
+# WavePlate:  170 deg
+# Operator:  Bill
+# Note:  
+Version:      = rcm_uno.m  2024-11-03
+Objective_mag =          5
+SampleX_n     =       2560
+SampleY_n     =        800
+OutAmpX_V     =      2.000
+OutAmpY_V     =      2.000
+Cal5x_um_per_V=   1373.000
+fovX_um       =   2746.000
+fovY_um       =   2746.000
+sampRate      =   1.2500e+05
+dt_s          =   8.0000e-06
+freqX_Hz      =     48.828
+periodX_s     =   2.0480e-02
+wX            =   3.0680e+02
+frameSamp_n   =    2048000
+frameSamp_s   =     16.384
+dX0_V         =   4.9087e-03
+dY0_V         =  -5.0000e-03
+dY_V          =  -1.9531e-06
+trans_s       =   2.0480e-02
+trans_n       =       2560
+frameLen_n    =    2048000
+rawLen_n      =    2053120
+imageX_n      =       2560
+imageY_n      =        802
+imageXu_n     =       1280
+sigMax_V      =      0.012
+sigMin_V      =      0.005
+LinX_n        =        800
+LinY_n        =        800
+lin2_file     = xgls13-lin-x1600.dat
+fig_file      = xgls13-fig.jpg
+daq1_file     = xgls13-daq-x2560.dat
+image_file    = xgls13-image.pgm

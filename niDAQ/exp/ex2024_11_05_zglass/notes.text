@@ -1,0 +1,401 @@
+2024-11-05  William A. Hudson
+
+	    Galvo Scanner RCM Z sectioning -- ex2024_11_05_zglass/
+	    ------------------------------
+
+Images of ground glass, sweep Z position, assess optical sectioning.
+
+Measurements taken by Bill on 2024-11-05.
+
+See:  red notebook  11-05-2024
+USB stick:  csu2024_11_05/  ex2024_11_05_Bill/
+Lab computer:  /r/Projects/rcm/exp/ex2024_11_05_Bill/
+Code:  src/rcm_uno.m  (2024-11-03, Git 280f1c941b)
+Follows from:  ex2024_11_01_galvo/  (roughly)
+
+Files:  (logical ordering)
+------
+ v  notes.text			this file
+ v  sig.stats			5x  objective Mean, SD
+ v  sig_5x.stats		40x objective Mean, SD
+ v  stats_plot.pdf		40x ground glass plot Mean,SD vs Z
+
+ v  xgls05-log.txt		5x  log file
+
+ v  xgls10-log.txt		40x  log files, rcm_uno.m
+    ...
+ v  xgls23-log.txt
+
+		Best focus data set
+    data ->
+	xgls18-daq-x2560.dat.gz	raw DAQ data signal (Volts)
+	xgls18-image.pgm	gray-scale image
+	xgls18-lin-x1600.dat	linearized signal, bi-directional (Volts)
+	xgls18-log.txt		log file
+
+ v = in Git, large data files excluded
+
+----------------------------------------------------------------------------
+## Setup
+----------------------------------------------------------------------------
+
+    Modified Galvo Scanner RCM built by Jesse Wilson on 1-10-2024.
+
+    Pinhole:  300 um fixed.
+    Objective:  40x  NA= 0.65  MEIJI 14876 S.Plan infinity/0
+    Sample:  ThorLabs DG10-220  Ground Glass, 220 grit
+
+    Find initial focus on surface of ground glass.  Use oscilloscope to find
+    maximum mean signal and maximum excursion peaks.
+    Explore Z-range to significant signal decrease.
+
+    Micrometer:  (my understanding so far 2024-11-17)
+    The micrometer has 10 um (0.01 mm) divisions, 50 um for one full rotation.
+    Counter-Clockwise (CCW) rotation increases the micrometer reading and
+    moves the stage away from the objective.
+
+    Collect data with micrometer turning only clockwise (CW), where the screw
+    threads push the stage against the spring, to avoid backlash.
+    This data steps Z by 20 um (2 divisions on micrometer).
+
+    Run  rcm_uno.m  at each Z-position to collect an image.
+
+Data Collection:  xgls10, .. xgls23
+
+    Actual Z-position was recorded in notebook and in the log file comments
+    as a cross check.  File xgls13 was wrong (Z= 16.35), should be Z= 16.30 mm,
+    and is corrected here.
+
+    This is my initial attempt to measure the ground glass response, and did
+    not really know what to expect.  I was pleasantly surprised to see
+    very significant signal drop-off at +-100 um from best focus
+    (100 um is 0.1 mm, 10 micrometer divisions).
+
+    Note moving the micrometer by 1 division (0.01 mm, 10 um) is quite
+    tricky to smoothly move to the new mark and avoid backlash.
+
+----------------------------------------------------------------------------
+## Analysis
+----------------------------------------------------------------------------
+
+Develop R-script:  src/sig_stats
+    The essential operations follow, and are refined in the script.
+
+    # read plain file into data vector
+    dv <- scan( file="xgls18-daq-x2560.dat", n=20000000 )
+	Read 2053121 items
+
+    # read compressed file
+    zf <- gzfile( "xgls18-daq-x2560.dat.gz", "r" )
+    dv <- scan( file=zf, n=20000000 )
+
+    # compute attributes
+    sigMax_V   <- max( dv )
+    sigMin_V   <- min( dv )
+    sigRange_V <- sigMax_V - sigMin_V
+    sigMean_V  <- mean( dv )
+    sigSD_V    <- sd( dv )	# standard deviation
+
+    # output list unformatted
+    cat( "sigMax_V   = ", sigMax_V,   "\n" )
+    cat( "sigMin_V   = ", sigMin_V,   "\n" )
+    cat( "sigRange_V = ", sigRange_V, "\n" )
+    cat( "sigMean_V  = ", sigMean_V,  "\n" )
+    cat( "sigSD_V    = ", sigSD_V,    "\n" )
+
+    # output list formatted
+    cat( sprintf( "sigMax_V   = %8.5f", sigMax_V  ), "\n" );
+    cat( sprintf( "sigMean_V  = %8.5f", sigMean_V ), "\n" );
+    ...
+
+    # output table unformatted
+    cat( sigMax_V, sigMin_V, sigRange_V, sigMean_V, sigSD_V, "\n" )
+
+Compute attributes of each raw data vector:
+
+    % sig_stats --table xgls[12]?-daq-x2560.dat.gz > sig.stats
+    Edit sig.stats to add Z_mm column for Z-position.
+
+    sig.stats:  (data in sequence taken)
+
+ sigMax_V  sigMin_V sigRange_V sigMean_V sigSD_V  Z_mm  File
+ 0.22008   0.00527   0.21481   0.02208   0.01888  16.40 xgls10-daq-x2560.dat.gz
+ 0.12583   0.00527   0.12056   0.01771   0.01055  16.37 xgls11-daq-x2560.dat.gz
+ 0.03257   0.00527   0.02730   0.01119   0.00407  16.35 xgls12-daq-x2560.dat.gz
+ 0.01168   0.00527   0.00641   0.00730   0.00098  16.30 xgls13-daq-x2560.dat.gz
+ 0.00708   0.00527   0.00181   0.00611   0.00022  16.60 xgls14-daq-x2560.dat.gz
+ 0.01053   0.00527   0.00526   0.00679   0.00065  16.50 xgls15-daq-x2560.dat.gz
+ 0.02468   0.00543   0.01925   0.00809   0.00182  16.45 xgls16-daq-x2560.dat.gz
+ 0.04951   0.00527   0.04424   0.01152   0.00573  16.42 xgls17-daq-x2560.dat.gz
+ 0.27386   0.00527   0.26859   0.02351   0.02072  16.40 xgls18-daq-x2560.dat.gz
+ 0.17896   0.00527   0.17369   0.02297   0.01692  16.38 xgls19-daq-x2560.dat.gz
+ 0.05330   0.00527   0.04803   0.01327   0.00595  16.36 xgls20-daq-x2560.dat.gz
+ 0.02090   0.00527   0.01563   0.00952   0.00266  16.34 xgls21-daq-x2560.dat.gz
+ 0.01399   0.00527   0.00872   0.00804   0.00151  16.32 xgls22-daq-x2560.dat.gz
+ 0.01168   0.00527   0.00641   0.00733   0.00100  16.30 xgls23-daq-x2560.dat.gz
+
+Plot Z-position results:  (using R)
+
+    df <- read.table( "sig.stats", header=TRUE )
+
+    # Just view points
+    plot( df$Z_mm, df$sigMean_V, ylim=c(0, 0.025) )
+    points( df$Z_mm, df$sigSD_V, col='red' )
+
+    # Add connecting lines - see order data was collected.
+    plot( df$Z_mm, df$sigMean_V, ylim=c(0, 0.025), type='o' )
+    points( df$Z_mm, df$sigSD_V, col='red', type='o' )
+
+    The primary curve with monotonic Z-position change is xgls14 (Z=16.60)
+    to xgls23 (Z=16.30).
+    The earlier three points xgls11 (Z=16.37) thru xgls13 (Z=16.30) all fit
+    neatly on the primary curve.
+
+    The two points at Z_mm=16.40 (near best focus) are quite different,
+    suggesting poor repeatability.
+    This is likely due to backlash in the micrometer stage, where the first
+    point xgls10 was taken after micrometer Z increasing, and all the others
+    after micrometer Z decreasing.
+
+Sort the table by Z_mm, so connecting lines show the curve better.
+
+    % sort -n -k6,6 < sig.stats > sig_sort.stats
+
+    df <- read.table( "sig_sort.stats", header=TRUE )
+
+    plot( df$Z_mm, df$sigMean_V, ylim=c(0, 0.025), type='o' )
+    points( df$Z_mm, df$sigSD_V, col='red', type='o' )
+    abline( h=0.0, col='green' )
+
+Make a pretty plot:
+
+    plot( df$Z_mm, df$sigMean_V, ylim=c(0, 0.025), type='o',
+	xlab='Z (mm)', ylab='photodetector (V)' )
+    points( df$Z_mm, df$sigSD_V, col='red', type='o' )
+    abline( h=0.0, col='green' )
+    abline( v=16.39, col='green' )
+    text( 16.50, 0.009, pos=4, "Mean (V)", col='black' )
+    text( 16.50, 0.002, pos=4, "SD (V)", col='red' )
+
+    title( main='Ground Glass Z-position, 300 um Pinhole' )
+    title( sub='Galvo Scanner, Initial Results, 2024-11-05' )
+
+    text( 16.46, 0.024, pos=4, "40x Objective, NA = 0.65" )
+    text( 16.46, 0.023, pos=4, "20 db Photodetector gain" )
+    text( 16.46, 0.022, pos=4, "ThorLabs DG10-220 ground glass" )
+    text( 16.46, 0.021, pos=4, "N = 2053121 points, whole image" )
+    text( 16.46, 0.019, pos=4, "Duplicate point shows backlash" )
+    text( 16.46, 0.017, pos=4, "<---  -Z is toward Objective" )
+
+    abline( h=0.00527, col='black' )	# sigMin_V
+    text( 16.46, 0.0045, pos=4, "sigMin_V= 0.00527" )
+
+ >  dev.copy2pdf( file="stats_plot.pdf" )
+
+	Peak looks centered about Z= 16.39
+	Pretty good rejection at +-30 um,  0.020 / 0.006  = 3.3
+	Better                at +-50 um,  0.020 / 0.0026 = 7.7
+
+    This is the whole scan image, bi-directional with no linearization, and
+    so the mean is biased by more samples along edges (cosine).  This may
+    not have that much effect on the overall shape of the curves.
+
+Interpretation:
+
+    Both peaks look centered on about Z= 16.39, which has no data point.
+
+    The minimum pixel value has (sigMin_V = 0.00527) for virtually all
+    images.  This might be the dark level of the photodetector.
+    Add a horizontal line as reference for the mean.
+
+    Estimate the minimum peak value as:
+	Mean_peak = 0.025 V
+	SD_peak   = 0.022 V
+    The peak is rising quite sharply, so it is not clear how high the peak
+    might actually be.  Choosing something pretty conservative, about 0.0015
+    higher than the max points.
+
+    Compute the rejection ratio as the value (Mean or SD) at some DZ distance
+    from the best focus (Z= 16.39):
+	sigSD_rr   =   SD_peak / sigSD_V     at Z= +-DZ
+	sigMean_rr = Mean_peak / sigMean_V   at Z= +-DZ
+
+    DZ= 0.030 mm  sigSD_V= 0.00573  sigSD_rr= 0.022/0.00573 = 3.8
+    DZ= 0.050 mm  sigSD_V= 0.00266  sigSD_rr= 0.022/0.00266 = 8.3
+
+    DZ= 0.030 mm  sigMean_V= 0.01327  sigMean_rr= 0.025/0.01327 = 2.0
+    DZ= 0.050 mm  sigMean_V= 0.00952  sigMean_rr= 0.025/0.00952 = 2.6
+
+    The mean value away from best focus represents an average contribution
+    of out-of-focus light, but says nothing about the variance of that
+    contribution across the image.
+
+    The SD value away from best focus represents how much the signal
+    varies across the the image.  More variation will be more disturbance
+    of the desired in-focus image.  Less variation is like a constant added
+    background and would be less disturbing.
+
+    Here we measured a single-layer (the ground glass surface) representing
+    the out-of-focus layer to be rejected.  Multiple layers would be
+    contributing in a real sample, so we want pretty strong rejection as
+    we move away from focus.  How much is enough?  Maybe 10x reduction?
+
+    Significant reduction begins at +-30 um or +-50 um.  This seems a much
+    larger distance than we would want.
+    Likely a much smaller pinhole will help.
+
+----------------------------------------------------------------------------
+## Image Observations:
+----------------------------------------------------------------------------
+
+    All images are normalized such that pixel values are scaled 0 .. 255,
+    where Black is sigMin_V and White is sigMax_V.  Thus even one really
+    bright sample sets the White level, leaving the rest of the image
+    appearing dark.  It might be interesting to try other normalizations.
+    (Is done by rcm_uno.m)
+
+5x Objective:  xgls05
+	Objective_mag =          5
+	OutAmpX_V     =      1.000
+	OutAmpY_V     =      1.000
+	fovX_um       =   1373.000
+	fovY_um       =   1373.000
+
+    xgls05-image.pgm  Near best focus.  FOV= 1.37 mm
+	We see the general nature of a ground glass image.
+	There are scattered bright reflecting points in an otherwise mostly
+	dark image.  There appears to be larger valleys and holes over the
+	larger area.
+
+	The focal plane appears curved, center mostly in-focus, while edges
+	are out-of-focus and show a radial blurring.
+
+40x Objective:  xgls10 .. xgls23
+
+    Logs have wrong Objective_mag (5x), corrected FOV calculation:
+
+	fovX_um = OutAmpX_V * Cal5x_um_per_V * (5 / Objective_mag)
+	Objective_mag =         40
+	OutAmpX_V     =      2.000
+	OutAmpY_V     =      2.000
+	fovX_um       =    344.000
+	fovY_um       =    344.000
+	Cal5x_um_per_V=   1373.000
+
+	The scan drive voltage was increased to get a bigger FOV and perhaps
+	help finding focus.
+
+    FOV = 344 um, image is 4x magnification over the xgls05 (5x objective).
+
+    DZ_mm = Z_mm - 16.39 mm	delta from estimated best focus
+
+  Sweeping toward objective:  (decreasing Z)
+
+    DZ_mm  Z_mm   File              sigMean_V  sigSD_V
+    -----  -----  ----------------  ---------  -------
+
+    +0.21  16.60  xgls14-image.pgm   0.00611   0.00022
+	Image washed out, no dynamic range.
+	Lots of pixel noise.
+
+    +0.11  16.50  xgls15-image.pgm   0.00679   0.00065
+	Very out-of-focus.
+	Still see pixel noise.
+
+    +0.06  16.45  xgls16-image.pgm   0.00809   0.00182
+	Less out-of-focus.
+
+    +0.03  16.42  xgls17-image.pgm   0.01152   0.00573
+	Bright points are blurry circles (discs).
+	A bit like art photography with point lights out-of-focus.
+	Very different out-of-focus effects compared to the other side of focus.
+
+    +0.01  16.40  xgls18-image.pgm   0.02351   0.02072
+	Best focus image.
+	Focus FOV is not flat, focus is sharper in the upper left quadrant.
+	Vignetting toward the lower right corner and right side.
+	A few really bright reflecting points set the white level.
+	Clearly see the chipped glass faces of the grinding.
+	Looks like a deeper divot hole, out-of-focus, centered in the upper
+	half.
+
+    +0.00  16.39  No image, estimated SD (standard deviation) peak
+
+    -0.01  16.38  xgls19-image.pgm   0.02297   0.01692
+	Now the divot hole is in-focus, while its surrounding is out-of-focus.
+	Area in upper-right is now in-focus, while upper-left is out-of-focus.
+	This confirms a curved focal plane, assuming the ground glass is flat.
+	The previous very bright points are now muted, with new bright points
+	in the newly in-focus area.
+
+    -0.02  16.37  xgls11-image.pgm   0.01771   0.01055
+	Now divot hole and upper right is going out-of-focus.
+
+    -0.03  16.36  xgls20-image.pgm   0.01327   0.00595
+	Now everything is out-of-focus.
+
+    -0.05  16.34  xgls21-image.pgm   0.00952   0.00266
+	Even more out-of-focus.
+	Images appear brighter due to normalization and much lower dynamic
+	range, i.e. no more bright points.
+	Looking very artsy, impressionist.
+
+    -0.09  16.30  xgls23-image.pgm   0.00733   0.00100
+
+    All images all show vignetting (darker) toward the lower right corner.
+
+    Images not noted above:  (they did not add much insight)
+    +0.01  16.40  xgls10-image.pgm
+    -0.04  16.35  xgls12-image.pgm
+    -0.07  16.32  xgls22-image.pgm
+    -0.09  16.30  xgls13-image.pgm
+
+    This is a good first try.
+    We see pretty strong variation with Z near best focus.
+    I would like to see more symmetric and uniform steps of 0.01 mm.
+
+----------------------------------------------------------------------------
+## Conclusions
+----------------------------------------------------------------------------
+
+    The Z-sectioning capability looks promising.
+
+    The plot of whole scan Mean and Standard Deviation (SD) shows a nice
+    peak, which is the best focus Z position (although there was no image
+    taken there).
+
+    It seems SD might be a better measure (than Mean) of out-of-focus rejection.
+    Estimated rejection ratio:  (SD_peak / SD(Z))
+	3.8 at DZ= +-30 um
+	8.3 at DZ= +-50 um
+	(Large uncertainty, round to 1 significant digit.)
+
+    Here we measured a single-layer (the ground glass surface) representing
+    the out-of-focus layer to be rejected.  Multiple layers would be
+    contributing in a real sample, so we want pretty strong rejection as
+    we move away from focus.  How much is enough?  Maybe 10x reduction?
+
+    Images have vignetting in lower-right corner.  Optical alignment could
+    be made better.
+
+    FOV is not flat, not all in focus at once.
+
+    The out-of-focus image effects are quite different when focus is above or
+    below the ground glass surface.
+
+    When sweeping Z, best focus is at maximum SD.  We also see this on the
+    oscilloscope as large spikes from bright spots on the ground glass.
+
+Next:
+    Sweep by 10 um steps over the interesting range.
+
+    Validate micrometer Z direction and stage spring direction.
+
+    Measure Photodetector dark level and noise - take image with laser blocked.
+
+    Fix vignetting in lower-right corner.
+
+    Add Mean and SD to rcm_uno.m script.
+
+    Perhaps reduce bias in statistics by examining a sub-region of each image?
+

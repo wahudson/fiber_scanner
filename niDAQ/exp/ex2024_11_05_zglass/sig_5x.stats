@@ -1,0 +1,4 @@
+ sigMax_V  sigMin_V sigRange_V sigMean_V sigSD_V  Z_mm  File
+ 0.09294   0.00593   0.08701   0.01111   0.00447  16.40 xgls05-daq-x2560.dat.gz
+ 0.09771   0.00593   0.09178   0.01116   0.00424  16.20 xgls06-daq-x2560.dat.gz
+
