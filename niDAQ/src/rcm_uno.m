@@ -220,10 +220,15 @@
 	allScanData = [ inScanData, outScanData ];
 
 	% Range of chInSig, first column of inScanData
-	sigMax_V = max( allScanData(:,1) );
-	sigMin_V = min( allScanData(:,1) );
+	sigMax_V   = max( allScanData(:,1) );
+	sigMin_V   = min( allScanData(:,1) );
+	sigRange_V = sigMax_V - sigMin_V;
+	[sigSD_V, sigMean_V] = std( allScanData(:,1) );  % standard deviation
 	fprintf( 'sigMax_V      = %10.3f\n', sigMax_V      );
 	fprintf( 'sigMin_V      = %10.3f\n', sigMin_V      );
+	fprintf( 'sigRange_V    = %10.3f\n', sigRange_V    );
+	fprintf( 'sigMean_V     = %10.3f\n', sigMean_V     );
+	fprintf( 'sigSD_V       = %10.3f\n', sigSD_V       );
 
     %% Raster Image
 
