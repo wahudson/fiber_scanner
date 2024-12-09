@@ -47,7 +47,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-11-03";	% base script from Git
+    Version = "rcm_uno.m  2024-12-08";	% base script from Git
 
 %% Update save counter
 
@@ -230,19 +230,43 @@
 	fprintf( 'sigMean_V     = %10.3f\n', sigMean_V     );
 	fprintf( 'sigSD_V       = %10.3f\n', sigSD_V       );
 
-    %% Raster Image
+    %% Linearize data
+
+	LinX_n = SampleY_n;		% width of FOV, make X same as Y
+	LinY_n = SampleY_n;
+
+	linVec = scanbin( inScanData, SampleX_n, LinX_n );
+	    % Bidirectional scan, Nx = 2*LinX_n
+	    % Custom function, mean of samples falling in linear bins.
+
+    %% Single FOV Raster Image
+
+	tmpVec = linVec([1 : ((2*LinX_n) * LinY_n)]);
+	    % truncate for image only
+
+	rasterIm = transpose( reshape( tmpVec, (2*LinX_n), LinY_n ) );
+	    % Raw raster matrix, upright image, mirrored X.
+	    % Function reshape( .., Nrow, Ncol ) walks output array by column
+	    % leaving the image transposed.
+
+	rasterIu = rasterIm( :, [1:LinX_n] );
+	    % Single FOV scaning left to right.
+
+    %% Show Preview image
 
 	if ( PreView )
-	    % Quick and dirty view, not linearized.
+	    if ( 0 )
+		% Quick and dirty view, not linearized.
 
-	    rasterIb = inScanData( 1:rawLen_n );	% remove final zero
-	    rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
-		% Raw raster matrix, upright image, mirrored X.
-		% Function reshape( .., Nrow, Ncol ) walks output array by
-		% column leaving the image transposed.
+		rasterIb = inScanData( 1:rawLen_n );	% remove final zero
+		rasterIm = transpose( reshape( rasterIb, imageX_n, imageY_n ) );
+		    % Raw raster matrix, upright image, mirrored X.
+		    % Function reshape( .., Nrow, Ncol ) walks output array by
+		    % column leaving the image transposed.
 
-	    rasterIu = rasterIm( :, [1:imageXu_n] );
-		% Single FOV scaning left to right.
+		rasterIu = rasterIm( :, [1:imageXu_n] );
+		    % Single FOV scaning left to right.
+	    end
 
 	    fprintf( '    image_ii  = %10d\n', ii              );
 	    fig4 = figure(4);  clf;	% redraw same figure
@@ -257,23 +281,16 @@
 	    axis on;
 	    ylabel( "um" );
 	    xlabel( "um" );
+	else
+	    break;
 	end
 
     end  % }
 
-%% Linearize data
-
-    LinX_n = SampleY_n;		% width of FOV, make X same as Y
-    LinY_n = SampleY_n;
+%% Save linVec
 
     fprintf( 'LinX_n        = %10d\n',   LinX_n        );
     fprintf( 'LinY_n        = %10d\n',   LinY_n        );
-
-    linVec = scanbin( inScanData, SampleX_n, LinX_n );
-	% Bidirectional scan, Nx = 2*LinX_n
-	% Custom function, mean of samples falling in linear bins.
-
-%% Save linVec
 
     lin2_file = OfileBase + "-lin-x" + (2*LinX_n) + ".dat";
     file_id = fopen( lin2_file, 'w' );
@@ -284,19 +301,6 @@
     fclose( file_id );
 
     fprintf( 'lin2_file     = %s\n',     lin2_file     );
-
-%% Raster Image
-
-    tmpVec = linVec([1 : ((2*LinX_n) * LinY_n)]);
-	% truncate for image only
-
-    rasterIm = transpose( reshape( tmpVec, (2*LinX_n), LinY_n ) );
-	% Raw raster matrix, upright image, mirrored X.
-	% Function reshape( .., Nrow, Ncol ) walks output array by column
-	% leaving the image transposed.
-
-    rasterIu = rasterIm( :, [1:LinX_n] );
-	% Single FOV scaning left to right.
 
 %% Show primary image, autoscaled
 
