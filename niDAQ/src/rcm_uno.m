@@ -29,6 +29,7 @@
     ];
 
     PreView     = 1;		% 1= preview loop, 0= high-res data capture
+    HistEq      = 0;		% 1= preview histogram equalization, 0= not
 
     FilePrefix  = "out";	% output file name without number or suffixes
 
@@ -47,7 +48,7 @@
     Cal5x_um_per_V = 1373;	% calibration 5x objective um/V  of OutAmpY_V
 				% (JWW and WH 2024-08-06)
 
-    Version = "rcm_uno.m  2024-12-08";	% base script from Git
+    Version = "rcm_uno.m  2024-12-09";	% base script from Git
 
 %% Update save counter
 
@@ -271,10 +272,14 @@
 	    fprintf( '    image_ii  = %10d\n', ii              );
 	    fig4 = figure(4);  clf;	% redraw same figure
 
-	    % imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V] );
-
-	    imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V], ...
-	        XData=[0, fovX_um], YData=[0, fovY_um] );
+	    if ( HistEq == 1 )
+		rasterHistEq = histeq( rasterIu );
+		imshow( rasterHistEq, ...
+		    XData=[0, fovX_um], YData=[0, fovY_um] );
+	    else
+		imshow( rasterIu, DisplayRange=[sigMin_V, sigMax_V], ...
+		    XData=[0, fovX_um], YData=[0, fovY_um] );
+	    end
 	    % Specifying YData re-scales image loosing pixel accuracy.
 
 	    subtitle( sprintf( "FOV = %3.0f um", fovY_um ) );
