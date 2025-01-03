@@ -1,0 +1,24 @@
+2024-12-26  William A. Hudson
+
+		NewStep NSC200 Motorized Micrometer
+		-----------------------------------
+
+MKS-Newport NSC200 micrometer motion controller system.
+    NSA12 Linear Actuator
+
+Developing a command-line interface.
+
+See also:  fiber_scanner/doc/newstep_micrometer.text
+
+Files:  (2024-12-26)
+------
+README		    this file
+
+doc/		    Documentation
+    architecture.text		system architecture
+    newstep_operation.text	NewStep Micrometer Operation
+
+bin/		    Commands, script source code
+exp/		    Experiments and Results
+src/		    Source code
+

@@ -1,0 +1,58 @@
+2024-12-20
+		NewStep  Micrometer Motion Control System
+		-----------------------------------------
+
+See also:  newstep/doc/
+
+Newport Corporation
+https://www.newport.com.cn/
+
+/home/var/tmp/NSC200-User-Manual-2005.pdf
+	Copy of old manual from Jesse Wilson.
+	Old controller, organic flowing body and knob (NSC200).
+	New controller is a square box, no knob (CONEX-PP).
+
+----------------------------------------------------------------------------
+## Reference
+----------------------------------------------------------------------------
+
+NewStep Communication Converter, RS-485 to RS-232, 6-wire Cable, NewStep
+    Model: NSC-485-232-I  (obsolete, not for sale)
+    https://www.newport.com.cn/p/NSC-485-232-I
+    Has simplified schematic.  33 ohm series resistors and filter capacitors
+    on signal lines.  Does not show RS232 connections.
+    Looks like IIC on NewStep side.
+
+NSC200 Motion Control System User's Manual
+    https://www.newport.com.cn/medias/sys_master/images/images/he3/h40/8797222567966/NSC200-User-Manual.pdf
+
+Motorized Actuator, NSA12, CONEX-PP Integrated Controller
+    User manuals, CAD drawings.  API commands.  Gui manual.
+    $1,545 Newport
+    https://www.newport.com.cn/p/CONEX-NSA12
+
+Motorized Linear Actuator, 11 mm Travel, Micro Step Drive
+    We have this one.
+    https://www.newport.com.cn/p/NSA12
+
+    > DS-032402 NSA12 Application Note (1.1 MB, PDF) 
+	Has details of NSA12 stepper motor operation and alternate controllers.
+	Pin assignments, stepper motor specs.
+	Not intended for continuous current, will overheat.
+	Negative travel limit with plunger fully retracted.
+	Has only the one limit, exceeding positive travel limit will damage it.
+	No way to recover jammed plunger!
+	Bipolar winding, 5 V, 340 mA/phase, 14.7 ohm/phase, 8.5 mH/phase.
+	Full step travel:  0.00025 inch (0.00635 mm)
+	Suggested mini-step:  64 per step.
+
+----------------------------------------------------------------------------
+## Manual notes:  NSC200-User-Manual-2005.pdf
+----------------------------------------------------------------------------
+
+p.47  ch5.2  RS232 Communications Setup
+
+    Serial port:
+	19200 bps, 8 data bits, no parity, 1 stop bit, xON / xOFF flow control
+	Flow control via CTS/RTS signals.
+

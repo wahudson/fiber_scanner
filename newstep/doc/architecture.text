@@ -1,0 +1,67 @@
+2024-12-23  William A. Hudson
+
+		NewStep Micrometer Controller
+		-----------------------------
+
+A command set to operate the MKS-Newport NSC200 micrometer motion controller.
+
+This controller is circa 2005.
+It has an RS-232 interface, which was common on old personal computers.
+API is a simple character based command and query system.
+
+The NewStep software (on CD) is for Windows 98, 2000, NT or XP - essentially
+unusable.
+
+This development is on Linux.
+
+Initial objectives:
+   IS command line user interface.
+   NOT a GUI.
+   IS one NSA12 Motor and one NSC200 Controller, NOT multiple.
+   IS somewhat hardwired, NOT fully generic.
+   NOT every capability is implemented.
+   IS good enough to get started.
+
+----------------------------------------------------------------------------
+## Initial Ideas
+----------------------------------------------------------------------------
+
+Start with stand-alone commands, then move toward a cockpit command.
+Philosophy is modular and re-usable.  Hence Linux.
+
+Possible initial commands:
+
+    nscinit	Initialize the RS-232 serial port.  stty
+
+    nscc	Issue literal command/query.  Check error status.
+
+    nscmove	Move controller position.
+
+    nscconf	Configuration
+
+    nscstatus	Status
+
+
+Position Values:
+
+    Position is in full-steps (fStep) or micro-steps (uStep).
+    Need conversions to/from micrometers (um).
+    Full step size depends on the micrometer motor.
+
+    64 uStep per fStep
+
+RS-232 port identification:
+    How does each command know which serial port to use?
+
+ >  A) Environment variable.  e.g.  NSC200_PORT
+	+ Allows multiple ports in same shell.
+	- Environment variable must get set.
+
+    B) Symlink indirection.  e.g.  ~/NSC200.tty -> /dev/ttyUSB0
+	+ No env variable.
+	- Only one port per user.
+
+    C) Hardwired in code.
+	- We can do better.
+
+

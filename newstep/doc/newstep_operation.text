@@ -1,0 +1,220 @@
+2024-12-25  William A. Hudson
+
+		NewStep Micrometer Operation
+		----------------------------
+
+See also:  fiber_scanner/doc/newstep_micrometer.text
+
+----------------------------------------------------------------------------
+## Hardware:
+----------------------------------------------------------------------------
+
+NSA12 Linear Actuator:  (Moterized Micrometer)
+    https://www.newport.com/p/NSA12
+
+	Essential spec sheet:  (NewStep Manual)
+    Travel range:		11 mm
+    Motor:			2-phase stepper motor, open loop
+    Drive mechanism:		Direct drive, non-rotating lead screw
+    Drive screw pitch:		0.3048 mm/revolution
+ x  Full-step:			6.4   um (48 Full-step/revolution) - spec
+ >  Full-step:			6.350 um (from screw pitch)
+ x  Micro-step:			0.10  um (64 Micro-step/Full-step) - spec
+    Micro-step:			0.09922 um (from screw pitch)
+    Minimum incremental motion:		0.30 um (3 micro-steps)
+    Unidirectional repeatability:	2.2  um
+    Bidirectional repeatability:	< 10 um
+    Load capacity:			28 N (2.9 kg-force or 6.3 lb-force)
+    Max speed, no load:			1.0 mm/sec
+
+    Note the spec for Full-step and Drive screw pitch are not consistent.
+    The Full-step/revolution and Micro-step/Full-step are exact integers
+    by design.  Why did they round off the step size??
+    Position is controlled by Full/Micro step count, which can be large
+    integers.
+
+    The Drive screw pitch has more precision, so use that.
+    ==> Full-step:  6.350 um
+    About a 0.8% error, is within a 1% expected accuracy.
+
+    Drive screw pitch:  0.3048 mm/revolution = 0.01200 inch/revolution
+    	==> 83.333 threads/inch
+
+    Seems likely to want 0.10 um/Micro-step for ease of calculation, and
+    accept the corresponding error in screw pitch as close enough.
+
+    The NSA12 datasheet has correct numbers.
+
+NSC-485-232-I:  RS485-to-RS232 Converter
+    Input Connector (RS-232 side):  DB-9F Female, thumb screws
+    Output connector (RS485 side):  6-position, 4-wire RJ11 jack (5 wire?)
+    Power source:  RS232 handshake lines
+
+    Schematic:  https://www.newport.com.cn/p/NSC-485-232-I
+    RJ11 Jack:
+	pin 2  data A(-)  RS-485
+	pin 5  data B(+)
+	pin 3  GND
+	pin 4  NC
+	pin 1  SDA (I2C) Used to communicate with newport switchbox.
+	pin 6  SCL (I2C)
+	Each signal line has a 33 ohm series resistor.
+	RJ11 I2C pins have 1000 pF to ground, data A/B has 0.010 uF to ground.
+
+    Normally converter is plugged directly into the computer com port, or
+    via a straight-thru extension cable.
+    Since computer is DTE, this suggests the converter is DCE (modem) wired.
+
+    Other doc describes RTS/CTS flow control on RS-232 side.  This suggests
+    that an active circuit must be in the Converter.  Looks like I2C might
+    be used for flow control and RS-485 for data?
+
+    Power source is RS-232 handshake lines, probably Data Terminal Ready (DTR).
+    Thus we may need to provide power on DTR.
+
+    Looks like a custom Converter, not generic.
+    RS485 is a signaling standard, not a protocol.
+
+----------------------------------------------------------------------------
+## 5.2 RS-232 Communications:
+----------------------------------------------------------------------------
+
+    COM Port Setup:  19200 bps, 8 data bits, no parity, 1 stop bit,
+	xON / xOFF flow control.
+
+    RTS/CTS flow control.  RTS is used as Ready to Receive (RTR).
+
+    e.g.
+    % stty -F /dev/...  19200 cs8 -parenb -cstopb ixon crtscts
+
+----------------------------------------------------------------------------
+## 6. NewStep ASCII Command Set:
+----------------------------------------------------------------------------
+
+Ascii Commands:
+    Prefix is address number {0..255}.
+    No number implies 0.
+    Unrecognized address gives no error and no controller will respond.
+
+6.2 Command Set Summary (p.60)
+
+    pg = PDF page number
+    Command type:
+	    .  = as Command
+	     ? = as Query
+	     - = not applicable
+
+    pg  Cmd .?  Command Description
+    ---  -- --  ----------------------------
+    86.  SL .?  Negative Software Limit - Set Left Travel Limit
+    89.  SR .?  Positive Software Limit - Set Right Travel Limit
+
+    62.  AC .?  Acceleration - Set Acceleration
+    63.  AU .?  Maximum Acceleration - Set Maximum Acceleration
+
+    95.  VA .?  Velocity - Set Velocity
+    95.  VU .?  Maximum Velocity - Set Maximum Velocity
+
+    78.  PA .?  Absolute Position - Move to Absolute Position
+    81.  PR .?  Relative Position - Move Relative to current position or home?
+    93.  TP -?  Tell Position - Read Position
+    90.  ST .-  Stop Motion
+
+    69.  JA .?  Jog - Start Jog Motion at speed nn
+    70.  JS .?  Jog Scale Factor (speed multiplier)
+
+    71.  KM .?  Knob Mode (velocity or position)
+    88.  SP .?  Knob Position - Set Position for Knob Control
+    91.  SV .?  Knob Velocities - Set Velocities For Knob Control
+    79.  PD .?  Position Delay - Position Delay in Knob Control
+
+    72.  MF .-  Motor OFF (disabled)
+    73.  MO .-  Motor ON (enabled)
+
+    75.  OA .?  Homing Acceleration
+    76.  OH .?  Homing Speed
+    77.  OR .?  Home - Search for Home (negative hard limit)
+    67.  DH .?  Define Home Position
+
+    94.  TS -?  Controller Motor Status
+    80.  PH -?  Hardware Status - Get Hardware Status
+    92.  TE -?  Tell Error - Read Error Code
+
+    83.  SA .-  Set Controller Address
+    82.  RS .-  Reset Controller
+    84.  SH .?  Set Hardware Configuration
+
+    68.  ID .?  Positioner Identification - Set Positioner Name
+    64.  BA .?  Backlash Compensation
+
+    87.  SM .-  Save in Memory - Save Settings to EEPROM (limited writes ~100?)
+    66.  BZ .-  Restore EEPROM Content to Default
+
+    65.  BX .?  Scan Switchbox
+    74.  MX .?  Select Switchbox Channel
+
+    96.  VE -?  Firmware version - Read Controller Firmware Version
+
+Components:
+    Actuator   - the micrometer stepper motor.
+    Controller - the NSC200 motion controller with Knob.
+    Switchbox  - connects one Controller to multiple Actuators.  (not us)
+
+----------------------------------------------------------------------------
+## Operation/Behavior
+----------------------------------------------------------------------------
+
+States of the System:  (single controller and motor)
+
+    [[ Moving ]]	Motor running, some commands ignored.
+    				Long movement duration is possible.
+
+    [[ Ready ]]		Ready for movement.
+
+    [[ Homeless ]]	Initial state before home position is found.
+
+    [[ Disabled ]]	Motor is disabled (not just stopped).
+
+    Commands make transitions between these states.
+
+From manuals or deduced:
+
+    Motor and Controller operate in "open loop" (see TP Read Position). 
+    Hardware limit found by the Home operation is the reference.
+    Controller essentially counts Full steps (and micro steps) to know the
+    position during or at end of motion.
+
+    The Search for Home (OH) command must be issued after controller is
+    powered up (or reset?).  This sets the zero position of the absolute
+    scale?
+
+    How is Define Home Position (DH) used?  What is it?
+    Perhaps it redefines the zero position of the absolute scale?
+    Maybe it should not be used?
+
+    The TE (Read Error Code) command hints at possible behaviors.
+    Errors on software limit detected (SR,SL command).
+    Errors on hardware limit detected - suggests there are hardware limits,
+    but the NSA12 application note says it is only on negative end.
+    Presumably motor stops when a limit is detected.
+    Setting the software limits is essential!
+
+    JA (Start Jog Motion) command:  Seems like it will start motion, and
+    stop only when a hardware/software limit is reached, or a Stop Motion
+    (ST) command is issued.
+
+    SM (Save Settings to EEPROM):  The EEPROM has limited life.  The new
+    controller specifically says 100 writes!  I doubt the old controller is
+    better than the newer one.
+
+    Use working memory.  Start from Reset (RS), or restore EEPROM (BZ).
+
+    Read Error Code (TE) after each command to be sure it is successful.
+
+    Time to accomplish a move:  Must calculate yourself.  Many commands
+    are ignored when in motion.
+
+    Reset Controller (RS):
+    Loads EEPROM config into working memory (there is no other command to
+    do this).
+
