@@ -1,0 +1,91 @@
+2024-12-26  William A. Hudson
+
+		nscinit -- Initialize NSC200 serial port
+		----------------------------------------
+
+For MKS-Newport NSC200 micrometer motion controller.
+
+----------------------------------------------------------------------------
+## Summary Behavior
+----------------------------------------------------------------------------
+
+Usage:
+
+    nscinit - Initialize NSC200 serial port
+usage:  nscinit  [options]
+   (default)        show NSC200_DEV environment variable on stdout
+  options:
+    --dev=FILE      serial port device file
+    --stty          do stty command (default with --dev)
+    --show          show stty settings on stdout
+    --noexe,-n      no execute, just show commands
+    --help          show this usage
+    --man           show manual page
+
+Essential operation:
+    Verify env NSC200_DEV or --dev argument.
+    Print command to set NSC200_DEV environment variable.  e.g.
+	export NSC200_DEV=/dev/ttyUSB0
+    Configure stty on the given device file.
+
+Features, Behavior:
+
+    Want command to be reasonably safe and informative.
+
+    Assume a device given by env or --dev is correct.  Use it without
+    further checking.
+
+    Always show env variable setting on stdout.  Is key information,
+    especially without --dev.
+
+    Always show trace command execution.  No reason not to, as there is
+    only the one stty command.
+
+    No Execute is a very handy when exploring a new command.  Allows user
+    to see command behavior without actually changing the device file.
+
+----------------------------------------------------------------------------
+## Initial Ideas
+----------------------------------------------------------------------------
+
+Command usage:
+
+ usage:  nscinit  [options] [-q|--env] [--dev=FILE]
+
+    --dev=FILE        device file
+
+    -q                just query stty settings on stdout
+    --env             just echo env setting on stdout
+
+    --stty            just run stty on current env or --dev
+
+    Normally only echo env setting on stdout for use with eval.
+    e.g.  eval `nscinit --dev=/dev/ttyUSB0`
+
+Command operation:
+
+    % stty -F /dev/ttyUSB0  19200 cs8 -parenb -cstopb ixon crtscts
+
+    echo "export NSC200_DEV=${NSC200_DEV}"
+
+Primary actions:
+
+    set stty
+    query stty
+    print env
+
+    Table to think about various combinations.
+
+    stty query env  command
+    ---- ----- ---  ------------------------------
+    .    .     v    no args - check env
+    v    .     v    --dev
+    v    v     v    --dev -q
+
+    .    v     v    -q			# human readable only
+    .    .     v    --env
+
+    .    .     v    --dev --env		# a way to set env?  not set stty
+
+    v    .     v    --stty		# reset stty from env
+

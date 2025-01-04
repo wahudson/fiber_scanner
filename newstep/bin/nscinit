@@ -1,0 +1,264 @@
+#!/usr/bin/perl -w
+# 2024-12-26  William A. Hudson
+
+# nscinit -- Initialize NSC200 serial port
+#
+# For MKS-Newport NSC200 micrometer motion controller.
+# Maintenance comments:  #!!
+#---------------------------------------------------------------------------
+
+use strict;
+
+use Getopt::Long  ();
+use Pod::Usage    ( 'pod2usage' );
+
+our $ProgFile = $0;	# this program
+our $ProgName = $0;
+    $ProgName =~ s:^.*/:: ;
+
+#---------------------------------------------------------------------------
+## Main program usage
+#---------------------------------------------------------------------------
+
+# Print program usage.
+#    May show configuration defaults.
+# call:
+#    print_usage()
+# return:
+#    ()  = unused
+#    Does NOT exit, let main program decide that.
+#
+sub print_usage
+{
+    print( <<USAGE );
+    nscinit - Initialize NSC200 serial port
+usage:  $ProgName  [options]
+   (default)        show NSC200_DEV environment variable on stdout
+  options:
+    --dev=FILE      serial port device file
+    --stty          do stty command (default with --dev)
+    --show          show stty settings on stdout
+    --noexe,-n      no execute, just show commands
+    --help          show this usage
+    --man           show manual page
+USAGE
+}
+
+#---------------------------------------------------------------------------
+## Main program
+#---------------------------------------------------------------------------
+
+{
+
+## Option processing.
+
+    my $op_dev          = undef;
+    my $op_stty         = 0;
+    my $op_show         = 0;
+    my $op_noexe        = 0;
+    my $op_verbose      = 0;
+
+    Getopt::Long::Configure(
+	'posix_default',
+    #	'bundling',		# enable -rN, require --word
+    #	'bundling_override',	# good for -r3, clash --vx -v -x
+	'no_ignore_case',
+    );
+
+    Getopt::Long::GetOptions(
+	"--help"         => sub { print_usage();      exit( 0 ) },
+	"--man"          => sub { do_man();           exit( 0 ) },
+
+	"--dev=s"        => \$op_dev,
+	"--stty"         => \$op_stty,
+	"--show"         => \$op_show,
+
+	"--noexe|n"      => \$op_noexe,
+	"--verbose|v"    => \$op_verbose,
+
+    ) || do {	# GetOptions() returns false on errors in option parsing.
+	Error( "Type '$ProgName --help' for usage.\n" );
+	exit( 2 );
+	# Do not show usage longer than 5 lines, let user see argument error.
+    };
+
+    if ( scalar( @ARGV ) ) {
+	Error( "extra arguments:  @ARGV\n" );
+    }
+
+    my $NSC200_DEV = $ENV{NSC200_DEV};
+
+    if ( $op_dev ) {
+	$NSC200_DEV = $op_dev;
+    }
+
+    unless ( defined( $NSC200_DEV ) ) {
+	Error( "require --dev or environment NSC200_DEV\n" );
+    }
+
+    last if ( Error() );
+
+    print( "export NSC200_DEV=$NSC200_DEV\n" );	# always show env
+
+    if ( $op_stty || defined( $op_dev ) ) {	# set tty
+	my $cmd = "stty -F $NSC200_DEV  19200 cs8 -parenb -cstopb ixon crtscts";
+	print( STDERR  "+ $cmd\n" );
+	system( $cmd )  if ( ! $op_noexe );
+    }
+
+    if ( $op_show ) {				# show stty
+	my $cmd = "stty -a -F $NSC200_DEV >&2";
+	print( STDERR  "+ $cmd\n" );
+	system( $cmd )  if ( ! $op_noexe );
+    }
+
+    if ( $op_noexe ) {
+	print( STDERR  "+ NO Execute\n" );
+    }
+
+}
+
+exit( (Error()) ? 1 : 0 );
+
+#---------------------------------------------------------------------------
+## functions
+#---------------------------------------------------------------------------
+
+# Show command usage.
+# call:
+#    do_usage();
+# return:
+#    ()  : unused
+#
+sub do_usage
+{
+    pod2usage( {
+	-message => "Example program form",
+	-exitval => "NOEXIT",
+	-verbose => 0,
+    } );
+    1;
+}
+
+
+# Show man page.
+#
+sub do_man
+{
+    my $pager = $ENV{'PAGER'} || "less";
+
+    open( STDOUT, "| $pager" );
+
+    {
+	unless ( -r $ProgFile ) {   # message embedded in output
+	    print( "Error:  file not found:  $ProgFile\n\n" );
+	    last;
+	}
+
+#	system( "pod2text -s < $ProgFile" );
+	system( "pod2man -s 1 -n $ProgName --center='User Contrib' $ProgFile | nroff -man" );
+    }
+
+    close( STDOUT );
+    1;
+}
+
+
+#---------------------------------------------------------------------------
+## Error Handling
+#---------------------------------------------------------------------------
+
+our $Error_cnt = 0;	# (private)
+
+# Error message reporting.
+# call:
+#    Error( @text )	Print error message, increment error count.
+#    Error()		Get error count.
+# return:
+#    ()  = Error count, false if no errors were recorded.
+#
+sub Error
+{
+    if ( @_ ) {
+	warn( "Error:  ", @_ );
+	$Error_cnt ++;
+    }
+    return( $Error_cnt );
+}
+
+
+__END__
+
+#---------------------------------------------------------------------------
+## Man page
+#---------------------------------------------------------------------------
+# See also:  perlpod(1)  perlpodstyle(1)
+
+=head1		NAME
+
+nscinit - Initialize NSC200 serial port
+
+=head1		SYNOPSIS
+
+nscinit  [options]
+   (default)        show NSC200_DEV environment variable on stdout
+  options:
+    --dev=FILE      serial port device file
+    --stty          do stty command (default with --dev)
+    --show          show stty settings on stdout
+    --noexe,-n      no execute, just show commands
+    --help          show this usage
+    --man           show manual page
+
+
+=head1		DESCRIPTION
+
+Send literal NSC200 command string to the serial port and print response.
+Check errors on stderr.
+
+
+=head1		OPTIONS
+
+=over 8
+
+=item B<--help>             - Show command usage and exit.
+
+=item B<--man>              - Show man page and exit.
+
+Prints the manual page and exits.
+
+=back
+
+
+=head1		RETURN VALUE
+
+0= success, otherwise errors
+
+
+=head1		EXAMPLES
+
+ % nscinit --dev=/dev/ttyUSB0
+
+ % eval `nscinit --dev=/dev/ttyUSB0`
+
+ % NSC200_DEV=foo nscinit
+
+=head1		ENVIRONMENT
+
+=over 8
+
+=item B<PAGER>
+
+Value defines an output filter used to display manual pages.
+By default, less(1) is used.  If PAGER='', stdout is written with no paging.
+
+=back
+
+
+=head1		FILES
+
+
+=head1		SEE ALSO
+
+=cut
+
