@@ -1,0 +1,73 @@
+2025-01-01  William A. Hudson
+
+		NewStep Commands -- Testing
+		---------------------------
+
+Self-checking regression tests.
+
+Files:  (2025-01-01)
+------
+Makefile	run all test suites
+README		this file
+
+.gitignore	Git ignore transient files
+
+bin/		commands to be tested
+    nscc     -> ../../bin/nscc
+
+lib/		Test library
+    TestLib2.pm		for testing programs (perl framework)
+
+t_*/		Generic test suite contents
+    Makefile		run/compile the test
+    ref/		reference input/output of the test
+    test.pl		test program (perl)
+    tmp/		where the test program is executed, removed each time
+
+
+Test suites:  (2025-01-01)
+------------
+?       = not committed
+  b     = uses bin/
+   l    = uses lib/
+     s  = uses src/
+ u      = Unit test (C++)        utLib1.cpp
+ p      = Program test (command) TestLib2.pm
+------  --------------
+ pbl    t_nscc/		NSC200 literal Command/Query
+
+
+Test Setup:
+-----------
+    The individual test  t_*/Makefile  has dependency on the test framework,
+    but will not rebuild the test framework.
+
+    Build the test framework in src/ (only needed when it changes):
+    % cd  src/
+    % make
+
+    Tests do NOT rebuild the object being tested.
+
+    Symlinks:  Intended to allow the whole test suit to be pointed at any
+    version of the commands/libraray to be tested.  May not be perfect, i.e.
+    not really exercised.
+    In bin/ symlinks point to commands being tested.
+
+    Framework was copied from the 'rgpio' project.
+
+Run Tests:
+----------
+    # Run all tests from this directory
+    % make test
+
+    # Run a specific test
+    % cd t_<dir>/
+    % make test
+
+Git:
+----
+    The .gitignore file has entries to ignore the transient files in each
+    test directory:
+    t_*/test.exe
+    t_*/tmp
+

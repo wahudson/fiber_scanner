@@ -1,0 +1,10 @@
+nscc - NewStep NSC200 literal Command/Query
+Usage:
+     nscc  [options]  [cmd]
+        cmd                 literal NewStep command string, e.g. "1SR?"
+                                None (default) queries last error.
+      options:
+        --trace,-x          show execution on stderr
+        --help              show this usage
+        --man               show manual page
+
