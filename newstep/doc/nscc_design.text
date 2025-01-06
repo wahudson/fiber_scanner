@@ -1,0 +1,64 @@
+2024-12-23  William A. Hudson
+
+		nscc - NewStep NSC200 literal Command/Query
+		-------------------------------------------
+
+For MKS-Newport NSC200 micrometer motion controller.
+
+----------------------------------------------------------------------------
+## Initial Ideas
+----------------------------------------------------------------------------
+
+Operation:
+    Send literal command to serial port.
+    Print result.
+    Query error status and print on stderr.
+
+    Many commands have no response on the serial port.  How do we know
+    when the command is done?
+
+    Issue Tell Error (TE?) query which should always return an error code
+    (number), where 0= no error.  e.g. response is
+	TE? 0
+    We can look for the query response to know there are no more chars
+    to be read.  Use a Non-blocking read to verify.
+
+    Essentially program must keep track of the controller state.  A long
+    running command may not have a response for a long time.  No receive
+    chars does not indicate command is done.
+    Some commands are accepted while motor is running.
+    The TE? command could return while motor is running.
+
+    Query motor to know that motor is done running.
+    Motor Status (TS?) command reports motor running/stopped/disabled.
+	80 = motor moving
+	81 = not moving
+	64 = motor is disabled
+
+    Delay and check again.  Possibly use a time delay with some commands.
+
+    Non-blocking read(2).
+
+    Use select(2) to see if filehandle is ready.
+
+Command usage:
+
+ usage:  nscc  [options]  "cmd"
+    cmd               literal NewStep command string
+
+    --dev=FILE        device file
+
+    -x, --trace       trace commands sent
+
+    --raw             send only command, read back with timeout
+    --send            send only command, no read
+    --read            read with timeout
+
+
+Command operation:
+    echo $cmd  > ${NSC200_DEV}
+    echo "TE?" > ${NSC200_DEV}
+    echo "TS?" > ${NSC200_DEV}
+
+    read non-blocking, look for "TS?" response.
+

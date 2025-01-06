@@ -1,0 +1,414 @@
+#!/usr/bin/perl -w
+# 2024-12-26  William A. Hudson
+
+# nscc -- NSC200 literal Command/Query
+#
+#   Send command
+#   Send error query
+#   Read all responses until error query
+#
+# For MKS-Newport NSC200 micrometer motion controller.
+# Maintenance comments:  #!!
+#---------------------------------------------------------------------------
+
+use strict;
+
+use Getopt::Long  ();
+use Pod::Usage    ( 'pod2usage' );
+
+our $ProgFile = $0;	# this program
+our $ProgName = $0;
+    $ProgName =~ s:^.*/:: ;
+
+our $ToolDir;
+
+# FindBin allows a symbolic link to the wrapper script, which must
+#    be in the ToolDir.  $RealBin will be set to the actual directory
+#    the script is in.
+#
+use FindBin qw($RealBin);
+
+BEGIN
+{
+    $ToolDir = $RealBin;
+
+    unless ( -d $ToolDir ) {
+	die( "Error:  missing ToolDir:  $ToolDir\n" );
+    }
+}
+
+use lib "$ToolDir";
+
+#use NscLib ();
+
+#---------------------------------------------------------------------------
+## Main program
+#---------------------------------------------------------------------------
+
+{
+
+## Option processing.
+
+    # Secret options:
+    # --TESTMODE     file descriptor 3 is data to serial port
+
+    my $op_trace        = 0;
+#   my $op_verbose      = 0;
+    my $op_TESTMODE     = 0;
+
+    Getopt::Long::Configure(
+	'posix_default',
+    #	'bundling',		# enable -rN, require --word
+    #	'bundling_override',	# good for -r3, clash --vx -v -x
+	'no_ignore_case',
+    );
+
+    Getopt::Long::GetOptions(
+	"--help"         => sub { do_usage();	exit( 0 ) },
+	"--man"          => sub { do_man();	exit( 0 ) },
+
+	"--trace|x"      => \$op_trace,
+#	"--verbose|v"    => \$op_verbose,
+	"--TESTMODE"     => \$op_TESTMODE,
+
+    ) || do {	# GetOptions() returns false on errors in option parsing.
+	Error( "Type '$ProgName --help' for usage.\n" );
+	exit( 2 );
+	# Do not show usage longer than 5 lines, let user see argument error.
+    };
+
+#    print( "ProgFile= $ProgFile\n" );
+#    print( "ProgName= $ProgName\n" );
+#    print( "ToolDir=  $ToolDir\n"  );
+#    print( "ARGV= ", @ARGV, "\n" );
+
+    my $dev = $ENV{NSC200_DEV};
+
+    unless ( $dev ) {
+	Error( "missing env NSC200_DEV\n" );
+	last;
+    }
+
+    my $Fin;	# read  serial port file handle
+    my $Fout;	# write serial port file handle
+
+    if ( $op_TESTMODE ) {
+	print( STDERR  "+ TESTMODE\n" )  if ( $op_trace );
+	$Fin = \*STDIN;
+
+	open( $Fout, '>&=3' ) || do {
+	    Error( "cannot write file descriptor:  3\n" );
+	    last;
+	};
+    }
+    else {
+	print( STDERR  "+ open serial port:  ${dev}\n" )  if ( $op_trace );
+	open( $Fin,  '<', $dev ) || do {
+	    Error( "cannot read serial port:  $dev\n" );
+	    last;
+	};
+	open( $Fout, '>', $dev ) || do {
+	    Error( "cannot write serial port:  $dev\n" );
+	    last;
+	};
+    }
+
+#!! Extract controller number from command.
+
+    my $cmd = join( ' ', @ARGV );
+    print( STDERR  "+ cmd=", $cmd, "=\n" )  if ( $op_trace );
+
+    my $errquery = "TE?";
+    print( STDERR  "+ chk=", $errquery, "=\n" )  if ( $op_trace );
+
+    print( $Fout  $cmd, "\n" );		# Send command
+    print( $Fout  $errquery, "\n" );	# Send error query
+
+    my $erno = '';
+    while ( <$Fin> ) {			# Read each response line
+	print( $_ );
+	chomp( $_ );
+
+	if ( m/^\d*TE(\d*)\?/ ) {
+	    $erno = $1;
+
+	    unless ( length( $erno ) ) {
+		Error( "missing error number in return:  '$_'\n" );
+		last;
+	    } # unlikely response
+
+	    last;
+	}
+    }
+    # may be EOF
+
+    unless ( length( $erno ) ) {
+	Error( "no error status returned\n" );
+	last;
+    }
+
+    my %Msg = (
+	'0' => "No errors",
+	'1' => "Driver fault (open load)",
+	'2' => "Driver Fault (thermal shut down)",
+	'3' => "Driver fault (short)",
+	'6' => "Invalid command",
+	'7' => "Parameter Out of Range",
+	'8' => "No Motor connected",
+	'10' => "Brown-out",
+	'38' => "Command parameter missing",
+	'24' => "Positive hardware limit detected",
+	'25' => "Negative hardware limit detected",
+	'26' => "Positive software limit detected",
+	'27' => "Negative software limit detected",
+	'210' => "Max velocity exceeded",
+	'211' => "Max acceleration exceeded",
+	'213' => "Motor not enabled",
+	'214' => "Switch to invalid axis",
+	'220' => "Homing aborted",
+	'226' => "Parameter change not allowed during motion",
+    );
+
+    if ( $erno ) {
+	my $msg = $Msg{$erno};
+	if ( defined( $msg ) ) {
+	    Error( "NewStep: ($erno) $msg\n" );
+	}
+	else {
+	    Error( "($erno) unknown error number\n" );
+	}
+    }
+
+    if ( $op_TESTMODE ) {
+	close( $Fout );
+    }
+
+}
+
+exit( (Error()) ? 1 : 0 );
+
+
+#---------------------------------------------------------------------------
+## functions
+#---------------------------------------------------------------------------
+
+# Show command usage.
+# call:
+#    do_usage();
+# return:
+#    ()  : unused
+#
+sub do_usage
+{
+    pod2usage( {
+	-message => "nscc - NewStep NSC200 literal Command/Query",
+	-exitval => "NOEXIT",
+	-verbose => 0,
+    } );
+    1;
+}
+
+
+# Show man page.
+#
+sub do_man
+{
+    my $pager = $ENV{'PAGER'} || "less";
+
+    open( STDOUT, "| $pager" );
+
+    {
+	unless ( -r $ProgFile ) {   # message embedded in output
+	    print( "Error:  file not found:  $ProgFile\n\n" );
+	    last;
+	}
+
+#	system( "pod2text -s < $ProgFile" );
+	system( "pod2man -s 1 -n $ProgName --center='User Contrib' $ProgFile | nroff -man" );
+    }
+
+    close( STDOUT );
+    1;
+}
+
+
+#---------------------------------------------------------------------------
+## Error Handling
+#---------------------------------------------------------------------------
+
+our $Error_cnt = 0;	# (private)
+
+# Error message reporting.
+# call:
+#    Error( @text )	Print error message, increment error count.
+#    Error()		Get error count.
+# return:
+#    ()  = Error count, false if no errors were recorded.
+#
+sub Error
+{
+    if ( @_ ) {
+	warn( "Error:  ", @_ );
+	$Error_cnt ++;
+    }
+    return( $Error_cnt );
+}
+
+
+__END__
+
+#---------------------------------------------------------------------------
+## Man page
+#---------------------------------------------------------------------------
+# See also:  perlpod(1)  perlpodstyle(1)
+
+=head1		NAME
+
+nscc - NewStep NSC200 literal Command/Query
+
+=head1		SYNOPSIS
+
+ nscc  [options]  [cmd]
+    cmd                 literal NewStep command string, e.g. "1SR?"
+			    None (default) queries last error.
+  options:
+    --trace,-x          show execution on stderr
+    --help              show this usage
+    --man               show manual page
+
+
+=head1		DESCRIPTION
+
+Send literal NSC200 command string to the serial port and print any response
+on stdout.
+Query error status (TE? command) and report on stderr.
+
+Require controller serial port be defined in environment variable:  e.g.
+
+    % export  NSC200_DEV=/dev/ttyUSB0
+
+=head2			Command Format
+
+NewStep commands are of the form:
+
+    nnAAxx
+    nnAA?
+ where
+    nn = controller number {0:255}
+    AA = two character command name
+    xx = optional decimal value, usually in uStep
+    ?  = query (literal question mark)
+
+=head2			Command Summary
+
+ pg = page number in NewStep User's Manual PDF
+ Command type:
+	 .? = as Command or Query
+	 .- = as Command only
+	 -? = as Query only
+
+ pg  Cmd .?  Command Description
+ ---  -- --  ----------------------------
+ 86.  SL .?  Negative Software Limit - Set Left Travel Limit
+ 89.  SR .?  Positive Software Limit - Set Right Travel Limit
+
+ 62.  AC .?  Acceleration - Set Acceleration
+ 63.  AU .?  Maximum Acceleration - Set Maximum Acceleration
+
+ 95.  VA .?  Velocity - Set Velocity
+ 95.  VU .?  Maximum Velocity - Set Maximum Velocity
+
+ 78.  PA .?  Absolute Position - Move to Absolute Position
+ 81.  PR .?  Relative Position - Move Relative
+ 93.  TP -?  Tell Position - Read Position
+ 90.  ST .-  Stop Motion
+
+ 69.  JA .?  Jog - Start Jog Motion at speed nn
+ 70.  JS .?  Jog Scale Factor (speed multiplier)
+
+ 71.  KM .?  Knob Mode (velocity or position)
+ 88.  SP .?  Knob Position - Set Position for Knob Control
+ 91.  SV .?  Knob Velocities - Set Velocities For Knob Control
+ 79.  PD .?  Position Delay - Position Delay in Knob Control
+
+ 72.  MF .-  Motor OFF (disabled)
+ 73.  MO .-  Motor ON (enabled)
+
+ 75.  OA .?  Homing Acceleration
+ 76.  OH .?  Homing Speed
+ 77.  OR .?  Home - Search for Home (negative hard limit)
+ 67.  DH .?  Define Home Position
+
+ 94.  TS -?  Controller Motor Status
+ 80.  PH -?  Hardware Status - Get Hardware Status
+ 92.  TE -?  Tell Error - Read Error Code
+
+ 83.  SA .-  Set Controller Address
+ 82.  RS .-  Reset Controller
+ 84.  SH .?  Set Hardware Configuration
+
+ 68.  ID .?  Positioner Identification - Set Positioner Name
+ 64.  BA .?  Backlash Compensation
+
+ 87.  SM .-  Save in Memory - Save Settings to EEPROM (max writes ~100?)
+ 66.  BZ .-  Restore EEPROM Content to Default
+
+ 65.  BX .?  Scan Switchbox
+ 74.  MX .?  Select Switchbox Channel
+
+ 96.  VE -?  Firmware version - Read Controller Firmware Version
+
+
+=head1		OPTIONS
+
+=over 8
+
+=item B<--help>             - Show command usage and exit.
+
+=item B<--man>              - Show man page and exit.
+
+Prints the manual page and exits.
+
+=item B<--trace>            - Trace command execution.
+
+Show actions as they are executed on stderr.
+
+=back
+
+
+=head1		RETURN VALUE
+
+0= success, otherwise errors
+
+
+=head1		EXAMPLES
+
+
+ # Required environment for serial port.
+ % export  NSC200_DEV=/dev/ttyUSB0
+
+ # Run Absolute Position (PA) command to 1024 uSteps on controller 3.
+ % nscc  3PA1024
+
+=head1		ENVIRONMENT
+
+=over 8
+
+=item B<NSC200_DEV>         - Serial port device file.
+
+Device file for the NSC200 controller RS-232 interface.
+
+=item B<PAGER>
+
+Value defines an output filter used to display manual pages.
+By default, less(1) is used.  If PAGER='', stdout is written with no paging.
+
+=back
+
+
+=head1		SEE ALSO
+
+nscinit(1)
+
+=cut
+
