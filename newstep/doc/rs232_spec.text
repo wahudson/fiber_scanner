@@ -1,0 +1,257 @@
+2024-12-21
+		RS-232 Serial Specification
+		---------------------------
+
+----------------------------------------------------------------------------
+## References
+----------------------------------------------------------------------------
+
+Serial port
+    https://en.wikipedia.org/wiki/Serial_port
+    Serial ports on early PCs.
+    **** Good application overview of RS-232 on PCs.
+
+RS-232
+    https://en.wikipedia.org/wiki/RS-232
+    **** Focus on the spec, hardware, cables, voltage, protocol.
+
+COM (hardware interface)
+    https://en.wikipedia.org/wiki/COM_(hardware_interface)
+    "COM" Serial ports on early PCs.  Typically used 16550 UART.
+    ** Short, history
+
+RS232 Connector Pin Assignment, DB-9 and DB-25 connectors
+    https://www.pccompci.com/rs232-cable-technology.html
+    Null modem, conversion, loopback cables.
+    Mostly connector wiring diagrams.
+    Does not use proper abbreviations of signals.
+    *** Applied cables.
+
+DB9 Connector Pinout
+    https://www.showmecables.com/blog/post/DB9-Connector-Pinout
+    **** Simple, clear.  DB9 connector application to RS-232.
+
+RS-232 vs. TTL Serial Communication
+    November 23, 2010
+    https://www.sparkfun.com/tutorials/215
+    ** Nice quick overview.
+
+FTDI conversion cables
+    https://ftdichip.com/product-category/products/cables/
+
+----------------------------------------------------------------------------
+## RS-232 Specification
+----------------------------------------------------------------------------
+    https://en.wikipedia.org/wiki/RS-232
+
+RS-232 logic and voltage levels:
+
+    Data circuits 	Control circuits 	RS-232 Voltage
+    -------------	----------------	-----------
+    0 (Space) 		Asserted 		+3 to +15 V
+    1 (Mark) 		Deasserted 		-15 to -3 V 
+
+    Maximum open-circuit voltage of 25 volts.
+    Signal levls of +-5 V to +-15 V are common.
+
+    Note RS-232 voltage levels are inverted compared to typical TTL levels.
+
+    Idle logic level is 1 (Mark), negative voltage < -3 V.
+
+DB9 Connector Pinout:
+    https://www.showmecables.com/blog/post/DB9-Connector-Pinout
+
+    DB-9 Male, looking at pins.
+
+	1   2   3   4   5
+	  6   7   8   9
+
+    DB-9 Female, looking at sockets.
+
+	5   4   3   2   1
+	  9   8   7   6
+
+    Normal RS-232 pinout:  (on DTE computer)
+	1  DCD
+	2  RxD
+	3  TxD
+	4  DTR
+	5  GND
+	6  DSR
+	7  RTS
+	8  CTS
+	9  RI
+
+Computer/Terminal Devices:
+    https://en.wikipedia.org/wiki/RS-232
+    https://en.wikipedia.org/wiki/Null_modem
+
+    Terminology:
+    DTE (data terminal equipment)      - the computer OR terminal tty
+    DCE (data communication equipment) - the modem (data carrier)
+
+    Is always in context of a computer or a tty (DTE) connected to a
+    modem or other physical transport layer (DCE).
+    Always a DTE connects to a DCE.  (Never DTE to DTE, or DCE to DCE.)
+
+    The idea is two DTE communicate thru a DCE transport layer:
+
+	DTE <---> DCE <---physical---> DCE <---> DTE
+	Terminal  Modem                Modem     Computer
+			    OR
+	Computer  Modem                Modem     Computer
+			    OR
+	Terminal  Modem                Modem     Terminal
+
+    The Modem can be "Null Modem", a cable that cross-connects corresponding
+    input/output signals on each side.  Not covered by the RS-232 standard.
+
+Signal Naming:  (from standpoint of the DTE)
+
+    Short         DB-25  DB-9
+    Name  DTE  DCE  pin  pin  Long Name
+    ----  ---  ---  ---       -------------------
+    TxD   out  in    2    3   Transmitted Data
+    RxD   in   out   3    2   Received Data
+
+    RTS   out  in    4    7   Request To Send - request DCE prepare to transmit
+    CTS   in   out   5    8   Clear To Send   - DCE is ready for data
+
+    DTR   out  in   20    4   Data Terminal Ready
+    DSR   in   out   6    6   Data Set Ready
+
+    CD    in   out   8    1   Data Carrier Detect (DCD)
+    RI    in   out  22    9   Ring Indicator
+
+    GND   common     7    5   Common Ground - signal voltage reference
+    PG    common     1    -   Protective Ground - chassis ground
+
+    RTS alternate name and meaning for typical flow control:
+   *RTR   out  in    4    7   Ready To Receive - DTE is ready to receive
+
+    * Note the signal RTR is typically still called RTS.
+      RTS was originally defined for use with a half-duplex modem.
+      Now it more commonly indicates DTE is ready to receive.
+
+    The DCE (modem) has the same pins and signal names as the DTE (computer),
+    but the signal directions are reversed.
+
+Connectors and Cables:
+
+    According to the standard,
+    Male   connectors have DTE pin functions, and
+    Female connectors have DCE pin functions.
+
+    The 25-pin D-subminiature male (DB-25M) connector is standard on DTE.
+    The 9-pin male DB-9M is also commonly used.
+
+    In practice, there are many combinations in use.
+
+Null Modem (Cross-over cable):
+
+        This_side               :              Other_Side
+    Signal  DB-25    DB-9      Dir   DB-9   DB-25       Signal
+    ------  -----    ----      ---   ----   -----       ------
+    TxD         2       3       >       2       3       RxD
+    RxD         3       2       <       3       2       TxD
+
+    RTS         4       7       >       8       5       CTS
+    CTS         5       8       <       7       4       RTS
+
+    GND         7       5       Common  5       7       SG
+
+    DSR         6       6       <       4       20      DTR
+    DCD         8       1       <       .       .       .
+
+    DTR         20      4       >       1       8       DCD
+    .           .       .       >       6       6       DSR 
+
+My beige DB-9F to DB-9F Xover cable:  "Xover 3 m"
+    Pin 6 is not connected.  All others are cross-over (null modem).
+
+My gray DB-9F to DB-25M  Straight cable:  "Straight"
+    All 9 pins are straight connections.
+
+----------------------------------------------------------------------------
+## stty Configuration
+----------------------------------------------------------------------------
+
+Condensed from the stty(1) manpage.  Partial.
+    *    non-POSIX
+    [-]  optional hyphen before argument indicates negation
+    The underlying system defines which settings are available.
+
+ usage:  stty [options] [SETTING]
+    -a, --all            print all current settings
+    -F, --file=DEVICE    use the specified DEVICE instead of stdin
+
+Control settings:
+   csN    set character size to N bits, N in [5..8]
+   [-]clocal	disable modem control signals
+   [-]cread	allow input to be received
+ * [-]crtscts	enable RTS/CTS handshaking
+   [-]cstopb	use two stop bits per character (one with '-')
+   [-]hup	send a hangup signal when the last process closes the tty
+   [-]hupcl	same as [-]hup
+   [-]parenb	generate parity bit in output and expect parity bit in input
+   [-]parodd	set odd parity (or even parity with '-')
+ * [-]cmspar	use "stick" (mark/space) parity
+
+Input settings:
+   [-]brkint	breaks cause an interrupt signal
+   [-]icrnl	translate carriage return to newline
+   [-]ignbrk	ignore break characters
+   [-]igncr	ignore carriage return
+   [-]ignpar	ignore characters with parity errors
+ * [-]imaxbel	beep and do not flush a full input buffer on a character
+   [-]inlcr	translate newline to carriage return
+   [-]inpck	enable input parity checking
+   [-]istrip	clear high (8th) bit of input characters
+ * [-]iutf8	assume input characters are UTF-8 encoded
+ * [-]iuclc	translate uppercase characters to lowercase
+ * [-]ixany	let any character restart output, not only start character
+   [-]ixoff	enable sending of start/stop characters
+   [-]ixon	enable XON/XOFF flow control
+   [-]parmrk	mark parity errors (with a 255-0-character sequence)
+   [-]tandem	same as [-]ixoff
+
+Output settings:
+ * bsN    backspace delay style, N in [0..1]
+ * crN    carriage return delay style, N in [0..3]
+ * ffN    form feed delay style, N in [0..1]
+ * nlN    newline delay style, N in [0..1]
+ * tabN	  horizontal tab delay style, N in [0..3]
+ * vtN    vertical tab delay style, N in [0..1]
+ * [-]ocrnl	translate carriage return to newline
+ * [-]ofdel	use delete characters for fill instead of NUL characters
+ * [-]ofill	use fill (padding) characters instead of timing for delays
+ * [-]olcuc	translate lowercase characters to uppercase
+ * [-]onlcr	translate newline to carriage return-newline
+ * [-]onlret	newline performs a carriage return
+ * [-]onocr	do not print carriage returns in the first column
+   [-]opost	postprocess output
+ * [-]tabs	tabs same as tab0, -tabs same as tab3
+
+Local settings:
+   [-]crterase	echo erase characters as backspace-space-backspace
+ *    crtkill	kill all line by obeying the echoprt and echoe settings
+ *   -crtkill	kill all line by obeying the echoctl and echok settings
+ * [-]ctlecho	echo control characters in hat notation ('^c')
+   [-]echo	echo input characters
+ * [-]echoctl	same as [-]ctlecho
+   [-]echoe	same as [-]crterase
+   [-]echok	echo a newline after a kill character
+ * [-]echoke	same as [-]crtkill
+   [-]echonl	echo newline even if not echoing other characters
+ * [-]echoprt	echo erased characters backward, between '\' and '/'
+ * [-]extproc	enable "LINEMODE"; useful with high latency links
+ * [-]flusho	discard output
+   [-]icanon	enable special characters: erase, kill, werase, rprnt
+   [-]iexten	enable non-POSIX special characters
+   [-]isig	enable interrupt, quit, and suspend special characters
+   [-]noflsh	disable flushing after interrupt and quit special characters
+ * [-]prterase	same as [-]echoprt
+ * [-]tostop	stop background jobs that try to write to the terminal
+ * [-]xcase	with icanon, escape with '\' for uppercase characters
+
+
