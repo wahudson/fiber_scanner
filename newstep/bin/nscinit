@@ -101,13 +101,16 @@ USAGE
     print( "export NSC200_DEV=$NSC200_DEV\n" );	# always show env
 
     if ( $op_stty || defined( $op_dev ) ) {	# set tty
-	my $cmd = "stty -F $NSC200_DEV  19200 cs8 -parenb -cstopb ixon crtscts";
+	my $cmd = "stty -F $NSC200_DEV  19200 cs8" .
+		" -parenb -cstopb ixon crtscts" .	# required by NewStep
+		" -clocal -onlcr -echo -echoe -echok";	# were interfearing
+
 	print( STDERR  "+ $cmd\n" );
 	system( $cmd )  if ( ! $op_noexe );
     }
 
     if ( $op_show ) {				# show stty
-	my $cmd = "stty -a -F $NSC200_DEV >&2";
+	my $cmd = "stty -a -F $NSC200_DEV";
 	print( STDERR  "+ $cmd\n" );
 	system( $cmd )  if ( ! $op_noexe );
     }

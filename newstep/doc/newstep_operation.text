@@ -9,7 +9,7 @@ See also:  fiber_scanner/doc/newstep_micrometer.text
 ## Hardware:
 ----------------------------------------------------------------------------
 
-NSA12 Linear Actuator:  (Moterized Micrometer)
+NSA12 Linear Actuator:  (Moterized Micrometer)  $885
     https://www.newport.com/p/NSA12
 
 	Essential spec sheet:  (NewStep Manual)
@@ -44,6 +44,13 @@ NSA12 Linear Actuator:  (Moterized Micrometer)
     accept the corresponding error in screw pitch as close enough.
 
     The NSA12 datasheet has correct numbers.
+
+    Application note:
+	https://www.newport.com/p/NSA12
+	-> DS-032402 NSA12 Application Note (1.1 MB, PDF)
+
+    CAD Drawing:
+	->NSA Drawing (145.1 kB, PDF)
 
 NSC-485-232-I:  RS485-to-RS232 Converter
     Input Connector (RS-232 side):  DB-9F Female, thumb screws
@@ -217,4 +224,22 @@ From manuals or deduced:
     Reset Controller (RS):
     Loads EEPROM config into working memory (there is no other command to
     do this).
+
+    In case of a controller with no switchbox, the channel number is always 1.
+    [p.51]
+    But our controller has address 0.
+
+    Sequential commands:  Experiment suggests the controller may operate in
+    half duplex mode.  When a following TE? query command was sent, it was
+    ignored unless a delay was inserted between the commands.  (2024-01-07)
+
+Process to Operate:
+
+  v Find controller address - search with TE? command.
+
+  x Change controller address (SA), if needed.
+
+    Query state, configuration:
+
+    Home search (OR)
 
