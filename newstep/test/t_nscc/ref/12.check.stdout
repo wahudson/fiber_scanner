@@ -1,8 +1,9 @@
 nscc - NewStep NSC200 literal Command/Query
 Usage:
-     nscc  [options]  [cmd]
-        cmd                 literal NewStep command string, e.g. "1SR?"
-                                None (default) queries last error.
+     nscc  [options]  [N][cmd]
+        N                   Controller address number {0..255}, default 0
+        cmd                 NewStep command string, e.g. "SR?"
+                                No cmd queries the last error (TE?).
       options:
         --trace,-x          show execution on stderr
         --help              show this usage

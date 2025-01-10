@@ -4,7 +4,7 @@
 # Testing:  nscc  command
 #    10-19  basic options --help
 #    20-29  TESTMODE Operation
-#    30-39  .
+#    30-39  Default address and command
 #    40-49  .
 #    50-59  .
 
@@ -13,6 +13,7 @@
 #    ./tmp/	run directory, all files written here
 #    ./ref/	reference input/output files
 #
+# Slow execution!  0.1 second delay per command.
 #---------------------------------------------------------------------------
 
 use lib "../lib";
@@ -43,7 +44,7 @@ chdir( "tmp" ) || die_Error( "cannot chdir ./tmp\n" );
 ## basic options --help
 #---------------------------------------------------------------------------
 
-run_test( "11", "nscc no args - reads stdin",
+run_test( "11", "nscc no args - reading /dev/null",
     "nscc",
     1,
     Stderr => q(
@@ -89,64 +90,126 @@ run_test( "13", "unknown option",
 # (from stdin) is the last line.
 
 run_test( "20", "arbitrary text command, no error",
-    "( echo 'TE0?' | nscc --TESTMODE  fake cmd 3.14 )",
+    "( echo '0TE? 0' | nscc --TESTMODE  fake cmd 3.14 )",
     0,
     Stderr => q(),
     Stdout => q(
-	TE0?
+	0TE? 0
     ),
 );
 
 run_test( "21", "valid command, OK response",
-    "( echo 'TE0?' | nscc --TESTMODE -x  3PA1024 )",
+    "( echo '3TE? 0' | nscc --TESTMODE -x  3PA1024 )",
     0,
     Stderr => q(
 	+ TESTMODE
 	+ cmd=3PA1024=
-	+ chk=TE?=
+	+ chk=3TE?=
     ),
     Stdout => q(
-	TE0?
+	3TE? 0
     ),
 );
 
 run_test( "22", "valid command, error response",
-    "( echo '3TE7?' | nscc --TESTMODE  3PA1024 )",
+    "( echo '3TE? 7' | nscc --TESTMODE  3PA1024 )",
     1,
     Stderr => q(
 	Error:  NewStep: (7) Parameter Out of Range
     ),
     Stdout => q(
-	3TE7?
+	3TE? 7
     ),
 );
 
-run_test( "24", "valid command, unknown error response",
-    "( echo '3TE99?' | nscc --TESTMODE -x  3PA1024  3>&1 )",
+run_test( "23", "valid command, unknown error response",
+    "( echo '3TE? 99' | nscc --TESTMODE -x  3PA1024  3>&1 )",
     1,
     Stderr => q(
 	+ TESTMODE
 	+ cmd=3PA1024=
-	+ chk=TE?=
+	+ chk=3TE?=
 	Error:  (99) unknown error number
     ),
     Stdout => q(
 	3PA1024
-	TE?
-	3TE99?
+	3TE?
+	3TE? 99
+    ),
+);
+
+run_test( "24", "OK response address does not match",
+    "( echo '22TE? 7' | nscc --TESTMODE -x  3PA?  3>&1 )",
+    1,
+    Stderr => q(
+	+ TESTMODE
+	+ cmd=3PA?=
+	+ chk=3TE?=
+	Error:  NewStep: (7) Parameter Out of Range
+    ),
+    Stdout => q(
+	3PA?
+	3TE?
+	22TE? 7
     ),
 );
 
 run_test( "25", "no TESTMODE, no response",
-    "( echo '3TE99?' | nscc -x  3PA1024 )",
+    "( echo '3TE? 99' | nscc -x  3PA1024 )",
     1,
     Stderr => q(
 	+ open serial port:  /dev/null
 	+ cmd=3PA1024=
-	+ chk=TE?=
+	+ chk=3TE?=
 	Error:  no error status returned
     ),
     Stdout => q(),
+);
+
+#---------------------------------------------------------------------------
+## Default address and command
+#---------------------------------------------------------------------------
+
+run_test( "31", "no address",
+    "( echo 'PA? 1492\n7TE? 0' | nscc --TESTMODE -x  PA?  3>&1 )",
+    0,
+    Stderr => q(
+	+ TESTMODE
+	+ cmd=0PA?=
+	+ chk=0TE?=
+    ),
+    Stdout => q(
+	0PA?
+	0TE?
+	PA? 1492
+	7TE? 0
+    ),
+);
+
+run_test( "32", "no command, just check error",
+    "( echo '0TE? 0' | nscc --TESTMODE -x  3>&1 )",
+    0,
+    Stderr => q(
+	+ TESTMODE
+	+ chk=0TE?=
+    ),
+    Stdout => q(
+	0TE?
+	0TE? 0
+    ),
+);
+
+run_test( "33", "only address, just check error",
+    "( echo '7TE? 0' | nscc --TESTMODE -x  7  3>&1 )",
+    0,
+    Stderr => q(
+	+ TESTMODE
+	+ chk=7TE?=
+    ),
+    Stdout => q(
+	7TE?
+	7TE? 0
+    ),
 );
 
 #---------------------------------------------------------------------------

@@ -15,6 +15,7 @@ use strict;
 
 use Getopt::Long  ();
 use Pod::Usage    ( 'pod2usage' );
+use Time::HiRes   ();
 
 our $ProgFile = $0;	# this program
 our $ProgName = $0;
@@ -113,16 +114,29 @@ use lib "$ToolDir";
 	};
     }
 
-    #!! Controller address hardwired to 0
+    # Controller address from the given command
+    my $addr = "0";		# default
+    my $cmd  = join( ' ', @ARGV );
 
-    my $cmd = "0" . join( ' ', @ARGV );
-    print( STDERR  "+ cmd=", $cmd, "=\n" )  if ( $op_trace );
+    $cmd =~ m/^(\d*)/ ;
+    if ( $1 eq '' ) {		# command has no address
+	$cmd = $addr . $cmd;
+    }
+    else {
+	$addr = $1;
+    }
 
-    my $errquery = "0TE?";
+    # Issue the given command
+    unless ( $cmd eq $addr ) {
+	print( STDERR  "+ cmd=", $cmd, "=\n" )  if ( $op_trace );
+
+	print( $Fout  $cmd, "\n" );	# Send command
+	Time::HiRes::sleep( 0.1 );	# delay seconds
+    }
+
+    my $errquery = "${addr}TE?";
     print( STDERR  "+ chk=", $errquery, "=\n" )  if ( $op_trace );
 
-    print( $Fout  $cmd, "\n" );		# Send command
-    sleep( 1 );
     print( $Fout  $errquery, "\n" );	# Send error query
 
     my $erno = '';
@@ -269,9 +283,10 @@ nscc - NewStep NSC200 literal Command/Query
 
 =head1		SYNOPSIS
 
- nscc  [options]  [cmd]
-    cmd                 NewStep command string, no address, e.g. "SR?"
-			    None (default) queries last error.
+ nscc  [options]  [N][cmd]
+    N                   Controller address number {0..255}, default 0
+    cmd                 NewStep command string, e.g. "SR?"
+			    No cmd queries the last error (TE?).
   options:
     --trace,-x          show execution on stderr
     --help              show this usage
@@ -280,15 +295,15 @@ nscc - NewStep NSC200 literal Command/Query
 
 =head1		DESCRIPTION
 
-Send literal NSC200 command string (without the leading controller address
-number) to the serial port and print any response on stdout.
-Query error status (TE? command) and report errors on stderr.
-
-Controller address is hardwired to "0".
+Send literal NSC200 command string to the serial port and print any response
+on stdout.  Then query error status (TE? command) and report errors on stderr.
 
 Require controller serial port be defined in environment variable:  e.g.
 
     % export  NSC200_DEV=/dev/ttyUSB0
+
+A delay (0.1 seconds) is issued after the command to give additional time
+for the controller and help it to not miss any following command.
 
 =head2			Command Format
 
