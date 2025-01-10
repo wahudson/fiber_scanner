@@ -113,15 +113,16 @@ use lib "$ToolDir";
 	};
     }
 
-#!! Extract controller number from command.
+    #!! Controller address hardwired to 0
 
-    my $cmd = join( ' ', @ARGV );
+    my $cmd = "0" . join( ' ', @ARGV );
     print( STDERR  "+ cmd=", $cmd, "=\n" )  if ( $op_trace );
 
-    my $errquery = "TE?";
+    my $errquery = "0TE?";
     print( STDERR  "+ chk=", $errquery, "=\n" )  if ( $op_trace );
 
     print( $Fout  $cmd, "\n" );		# Send command
+    sleep( 1 );
     print( $Fout  $errquery, "\n" );	# Send error query
 
     my $erno = '';
@@ -129,7 +130,7 @@ use lib "$ToolDir";
 	print( $_ );
 	chomp( $_ );
 
-	if ( m/^\d*TE(\d*)\?/ ) {
+	if ( m/^\d*TE\?\s*(\d*)/ ) {	# e.g. "0TE? 99"
 	    $erno = $1;
 
 	    unless ( length( $erno ) ) {
@@ -269,7 +270,7 @@ nscc - NewStep NSC200 literal Command/Query
 =head1		SYNOPSIS
 
  nscc  [options]  [cmd]
-    cmd                 literal NewStep command string, e.g. "1SR?"
+    cmd                 NewStep command string, no address, e.g. "SR?"
 			    None (default) queries last error.
   options:
     --trace,-x          show execution on stderr
@@ -279,9 +280,11 @@ nscc - NewStep NSC200 literal Command/Query
 
 =head1		DESCRIPTION
 
-Send literal NSC200 command string to the serial port and print any response
-on stdout.
-Query error status (TE? command) and report on stderr.
+Send literal NSC200 command string (without the leading controller address
+number) to the serial port and print any response on stdout.
+Query error status (TE? command) and report errors on stderr.
+
+Controller address is hardwired to "0".
 
 Require controller serial port be defined in environment variable:  e.g.
 
@@ -388,7 +391,7 @@ Show actions as they are executed on stderr.
  % export  NSC200_DEV=/dev/ttyUSB0
 
  # Run Absolute Position (PA) command to 1024 uSteps on controller 3.
- % nscc  3PA1024
+ % nscc  PA1024
 
 =head1		ENVIRONMENT
 
