@@ -1,11 +1,7 @@
 #!/usr/bin/perl -w
-# 2024-12-26  William A. Hudson
+# 2024-01-11  William A. Hudson
 
-# nscc -- NSC200 literal Command/Query
-#
-#   Send command
-#   Send error query
-#   Read all responses until error query
+# nsc -- NSC200 Controller cockpit Command/Query
 #
 # For MKS-Newport NSC200 micrometer motion controller.
 # Maintenance comments:  #!!
@@ -40,7 +36,32 @@ BEGIN
 
 use lib "$ToolDir";
 
-#use NscLib ();
+use NscLib ();		# NewStep NSC200 Controller interface library.
+
+#---------------------------------------------------------------------------
+## Main program usage
+#---------------------------------------------------------------------------
+
+# Print program usage.
+# call:
+#    print_usage()
+#
+sub print_usage
+{
+    print( <<USAGE );
+    NewStep NSC200 controller interface
+usage:  $ProgName [main options] action [args..]
+  action:  (require one)
+    send   XX...    send command, no address
+    error           query error status
+    hard            query hardware status
+  main options:
+    --addr=N,-aN    controller address, {0..255}, (default 0)
+    --trace,x       show execution on stderr
+    --help          show this usage
+    --man           show manual page
+USAGE
+}
 
 #---------------------------------------------------------------------------
 ## Main program
@@ -56,21 +77,26 @@ use lib "$ToolDir";
     my $op_trace        = 0;
 #   my $op_verbose      = 0;
     my $op_TESTMODE     = 0;
+    my $op_addr         = 0;
 
     Getopt::Long::Configure(
 	'posix_default',
     #	'bundling',		# enable -rN, require --word
     #	'bundling_override',	# good for -r3, clash --vx -v -x
+	'bundling_values',	# allow only -r3
 	'no_ignore_case',
     );
 
     Getopt::Long::GetOptions(
-	"--help"         => sub { do_usage();	exit( 0 ) },
-	"--man"          => sub { do_man();	exit( 0 ) },
+	"--help"         => sub { print_usage();  exit( 0 ) },
+	"--man"          => sub { do_man();       exit( 0 ) },
 
 	"--trace|x"      => \$op_trace,
 #	"--verbose|v"    => \$op_verbose,
 	"--TESTMODE"     => \$op_TESTMODE,
+
+	"--addr=i"       => \$op_addr,
+	"-a=i"           => \$op_addr,
 
     ) || do {	# GetOptions() returns false on errors in option parsing.
 	Error( "Type '$ProgName --help' for usage.\n" );
@@ -81,125 +107,53 @@ use lib "$ToolDir";
 #    print( "ProgFile= $ProgFile\n" );
 #    print( "ProgName= $ProgName\n" );
 #    print( "ToolDir=  $ToolDir\n"  );
+#    print( "op_addr    = $op_addr\n"     );
 #    print( "ARGV= ", @ARGV, "\n" );
 
-    my $dev = $ENV{NSC200_DEV};
+    my $act = shift( @ARGV );
 
-    unless ( $dev ) {
-	Error( "missing env NSC200_DEV\n" );
-	last;
+    unless ( $act ) {
+	Error( "require command action\n" );
     }
 
-    my $Fin;	# read  serial port file handle
-    my $Fout;	# write serial port file handle
+    last  if ( Error() );
 
-    if ( $op_TESTMODE ) {
-	print( STDERR  "+ TESTMODE\n" )  if ( $op_trace );
-	$Fin = \*STDIN;
+    my $Lx = NscLib->new(
+	Error_sub => sub { Error( @_ ) },
+	AddrNum   => $op_addr,
+	TESTMODE  => $op_TESTMODE,
+	TraceEx   => $op_trace,
+    ) || exit( 1 );
 
-	open( $Fout, '>&=3' ) || do {
-	    Error( "cannot write file descriptor:  3\n" );
+    if    ( $act eq 'send' ) {
+	unless ( @ARGV ) {
+	    Error( "require command arg\n" );
 	    last;
-	};
+	}
+	$Lx->send_raw( @ARGV );
+	$Lx->check_err();
     }
+    elsif ( $act eq 'hard'   ) { $Lx->show_HwConfig();  }
+    elsif ( $act eq 'error'  ) { $Lx->check_err();      }
     else {
-	print( STDERR  "+ open serial port:  ${dev}\n" )  if ( $op_trace );
-	open( $Fin,  '<', $dev ) || do {
-	    Error( "cannot read serial port:  $dev\n" );
-	    last;
-	};
-	open( $Fout, '>', $dev ) || do {
-	    Error( "cannot write serial port:  $dev\n" );
-	    last;
-	};
+	Error( "unknown action:  $act\n" );
     }
 
-    # Controller address from the given command
-    my $addr = "0";		# default
-    my $cmd  = join( ' ', @ARGV );
+last;
 
-    $cmd =~ m/^(\d*)/ ;
-    if ( $1 eq '' ) {		# command has no address
-	$cmd = $addr . $cmd;
-    }
-    else {
-	$addr = $1;
-    }
+#    $Lx->Error( "hello world\n" );
+#    $Lx->show_debug();
 
-    # Issue the given command
-    unless ( $cmd eq $addr ) {
-	print( STDERR  "+ cmd=", $cmd, "=\n" )  if ( $op_trace );
+#    $Lx->send_raw( "XX" );
 
-	print( $Fout  $cmd, "\n" );	# Send command
+#    $Lx->check_err();
 
-	Time::HiRes::sleep( 1.0 )  unless ( $op_TESTMODE );
-	# delay seconds before sending next command
-    }
+#    print( $Lx->decode_hardware( 0x77 ) );
 
-    my $errquery = "${addr}TE?";
-    print( STDERR  "+ chk=", $errquery, "=\n" )  if ( $op_trace );
+#    $Lx->show_HwConfig();
 
-    print( $Fout  $errquery, "\n" );	# Send error query
 
-    my $erno = '';
-    while ( <$Fin> ) {			# Read each response line
-	print( $_ );
-	chomp( $_ );
-
-	if ( m/^\d*TE\?\s*(\d*)/ ) {	# e.g. "0TE? 99"
-	    $erno = $1;
-
-	    unless ( length( $erno ) ) {
-		Error( "missing error number in return:  '$_'\n" );
-		last;
-	    } # unlikely response
-
-	    last;
-	}
-    }
-    # may be EOF
-
-    unless ( length( $erno ) ) {
-	Error( "no error status returned\n" );
-	last;
-    }
-
-    my %Msg = (
-	'0' => "No errors",
-	'1' => "Driver fault (open load)",
-	'2' => "Driver Fault (thermal shut down)",
-	'3' => "Driver fault (short)",
-	'6' => "Invalid command",
-	'7' => "Parameter Out of Range",
-	'8' => "No Motor connected",
-	'10' => "Brown-out",
-	'38' => "Command parameter missing",
-	'24' => "Positive hardware limit detected",
-	'25' => "Negative hardware limit detected",
-	'26' => "Positive software limit detected",
-	'27' => "Negative software limit detected",
-	'210' => "Max velocity exceeded",
-	'211' => "Max acceleration exceeded",
-	'213' => "Motor not enabled",
-	'214' => "Switch to invalid axis",
-	'220' => "Homing aborted",
-	'226' => "Parameter change not allowed during motion",
-    );
-
-    if ( $erno ) {
-	my $msg = $Msg{$erno};
-	if ( defined( $msg ) ) {
-	    Error( "NewStep: ($erno) $msg\n" );
-	}
-	else {
-	    Error( "($erno) unknown error number\n" );
-	}
-    }
-
-    if ( $op_TESTMODE ) {
-	close( $Fout );
-    }
-
+    if ( $Lx->Error() ) { exit( 1 ); }
 }
 
 exit( (Error()) ? 1 : 0 );
@@ -281,11 +235,11 @@ __END__
 
 =head1		NAME
 
-nscc - NewStep NSC200 literal Command/Query
+nsc - NewStep NSC200 literal Command/Query
 
 =head1		SYNOPSIS
 
- nscc  [options]  [N][cmd]
+ nsc  [options]  [N][cmd]
     N                   Controller address number {0..255}, default 0
     cmd                 NewStep command string, e.g. "SR?"
 			    No cmd queries the last error (TE?).
@@ -408,7 +362,13 @@ Show actions as they are executed on stderr.
  % export  NSC200_DEV=/dev/ttyUSB0
 
  # Run Absolute Position (PA) command to 1024 uSteps on controller 3.
- % nscc  PA1024
+ % nsc send  PA1024
+
+ # Query error status
+ % nsc error
+
+ # Query hardware status
+ % nsc hard
 
 =head1		ENVIRONMENT
 

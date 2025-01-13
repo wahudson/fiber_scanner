@@ -1,0 +1,71 @@
+2025-01-10  William A. Hudson
+
+		Library - NewStep NSC200 Controller Object
+		------------------------------------------
+
+For MKS-Newport NSC200 micrometer motion controller.
+
+----------------------------------------------------------------------------
+## Initial Ideas
+----------------------------------------------------------------------------
+
+Object:
+{
+}
+
+Methods:
+
+    send_raw( $cmd )	send only, no read, no error query
+    send_chk( $cmd )	send and check error
+			    Require no '?' on the command.
+
+    query_cmd( $cmd )	send a query command, read reply, no error check
+			    Require '?' on the command.
+
+    check_err()		send TE? and return decoded error text
+
+
+    query()		send query command, return result object
+
+    query_hardware()	Hardware Configuration (SH)
+    query_status()	Hardware Status (PH)
+    query_motor()	Motor status (TS)
+
+Query object:
+    {
+    }
+    get_query()		return query text
+    get_reply()		return reply text
+    get_value()		return numerical value of the reply
+
+	Field settings:  get_(), put_()
+    get_HardLimChk_1()
+    get_HomeSearch_1()
+    get_SoftLimChk_1()
+
+    push()		push settings to controller
+    query()		send query command, read result
+
+Operations and Use:
+
+    Constructor should open device file.  Ready to send/receive.
+
+    Send commands are only for non-query commands.  No '?' commands.
+    Query commands are only for receiving results.
+
+    Command text is the 2-character command, with arguments.
+
+    Errors returned via Error() subroutine.
+
+    Simple query results returned as text
+	Raw text or value.
+	Only the result value is returned, not the echoed query itself.
+
+	print( $Xc->query( "PA?" ) );
+
+    Query objects for complex results.
+	The query command returns an object which has the result.
+
+    Decoding is done by the query object.
+	Decoded values.
+
