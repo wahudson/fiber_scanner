@@ -103,6 +103,7 @@ USAGE
     if ( $op_stty || defined( $op_dev ) ) {	# set tty
 	my $cmd = "stty -F $NSC200_DEV  19200 cs8" .
 		" -parenb -cstopb ixon crtscts" .	# required by NewStep
+		" igncr -icrnl" .			# ignore carriage return
 		" -clocal -onlcr -echo -echoe -echok";	# were interfearing
 
 	print( STDERR  "+ $cmd\n" );
