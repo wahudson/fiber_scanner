@@ -10,7 +10,7 @@ Developing a command-line interface.
 
 See also:  fiber_scanner/doc/newstep_micrometer.text
 
-Files:  (2025-01-05)
+Files:  (2025-01-14)
 ------
 README		    this file
 
@@ -21,6 +21,8 @@ doc/		    Documentation
     nscinit_design.text		Initialize NSC200 serial port
 
 bin/		    Commands, script source code
+    NscLib.pm		NewStep NSC200 Controller interface module
+    nsc			NSC200 Controller cockpit Command/Query
     nscc		NSC200 literal Command/Query
     nscinit		Initialize NSC200 serial port (stty)
 

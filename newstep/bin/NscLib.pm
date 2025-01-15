@@ -195,6 +195,113 @@ sub send_raw
 }
 
 
+# Send query command to NewStep controller.
+#    It is followed by an error query (TE?) to check for unrecognized command.
+# call:
+#    $self->query( $cmd )
+#    $cmd    = command without controller address,  e.g. "SL?"
+# return:
+#    () = query result text, without the command
+# A query command may be invalid and return nothing.  A following error
+# query then returns "(6) Invalid command".
+#
+sub query_chk
+{
+    my( $self, $cmd ) = @_;
+
+    my $retval = undef;
+
+    unless ( $cmd =~ m/^[A-Z][A-Z]\?$/ ) {
+	$self->Error( "query_chk():  require 'XX?' command format:  $cmd\n" );
+	return( undef );
+    }
+
+    $self->send_raw( $cmd );		# Send query
+    $self->send_raw( "TE?" );		# Send error query
+
+    my $fh = $self->{FHin};
+    while ( <$fh> ) {			# Read each response line
+
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	chomp( $_ );
+
+	my $rcmd = undef;
+	my $rval = undef;
+
+	if ( m/^\d+([A-Z][A-Z]\?)\s*(\w+)$/ ) {		# e.g. "99XX? 42"
+	    $rcmd = $1;
+	    $rval = $2;
+	}
+	else {
+	    $self->Error( "query_chk():  unexpected reply format:  '$_'\n" );
+	    next;
+	}
+
+	if ( $rcmd eq $cmd ) {		# desired query
+	    $retval = $rval;
+	}
+	elsif ( $rcmd eq 'TE?' ) {	# error query
+	    if ( $rval ) {
+		$self->Error( $self->decode_err( $rval ), "\n" );
+	    }
+	    last;
+	}
+	else {
+	    $self->Error( "query_chk():  unexpected reply:  '$_'\n" );
+	}
+    }
+    # may be EOF
+
+    return( $retval );
+}
+
+
+# Decode NewStep error number (TE?).
+# call:
+#    $self->decode_err( $erno )
+#    $erno = error number
+# return:
+#    () = $text of error message, null '' if no error
+#
+sub decode_err
+{
+    my( $self, $erno ) = @_;
+
+    return( '' )  unless ( $erno );
+
+    my %Msg = (
+	'0' => "No errors",
+	'1' => "Driver fault (open load)",
+	'2' => "Driver Fault (thermal shut down)",
+	'3' => "Driver fault (short)",
+	'6' => "Invalid command",
+	'7' => "Parameter Out of Range",
+	'8' => "No Motor connected",
+	'10' => "Brown-out",
+	'38' => "Command parameter missing",
+	'24' => "Positive hardware limit detected",
+	'25' => "Negative hardware limit detected",
+	'26' => "Positive software limit detected",
+	'27' => "Negative software limit detected",
+	'210' => "Max velocity exceeded",
+	'211' => "Max acceleration exceeded",
+	'213' => "Motor not enabled",
+	'214' => "Switch to invalid axis",
+	'220' => "Homing aborted",
+	'226' => "Parameter change not allowed during motion",
+    );
+
+    my $msg = $Msg{$erno};
+
+    if ( defined( $msg ) ) {
+	return( "NewStep: ($erno) $msg" );
+    }
+    else {
+	return( "unknown error number:  $erno" );
+    }
+}
+
+
 # Query error status of NewStep controller.
 #    Send TE? and return decoded error text.
 # call:
@@ -269,6 +376,105 @@ sub check_err
     }
 
     return( 1 );
+}
+
+
+#---------------------------------------------------------------------------
+## Hardware Status (PH)
+#---------------------------------------------------------------------------
+
+# Query Hardware Status (PH?).
+# call:
+#    $self->query_status()
+# return:
+#    () = Hardware status, decimal integer value
+#
+sub query_status
+{
+    my( $self ) = @_;
+
+    my $cmd = "PH?";
+
+    $self->send_raw( $cmd );		# Send query
+
+    my $retnum = undef;
+    my $fh     = $self->{FHin};
+    while ( <$fh> ) {			# Read each response line
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	chomp( $_ );
+
+	if ( m/^\d*PH\?\s*(\d+)$/ ) {	# e.g. "0PH? 1572098"
+	    $retnum = $1;
+	    last;
+	}
+    }
+    # may be EOF
+
+    unless ( defined( $retnum ) ) {
+	$self->Error( "query_status():  reply not found:  $cmd\n" );
+    }
+
+    return( $retnum );
+}
+
+# Decode Hardware Status (PH?).
+# call:
+#    $self->decode_status( $stat_num )
+# return:
+#    () = @Text of Hardware status
+#
+sub decode_status
+{
+    my( $self, $nx ) = @_;
+
+    my @text = (
+	statx( $nx,  0, "Green LED on" ),
+	statx( $nx,  1, "Red LED on" ),
+	statx( $nx,  8, "Negative travel limit reached" ),
+	statx( $nx,  9, "Positive travel limit reached" ),
+	statx( $nx, 11, "Device reset button not pressed" ),
+	statx( $nx, 12, "Button A not pressed" ),
+	statx( $nx, 13, "Button B not pressed" ),
+	statx( $nx, 14, "Jog knob switch not pressed" ),
+	statx( $nx, 15, "Low voltage not detected" ),
+	statx( $nx, 16, "Encoder A signal high" ),
+	statx( $nx, 17, "Encoder B signal high" ),
+	statx( $nx, 18, "Driver line 1 no fault" ),
+	statx( $nx, 19, "Driver enabled" ),
+	statx( $nx, 20, "Driver line 2 no fault" ),
+    );
+
+    return( @text );
+}
+
+# Format status bit. (private)
+sub statx
+{
+    my( $word, $nbit, $text ) = @_;
+
+    my $bit = ($word >> $nbit) & 0x1;
+
+    return( "    $bit  [$nbit]  $text\n" );
+}
+
+
+# Show Hardware Status (PH?).
+# call:
+#    $self->show_status()
+#
+sub show_status
+{
+    my( $self ) = @_;
+
+    my $stat_num = $self->query_status();
+
+    if ( defined( $stat_num ) ) {
+	printf( "Hardware Status (PH?):  0x%08x\n", $stat_num );
+	print( $self->decode_status( $stat_num ) )
+    }
+    else {
+	$self->Error( "show_status():  query failed\n" );
+    }
 }
 
 

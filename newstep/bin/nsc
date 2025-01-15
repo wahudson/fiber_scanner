@@ -52,9 +52,12 @@ sub print_usage
     NewStep NSC200 controller interface
 usage:  $ProgName [main options] action [args..]
   action:  (require one)
-    send   XX...    send command, no address
-    error           query error status
-    hard            query hardware status
+    send   XX...    send command
+    query  XX?...   query command
+    status          show hardware status (PH?)
+    watch  XX YY .. watch a query command list
+    error           show error status
+    showconf        show hardware configuration (SH?)
   main options:
     --addr=N,-aN    controller address, {0..255}, (default 0)
     --trace,x       show execution on stderr
@@ -125,21 +128,16 @@ USAGE
 	TraceEx   => $op_trace,
     ) || exit( 1 );
 
-    if    ( $act eq 'send' ) {
-	unless ( @ARGV ) {
-	    Error( "require command arg\n" );
-	    last;
-	}
-	$Lx->send_raw( @ARGV );
-	$Lx->check_err();
-    }
-    elsif ( $act eq 'hard'   ) { $Lx->show_HwConfig();  }
-    elsif ( $act eq 'error'  ) { $Lx->check_err();      }
+    if    ( $act eq 'send'     ) { do_send(       $Lx ); }
+    elsif ( $act eq 'query'    ) { do_query(      $Lx ); }
+    elsif ( $act eq 'status'   ) { do_status(     $Lx ); }
+    elsif ( $act eq 'watch'    ) { do_watch(      $Lx ); }
+    elsif ( $act eq 'error'    ) { $Lx->check_err();      }
+    elsif ( $act eq 'showconf' ) { $Lx->show_HwConfig();  }
     else {
 	Error( "unknown action:  $act\n" );
     }
 
-last;
 
 #    $Lx->Error( "hello world\n" );
 #    $Lx->show_debug();
@@ -157,6 +155,89 @@ last;
 }
 
 exit( (Error()) ? 1 : 0 );
+
+
+#---------------------------------------------------------------------------
+## Actions
+#---------------------------------------------------------------------------
+
+# Send command, with error query.
+# call:
+#    do_send( $Lx );
+#
+sub do_send
+{
+    my( $xc ) = @_;
+    unless ( @ARGV ) {
+	Error( "require command arg\n" );
+	last;
+    }
+
+    $xc->send_raw( @ARGV );
+    $xc->check_err();
+    1;
+}
+
+
+# Query command, with error query.
+# call:
+#    do_query( $Lx );
+#
+sub do_query
+{
+    my( $xc ) = @_;
+    unless ( @ARGV ) {
+	Error( "require command arg\n" );
+	last;
+    }
+
+    print( $xc->query_chk( @ARGV ), "\n" );
+    1;
+}
+
+
+# Show status (PH?).
+# call:
+#    do_status( $Lx );
+#
+sub do_status
+{
+    my( $xc ) = @_;
+    if ( @ARGV ) {
+	Error( "no args used\n" );
+    }
+
+    $xc->show_status();
+    1;
+}
+
+
+# Watch a query command list.
+#    <ctrl-C> to quit.
+# call:
+#    do_watch( $Lx );
+#    @ARGV  = list of query commands without '?', e.g. "TP TS"
+#
+sub do_watch
+{
+    my( $xc ) = @_;
+    unless ( @ARGV ) {
+	Error( "require command arg\n" );
+	last;
+    }
+
+    $xc->{TraceEx} = 1;		# force trace to see replies
+
+    while ( 1 )
+    {
+	foreach my $que ( @ARGV ) {
+	    $xc->query_chk( $que . '?' );	# ignore return value
+	}
+	sleep( 1 );
+    }
+
+    1;
+}
 
 
 #---------------------------------------------------------------------------
@@ -235,24 +316,29 @@ __END__
 
 =head1		NAME
 
-nsc - NewStep NSC200 literal Command/Query
+nsc - NSC200 Controller cockpit Command/Query
 
 =head1		SYNOPSIS
 
- nsc  [options]  [N][cmd]
-    N                   Controller address number {0..255}, default 0
-    cmd                 NewStep command string, e.g. "SR?"
-			    No cmd queries the last error (TE?).
-  options:
-    --trace,-x          show execution on stderr
-    --help              show this usage
-    --man               show manual page
+ nsc [main options] action [args..]
+  action:  (require one)
+    send   XX...    send command
+    query  XX?...   query command
+    status          show hardware status (PH?)
+    watch  XX YY .. watch a query command list
+    error           show error status
+    showconf        show hardware configuration (SH?)
+  main options:
+    --addr=N,-aN    controller address, {0..255}, (default 0)
+    --trace,x       show execution on stderr
+    --help          show this usage
+    --man           show manual page
 
 
 =head1		DESCRIPTION
 
-Send literal NSC200 command string to the serial port and print any response
-on stdout.  Then query error status (TE? command) and report errors on stderr.
+Operate the NewStep NSC200 motorized micrometer controller.
+Is an abstraction of the 2-character ASCII command interface.
 
 Require controller serial port be defined in environment variable:  e.g.
 
