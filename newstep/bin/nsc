@@ -123,9 +123,10 @@ USAGE
 
     my $Lx = NscLib->new(
 	Error_sub => sub { Error( @_ ) },
-	AddrNum   => $op_addr,
-	TESTMODE  => $op_TESTMODE,
-	TraceEx   => $op_trace,
+	AddrNum      => $op_addr,
+	TESTMODE     => $op_TESTMODE,
+	TraceEx      => $op_trace,
+	TraceReply   => 1,
     ) || exit( 1 );
 
     if    ( $act eq 'send'     ) { do_send(       $Lx ); }

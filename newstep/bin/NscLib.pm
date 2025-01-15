@@ -14,6 +14,7 @@ use strict;
 #    DevFile      => "/dev/ttyUSB0",	# serial port device file
 #    AddrNum      => 0,		# controller address {0..255}
 #    TraceEx      => 0,		# trace execution flag, on STDERR
+#    TraceReply   => 0,		# trace reply     flag, on STDERR
 #    TESTMODE     => 0,		# test mode communication flag
 # }
 
@@ -56,6 +57,7 @@ sub new
 	DevFile      => $ENV{NSC200_DEV},	# serial port device file
 	TESTMODE     => 0,			# test mode communication
 	TraceEx      => 0,			# trace execution
+	TraceReply   => 0,			# trace response
 		# initialize
 	Error_cnt    => 0,
 	FHout        => undef,	# file handle out
@@ -69,6 +71,7 @@ sub new
 	'Error_sub',	# before any calls to $self->Error()
 	'TESTMODE',
 	'TraceEx',
+	'TraceReply',
 	'DevFile',
     ) {
 	if (                exists( $arg{$key} ) ) {
@@ -158,6 +161,7 @@ sub show_debug
     print( "AddrNum   = $self->{AddrNum}\n" );
     print( "TESTMODE  = $self->{TESTMODE}\n" );
     print( "TraceEx   = $self->{TraceEx}\n" );
+    print( "TraceReply= $self->{TraceReply}\n" );
     print( "Error_cnt = $self->{Error_cnt}\n" );
 }
 
@@ -222,13 +226,13 @@ sub query_chk
     my $fh = $self->{FHin};
     while ( <$fh> ) {			# Read each response line
 
-	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceReply} );
 	chomp( $_ );
 
 	my $rcmd = undef;
 	my $rval = undef;
 
-	if ( m/^\d+([A-Z][A-Z]\?)\s*(\w+)$/ ) {		# e.g. "99XX? 42"
+	if ( m/^\d+([A-Z][A-Z]\?)\s*(\S+)$/ ) {		# e.g. "99XX? 42"
 	    $rcmd = $1;
 	    $rval = $2;
 	}
@@ -320,7 +324,7 @@ sub check_err
     my $erno = '';
     my $fh   = $self->{FHin};
     while ( <$fh> ) {			# Read each response line
-	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceReply} );
 	chomp( $_ );
 
 	if ( m/^\d*TE\?\s*(\d*)/ ) {	# e.g. "0TE? 99"
@@ -400,7 +404,7 @@ sub query_status
     my $retnum = undef;
     my $fh     = $self->{FHin};
     while ( <$fh> ) {			# Read each response line
-	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceReply} );
 	chomp( $_ );
 
 	if ( m/^\d*PH\?\s*(\d+)$/ ) {	# e.g. "0PH? 1572098"
@@ -499,7 +503,7 @@ sub query_hardware
     my $retnum = undef;
     my $fh   = $self->{FHin};
     while ( <$fh> ) {			# Read each response line
-	print( STDERR  "+< ", $_ )  if ( $self->{TraceEx} );
+	print( STDERR  "+< ", $_ )  if ( $self->{TraceReply} );
 	chomp( $_ );
 
 	if ( m/^\d*SH\?\s*(\d+)$/ ) {	# e.g. "0SH? 255"
