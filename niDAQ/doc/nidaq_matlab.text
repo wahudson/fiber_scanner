@@ -76,6 +76,7 @@ String operations:
     strcat()	normal concatenation;  cell arrays strip trailing white-space
     append()	true concatenation, result is string if any input is string
     +           alias operator for append()
+    split()	split strings at delimiters or whitespace
     https://www.mathworks.com/help/matlab/characters-and-strings.html
     num2str( A, precision )	convert number into char array
     num2str( A, format )	convert number into char array
@@ -243,8 +244,11 @@ fclose( fileID );
     Similar to standard C.
     https://www.mathworks.com/help/matlab/ref/fprintf.html
 
-Plotting:
+Loops, flow control:  for, while, if, switch
+    https://www.mathworks.com/help/matlab/control-flow.html
 
+Plotting:
+---------
 figure(n)
     Create a new figure window.  n= figure number identifier
 figure()
@@ -322,6 +326,11 @@ mkdir( expDir )
 copyfile( "rcm_uno.m", expDir )
 cd( expDir )	change directory of Matlab editor
 open( file )	in Matlab editor
+
+Serial Port:
+------------
+    sp = serialport( "COM3", 19200 )	create serial port object, baud rate
+    https://www.mathworks.com/help/matlab/ref/serialport.html
 
 DAQ Explanations:
 -----------------

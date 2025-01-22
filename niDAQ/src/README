@@ -2,7 +2,7 @@
 		Source Code -- niDAQ/src/
 		-------------------------
 
-Files:
+Files:  2025-01-21
 ------
 README			this file
 
@@ -26,38 +26,40 @@ lockin_phase		Lockin Phase and Magnitude from data table
 one_lissajous.m		Simple pattern and data collection
 
 plot_ellipse		Plot XY ellipse from fiber scanner
-reformat_daq		Re-format DAQ data table to fixed-point numbers
 sweep.m			An early data set collection script
 
 		Galvo RCM Microscope (2024)
 NewExp.m		Bootstrap Matlab into a new experiment directory
 
 raster_gal.m		Raster scan galvanometer
-raster_gal.m,0625
 
 rcm_uno.m		RCM single-frame raster scan galvanometer Microscope
-rcm_uno.m,0709
-rcm_uno.m,0811
-qcm_uno.m		??
 scm_uno.m		fork of rcm_uno.m to linearize scan
 
+sig_stats		Compute Mean and SD for a file data vector
+
 numbin			Linearize cosine scan data with a bin map
-numbin0			numbin  without using Xbt threshold
 sinebin			Linearize sinusoidal scan data (advanced method)
 
 scanbin_test.m		Test port of numbin to linearize raster scan
-scanbin_test.m,norm	scanbin_test.m  without double() arithmetic fixes
-lintest.m,0809		in-line version of scanbin_test.m
 
 gridtest.m		Test gridbin() to linearize sinusoidal raster scan
-gridtest.m,0801
 
 galvo_gen_data		Recreate  raster_gal.m  XY drive values
 reformat_col		Re-format DAQ data to single column fixed-point numbers
+reformat_daq		Re-format DAQ data table to fixed-point numbers
 reformat_galvo		Re-format Galvo/DAQ data table to fixed-point numbers
 
 		Numeric data to Image file conversion
 to_pgm			Convert numeric list input to a PGM image file
 to_pgm0			Bare bones  to_pgm
 to_pgmFile		Run 'Command' (i.e. to_pgm) on a list of files.
+
+		Serial Port interface
+echo.m			Read commands on serial port (development)
+
+tmp/
+    gridtest.m,0801
+    lintest.m,0809	in-line version of scanbin_test.m
+    rcm_uno_100224.m
 
