@@ -192,8 +192,8 @@ sub send_raw
 
     print( {$self->{FHout}}  $cmd, "\n" );	# Send command
 
-    Time::HiRes::sleep( 1 )  unless ( $self->{TESTMODE} );
-    # delay seconds before sending next command
+    Time::HiRes::sleep( 0.2 )  unless ( $self->{TESTMODE} );
+    # delay seconds before sending next command (edge of OK is 0.1 s)
 
     return( 1 );
 }

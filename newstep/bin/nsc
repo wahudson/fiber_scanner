@@ -52,8 +52,8 @@ sub print_usage
     NewStep NSC200 controller interface
 usage:  $ProgName [main options] action [args..]
   action:  (require one)
-    send   XX...    send command
-    query  XX?...   query command
+    send   XX...    send any command
+    query  [XX ..]  query command list ('?' is implied)
     status          show hardware status (PH?)
     watch  XX YY .. watch a query command list
     error           show error status
@@ -116,7 +116,8 @@ USAGE
     my $act = shift( @ARGV );
 
     unless ( $act ) {
-	Error( "require command action\n" );
+	#!! Error( "require command action\n" );
+	$act = 'error';
     }
 
     last  if ( Error() );
@@ -162,7 +163,7 @@ exit( (Error()) ? 1 : 0 );
 ## Actions
 #---------------------------------------------------------------------------
 
-# Send command, with error query.
+# Send raw command followed by error query.
 # call:
 #    do_send( $Lx );
 #
@@ -180,7 +181,10 @@ sub do_send
 }
 
 
-# Query command, with error query.
+# Query command followed by error query.
+#    ARGV = list of query commands (without the '?').
+#    Each query is followed by an error check.
+#    Stop on first error, ignoring rest of ARGV.
 # call:
 #    do_query( $Lx );
 #
@@ -192,7 +196,27 @@ sub do_query
 	last;
     }
 
-    print( $xc->query_chk( @ARGV ), "\n" );
+    $xc->{TraceEx} = 1;		# force to see each command
+
+    foreach my $cmd ( @ARGV )
+    {
+	unless ( $cmd =~ m/^[A-Z][A-Z]$/ ) {
+	    Error( "require plain XX command, no '?':  $cmd\n" );
+	    last;
+	}
+
+	$cmd .= '?';
+
+	my $reply = $xc->query_chk( $cmd );
+
+	unless ( defined( $reply ) ) {
+	    Error( "no reply for:  $cmd\n" );
+	    next;
+	}
+
+	print( "$reply\n" );
+    }
+
     1;
 }
 
@@ -384,6 +408,10 @@ NewStep commands are of the form:
  93.  TP -?  Tell Position - Read Position
  90.  ST .-  Stop Motion
 
+ 94.  TS -?  Controller Motor Status
+ 80.  PH -?  Hardware Status - Get Hardware Status
+ 92.  TE -?  Tell Error - Read Error Code
+
  69.  JA .?  Jog - Start Jog Motion at speed nn
  70.  JS .?  Jog Scale Factor (speed multiplier)
 
@@ -399,10 +427,6 @@ NewStep commands are of the form:
  76.  OH .?  Homing Speed
  77.  OR .?  Home - Search for Home (negative hard limit)
  67.  DH .?  Define Home Position
-
- 94.  TS -?  Controller Motor Status
- 80.  PH -?  Hardware Status - Get Hardware Status
- 92.  TE -?  Tell Error - Read Error Code
 
  83.  SA .-  Set Controller Address
  82.  RS .-  Reset Controller

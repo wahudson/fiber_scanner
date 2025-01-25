@@ -1,0 +1,46 @@
+2025-01-25  William A. Hudson
+
+		nsc - NewStep NSC200 Controller Cockpit
+		---------------------------------------
+
+For MKS-Newport NSC200 micrometer motion controller.
+
+See also:  nscc_design.text  for earlier development.
+
+----------------------------------------------------------------------------
+## Principle Ideas
+----------------------------------------------------------------------------
+
+All commands check for Controller Error (TE?).
+
+All controller commands are slightly cooked:
+    No controller address.
+
+Sub commands:
+
+    send		- send any single non-query command
+
+    query [XX ..]	- send a list of query commands (with no '?').
+	    Default is only the error check.
+
+    On the command line, a '?' matches a single character in file names, and 
+    thus should be quoted.
+    Try to avoid the need for quoting.
+
+    Query a list of 2-char commands (e.g.  nsc SL SR TP) seems very useful.
+
+Maybe raw XX commands can be an implied action:
+    nsc [send] XX...
+
+Maybe no args is error check:
+    nsc			- error query
+
+
+Objectives:  2025-01-25
+    Envision an ultimate command-line system.
+    Get a working framework started that could become that ultimate thing.
+    Get enough working to explore the NSC200 controller reasonably well.
+    We need to learn how it really works, as the documentation is not
+    sufficient.
+    Need timeliness to turn-on new motor.
+
