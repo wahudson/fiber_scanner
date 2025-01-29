@@ -56,8 +56,10 @@ usage:  $ProgName [main options] action [args..]
     query  [XX ..]  query command list ('?' is implied)
     status          show hardware status (PH?)
     watch  XX YY .. watch a query command list
+    move  N         move to absolute N micro-steps
+    stop            stop motor
     error           show error status
-    showconf        show hardware configuration (SH?)
+    showconf        show hardware configuration (SH?) [invalid]
   main options:
     --addr=N,-aN    controller address, {0..255}, (default 0)
     --trace,x       show execution on stderr
@@ -137,6 +139,8 @@ USAGE
     elsif ( $act eq 'query'    ) { do_query(      $Lx ); }
     elsif ( $act eq 'status'   ) { do_status(     $Lx ); }
     elsif ( $act eq 'watch'    ) { do_watch(      $Lx ); }
+    elsif ( $act eq 'move'     ) { do_move(       $Lx ); }
+    elsif ( $act eq 'stop'     ) { do_stop(       $Lx ); }
     elsif ( $act eq 'error'    ) { $Lx->check_err();      }
     elsif ( $act eq 'showconf' ) { $Lx->show_HwConfig();  }
     else {
@@ -263,6 +267,73 @@ sub do_watch
 	}
 	sleep( 1 );
     }
+
+    1;
+}
+
+
+# Move to absolute micro-step position.
+# call:
+#    do_move( $Lx );
+#    @ARGV  = list of query commands without '?', e.g. "TP TS"
+#
+sub do_move
+{
+    my( $xc ) = @_;
+    unless ( scalar( @ARGV ) == 1 ) {
+	Error( "require move arg\n" );
+	return( 1 );
+    }
+
+    my $newpos = $ARGV[0];
+
+    my $oldpos = $xc->query_chk( "TP?" );
+    printf( "%d  start position (uStep)\n", $oldpos );
+
+    $xc->send_raw( "PA $newpos" );
+    $xc->check_err();
+
+    while ( 1 )
+    {
+	my $pos = $xc->query_chk( "TP?" );	# tell position
+	printf( "%d\n", $pos );
+
+	if ( $pos == $oldpos ) { last; }
+
+	$oldpos = $pos;
+	sleep( 1 )  unless ( $xc->{TESTMODE} );
+    }
+
+    my $motor = $xc->query_chk( "TS?" );	# motor status
+
+    unless ( $motor == 81 ) {
+	Error( "motor not stopped\n" );
+    }
+
+    1;
+}
+
+
+# Stop motor.
+# call:
+#    do_stop( $Lx );
+#    @ARGV  = list of query commands without '?', e.g. "TP TS"
+#
+sub do_stop
+{
+    my( $xc ) = @_;
+
+    $xc->send_raw( "ST" );
+    $xc->check_err();
+
+    my $motor = $xc->query_chk( "TS?" );	# motor status
+
+    unless ( $motor == 81 ) {
+	Error( "motor not stopped\n" );
+    }
+
+    my $pos = $xc->query_chk( "TP?" );
+    printf( "%d  position (uStep)\n", $pos );
 
     1;
 }
