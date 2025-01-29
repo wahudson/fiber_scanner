@@ -38,7 +38,7 @@ NSA12 Linear Actuator:  (Moterized Micrometer)  $885
     About a 0.8% error, is within a 1% expected accuracy.
 
     Drive screw pitch:  0.3048 mm/revolution = 0.01200 inch/revolution
-    	==> 83.333 threads/inch
+	==> 83.333 threads/inch
 
     Seems likely to want 0.10 um/Micro-step for ease of calculation, and
     accept the corresponding error in screw pitch as close enough.
@@ -174,7 +174,7 @@ Components:
 States of the System:  (single controller and motor)
 
     [[ Moving ]]	Motor running, some commands ignored.
-    				Long movement duration is possible.
+				Long movement duration is possible.
 
     [[ Ready ]]		Ready for movement.
 
@@ -186,12 +186,12 @@ States of the System:  (single controller and motor)
 
 From manuals or deduced:
 
-    Motor and Controller operate in "open loop" (see TP Read Position). 
+    Motor and Controller operate in "open loop" (see TP Read Position).
     Hardware limit found by the Home operation is the reference.
     Controller essentially counts Full steps (and micro steps) to know the
     position during or at end of motion.
 
-    The Search for Home (OH) command must be issued after controller is
+    The Search for Home (OR) command must be issued after controller is
     powered up (or reset?).  This sets the zero position of the absolute
     scale?
 
@@ -242,4 +242,99 @@ Process to Operate:
     Query state, configuration:
 
     Home search (OR)
+
+Initialization instructions:  (deduced from manual)
+
+    Power-on the controller.
+
+    Reset RS485 bus address of controller.  (p.45)
+	This sets address to 0.
+	The GUI can then see it as uninitialized.
+	Does not really reset anything else?
+
+	Manual state:  "Once a desired RS485 bus address has been entered,
+	the controller can then be digitally addressed in Remote mode using
+	either NewStep-Util software or ASCII commands."
+
+    Use NewStep-Util software (GUI):
+	This would normally do all the initialization.
+	But we do not have it, so we infer ASCII commands.
+
+    Set controller address:
+	ch 5.4  Controller Initialization  (p.49)
+	This walks user thru setting address to something non-zero.
+	It probably also Resets the controller (RS).
+
+	Firmware could behave different with a zero address.
+
+    Send (RS) Reset the Controller.
+	This is likely something the GUI would do.
+	Experience with "stuck motor" shows this can clear a stuck at
+	retracted hardware limit:  i.e. (PH?)
+	    0  [8]  Negative travel limit reached
+	    0  [9]  Positive travel limit reached
+
+    Network Scan ch5.5 (p.50)
+	This will scan the bus to find each controller, attached switchbox, and
+	attached positioners.
+
+	Switchbox has 8 channels for positioners.
+
+	A controller without a switchbox can have only one motor which is
+	always on channel 1.
+
+	(BX) Scan Switchbox
+	    Scan channels on switchbox, create a positioner table in controller.
+	(BX?) reports which switchbox channels have a positioner.
+
+	(MX) Select Switchbox Channel
+	    This is the mechanism to select active positioner on a controller.
+	    No Switchbox gives "Error 6 Invalid command".
+
+    Home the Positioner:
+	This essential step is all but overlooked in the manual.
+	It is necessary for the controller to find the only hardware limit
+	(fully retracted position) in order to know where the fully extended
+	position is.  Home essentially finds the fully retracted hard limit.
+
+	The Homing process drives the positioner inward until it reaches the
+	hard limit detector, and then backs out some amount, perhaps
+	~100 uSteps, to be off the hard limit.
+
+	The (OR?) Home query indicates if the positioner has been homed.
+
+	The GUI has a "Home" button, which will Home the positioner.
+	The Knob has a "Home" operation when the it is pressed-in for
+	    5 seconds.
+	The API has the (OR) Find Home command.
+	Once Homed, these commands merely move the positioner to the
+	position 0 (the home position) [I suspect].
+
+	There may be a home timeout, after which it flags error state
+	with Red LED and status of "[8]  Negative travel limit reached".
+	[New CONEX controller has a timeout.]
+
+    Controller Non-Volatile Memory:
+	The controller does remember the last position of a connected
+	Positioner over power-down.
+	Suspect that NVM is limited, and only used for essential things.
+	Hopefully it remembers Homed state also.
+
+	But the positioner could be replaced while powered down, and then the
+	remembered position is then Wrong!  This is a sure way to get
+	the positioner stuck.
+
+    Firmware bugs:
+	Almost certainly.
+	Random fiddling and unexpected input is likely to end badly.
+
+    Define Home (DH):
+	How does Define Home (DH) work?  What does it really do?
+	Is it part of Homing the Positioner?
+	Does it re-define the zero on the linear scale?
+	Is it just a convenience function?
+	Does it modify the Left/Right software limits?
+
+	2025-01-25  DH seems to only set current position to 0.
+	It does not change SL or SR.
 

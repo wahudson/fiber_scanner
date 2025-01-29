@@ -23,11 +23,33 @@ Sub commands:
     query [XX ..]	- send a list of query commands (with no '?').
 	    Default is only the error check.
 
-    On the command line, a '?' matches a single character in file names, and 
-    thus should be quoted.
-    Try to avoid the need for quoting.
+	On the command line, a '?' matches a single character in file names,
+	and thus should be quoted.  Try to avoid the need for quoting.
 
-    Query a list of 2-char commands (e.g.  nsc SL SR TP) seems very useful.
+	Query a list of 2-char commands (e.g.  nsc SL SR TP) seems very useful.
+
+    move		- send move and watch position
+	Include Home operation.
+	Watch position until it stops changing.
+	Check motor status at end.
+
+    stop		- stop motor, report motor status
+
+    conf		- show all configuration
+    limits		- show just limits
+	e.g. SL SR AU VU
+	Balance amount of output and completeness.  Two commands?
+
+    pos			- short position status
+	Position (TP), Motor status
+
+    status		- full status of everything
+	Maybe show whole config and status?
+	Home status.
+
+    hardware		- show hardware status (PH?)
+	Total 14 lines output.
+
 
 Maybe raw XX commands can be an implied action:
     nsc [send] XX...

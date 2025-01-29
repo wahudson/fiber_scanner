@@ -63,6 +63,9 @@ usage:  $ProgName [main options] action [args..]
     --trace,x       show execution on stderr
     --help          show this usage
     --man           show manual page
+  environment:
+    NSC220_ADDR     controller address {0..255} (default 0)
+    NSC220_DEV      serial port device file
 USAGE
 }
 
@@ -80,7 +83,7 @@ USAGE
     my $op_trace        = 0;
 #   my $op_verbose      = 0;
     my $op_TESTMODE     = 0;
-    my $op_addr         = 0;
+    my $op_addr         = $ENV{NSC220_ADDR} || 0;
 
     Getopt::Long::Configure(
 	'posix_default',
@@ -196,7 +199,7 @@ sub do_query
 	last;
     }
 
-    $xc->{TraceEx} = 1;		# force to see each command
+#!!    $xc->{TraceEx} = 1;		# force to see each command
 
     foreach my $cmd ( @ARGV )
     {
@@ -423,16 +426,16 @@ NewStep commands are of the form:
  72.  MF .-  Motor OFF (disabled)
  73.  MO .-  Motor ON (enabled)
 
- 75.  OA .?  Homing Acceleration
- 76.  OH .?  Homing Speed
+ 75.  OA .?  Homing Acceleration [invalid]
+ 76.  OH .?  Homing Speed [invalid]
  77.  OR .?  Home - Search for Home (negative hard limit)
  67.  DH .?  Define Home Position
 
  83.  SA .-  Set Controller Address
  82.  RS .-  Reset Controller
- 84.  SH .?  Set Hardware Configuration
+ 84.  SH .?  Set Hardware Configuration [invalid]
 
- 68.  ID .?  Positioner Identification - Set Positioner Name
+ 68.  ID .?  Positioner Identification - Set Positioner Name [invalid]
  64.  BA .?  Backlash Compensation
 
  87.  SM .-  Save in Memory - Save Settings to EEPROM (max writes ~100?)
