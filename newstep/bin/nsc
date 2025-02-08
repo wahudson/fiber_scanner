@@ -54,8 +54,10 @@ usage:  $ProgName [main options] action [args..]
   action:  (require one)
     send   XX...    send any command
     query  [XX ..]  query command list ('?' is implied)
-    status          show hardware status (PH?)
     watch  XX YY .. watch a query command list
+    status          show hardware status (PH?)
+    state           show System State {SL SR AC AU VA VU TP TS}
+    motor           motor status {Stopped, Moving, Disabled}
     move  N         move to absolute N micro-steps
     stop            stop motor
     error           show error status
@@ -137,8 +139,10 @@ USAGE
 
     if    ( $act eq 'send'     ) { do_send(       $Lx ); }
     elsif ( $act eq 'query'    ) { do_query(      $Lx ); }
-    elsif ( $act eq 'status'   ) { do_status(     $Lx ); }
     elsif ( $act eq 'watch'    ) { do_watch(      $Lx ); }
+    elsif ( $act eq 'status'   ) { do_status(     $Lx ); }
+    elsif ( $act eq 'state'    ) { do_state(      $Lx ); }
+    elsif ( $act eq 'motor'    ) { do_motor(      $Lx ); }
     elsif ( $act eq 'move'     ) { do_move(       $Lx ); }
     elsif ( $act eq 'stop'     ) { do_stop(       $Lx ); }
     elsif ( $act eq 'error'    ) { $Lx->check_err();      }
@@ -240,6 +244,41 @@ sub do_status
     }
 
     $xc->show_status();
+    1;
+}
+
+
+# Show system state.
+# call:
+#    do_state( $Lx );
+#
+sub do_state
+{
+    my( $xc ) = @_;
+    if ( @ARGV ) {
+	Error( "no args used\n" );
+    }
+
+    $xc->show_state_raw();
+    1;
+}
+
+
+# Show Motor status.
+# call:
+#    do_motor( $Lx );
+#
+sub do_motor
+{
+    my( $xc ) = @_;
+    if ( @ARGV ) {
+	Error( "no args used\n" );
+	return 0;
+    }
+
+    my $motor = $xc->query_motor();
+
+    print( "Motor:  $motor\n" );
     1;
 }
 

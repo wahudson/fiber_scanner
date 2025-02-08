@@ -202,7 +202,7 @@ sub send_raw
 # Send query command to NewStep controller.
 #    It is followed by an error query (TE?) to check for unrecognized command.
 # call:
-#    $self->query( $cmd )
+#    $self->query_chk( $cmd )
 #    $cmd    = command without controller address,  e.g. "SL?"
 # return:
 #    () = query result text, without the command
@@ -382,6 +382,80 @@ sub check_err
     return( 1 );
 }
 
+#---------------------------------------------------------------------------
+## Query State of system
+#---------------------------------------------------------------------------
+
+#!! Query results saved in object with a view toward accessor functions.  Maybe.
+
+# Show System State.
+#    Query set of state parameters:  SL SR AC AU VA VU TP TS
+#    Not included:  PA PR (previous move request)
+#    Results are set in the object.
+#!!  Probably want more useful units.
+# call:
+#    $self->show_state_raw()
+#
+sub show_state_raw
+{
+    my( $self ) = @_;
+
+    $self->{LeftLimit_SL}       = $self->query_chk( "SL?" );
+    $self->{RightLimit_SR}      = $self->query_chk( "SR?" );
+    $self->{Acceleration_AC}    = $self->query_chk( "AC?" );
+    $self->{MaxAcceleration_AU} = $self->query_chk( "AU?" );
+    $self->{Velocity_VA}        = $self->query_chk( "VA?" );
+    $self->{MaxVelocity_VU}     = $self->query_chk( "VU?" );
+    $self->{Position_TP}        = $self->query_chk( "TP?" );
+
+    my $motor = $self->query_motor();	# text state of motor
+
+    printf( "%10s  uStep      Left Limit\n",      $self->{LeftLimit_SL}    );
+    printf( "%10s  uStep      Right Limit\n",     $self->{RightLimit_SR}   );
+    printf( "%10s  FStep/s/s  Acceleration\n",    $self->{Acceleration_AC} );
+    printf( "%10s  FStep/s/s  Max Acceleration\n",$self->{MaxAcceleration_AU} );
+    printf( "%10s  FStep/s    Velocity\n",        $self->{Velocity_VA}     );
+    printf( "%10s  FStep/s    Max Velocity\n",    $self->{MaxVelocity_VU}  );
+    printf( "%10s  uStep      Position\n",        $self->{Position_TP}     );
+    printf( "%10s  --         Motor\n",           $motor                   );
+}
+
+#---------------------------------------------------------------------------
+## Motor Status (TS?)
+#---------------------------------------------------------------------------
+
+# Query Motor Status.
+# call:
+#    $self->query_motor()
+# return:
+#    () = Text state of motor
+#
+sub query_motor
+{
+    my( $self ) = @_;
+
+    my $motorTS = $self->query_chk( "TS?" );
+
+    unless ( defined( $motorTS ) ) {
+	$motorTS = 99;
+    }
+
+    $self->{Motor_TS} = $motorTS;
+
+    my %text = (
+	"81" => "Stopped",
+	"80" => "Moving",
+	"64" => "Disabled",
+    );
+
+    my $motor = $text{ $motorTS };
+    unless ( defined( $motor ) ) {
+	$motor = "unknown";
+	$self->Error( "query_motor():  bad motor state:  $motorTS\n" );
+    }
+
+    return( $motor );
+}
 
 #---------------------------------------------------------------------------
 ## Hardware Status (PH)
