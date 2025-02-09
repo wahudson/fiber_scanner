@@ -410,14 +410,14 @@ sub show_state_raw
 
     my $motor = $self->query_motor();	# text state of motor
 
-    printf( "%10s  uStep      Left Limit\n",      $self->{LeftLimit_SL}    );
-    printf( "%10s  uStep      Right Limit\n",     $self->{RightLimit_SR}   );
-    printf( "%10s  FStep/s/s  Acceleration\n",    $self->{Acceleration_AC} );
-    printf( "%10s  FStep/s/s  Max Acceleration\n",$self->{MaxAcceleration_AU} );
-    printf( "%10s  FStep/s    Velocity\n",        $self->{Velocity_VA}     );
-    printf( "%10s  FStep/s    Max Velocity\n",    $self->{MaxVelocity_VU}  );
-    printf( "%10s  uStep      Position\n",        $self->{Position_TP}     );
-    printf( "%10s  --         Motor\n",           $motor                   );
+    printf( "%10s  uStep      Left Limit (SL)\n",   $self->{LeftLimit_SL}    );
+    printf( "%10s  uStep      Right Limit (SR)\n",  $self->{RightLimit_SR}   );
+    printf( "%10s  FStep/s/s  Acceleration (AC)\n", $self->{Acceleration_AC} );
+    printf( "%10s  FStep/s/s  Max Acceleration (AU)\n", $self->{MaxAcceleration_AU} );
+    printf( "%10s  FStep/s    Velocity (VA)\n",     $self->{Velocity_VA}     );
+    printf( "%10s  FStep/s    Max Velocity (VU)\n", $self->{MaxVelocity_VU}  );
+    printf( "%10s  uStep      Position (TP)\n",     $self->{Position_TP}     );
+    printf( "%10s  --         Motor (TS)\n",        $motor                   );
 }
 
 #---------------------------------------------------------------------------

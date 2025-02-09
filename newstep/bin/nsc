@@ -65,6 +65,7 @@ usage:  $ProgName [main options] action [args..]
   main options:
     --addr=N,-aN    controller address, {0..255}, (default 0)
     --trace,x       show execution on stderr
+    --verbose,v     show responses on stderr
     --help          show this usage
     --man           show manual page
   environment:
@@ -85,7 +86,7 @@ USAGE
     # --TESTMODE     file descriptor 3 is data to serial port
 
     my $op_trace        = 0;
-#   my $op_verbose      = 0;
+    my $op_verbose      = 0;
     my $op_TESTMODE     = 0;
     my $op_addr         = $ENV{NSC220_ADDR} || 0;
 
@@ -102,7 +103,7 @@ USAGE
 	"--man"          => sub { do_man();       exit( 0 ) },
 
 	"--trace|x"      => \$op_trace,
-#	"--verbose|v"    => \$op_verbose,
+	"--verbose|v"    => \$op_verbose,
 	"--TESTMODE"     => \$op_TESTMODE,
 
 	"--addr=i"       => \$op_addr,
@@ -134,7 +135,7 @@ USAGE
 	AddrNum      => $op_addr,
 	TESTMODE     => $op_TESTMODE,
 	TraceEx      => $op_trace,
-	TraceReply   => 1,
+	TraceReply   => $op_verbose,
     ) || exit( 1 );
 
     if    ( $act eq 'send'     ) { do_send(       $Lx ); }
@@ -207,7 +208,7 @@ sub do_query
 	last;
     }
 
-#!!    $xc->{TraceEx} = 1;		# force to see each command
+    $xc->{TraceReply} = 1;		# force trace to see replies
 
     foreach my $cmd ( @ARGV )
     {
@@ -297,7 +298,7 @@ sub do_watch
 	last;
     }
 
-    $xc->{TraceEx} = 1;		# force trace to see replies
+    $xc->{TraceReply} = 1;		# force trace to see replies
 
     while ( 1 )
     {
