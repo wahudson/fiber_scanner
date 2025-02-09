@@ -35,6 +35,7 @@ Test suites:  (2025-01-01)
  p      = Program test (command) TestLib2.pm
 ------  --------------
  pbl    t_nscc/		NSC200 literal Command/Query
+ pbl    t_nsc/		NSC200 Controller cockpit Command/Query
 
 
 Test Setup:

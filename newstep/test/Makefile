@@ -8,7 +8,9 @@ SHELL = /bin/sh
 
 test:
 	cd t_nscc             && make test
+	cd t_nsc              && make test
 
 clean:
 	cd t_nscc             && make clean
+	cd t_nsc              && make clean
 

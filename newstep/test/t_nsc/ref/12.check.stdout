@@ -1,0 +1,22 @@
+    NewStep NSC200 controller interface
+usage:  nsc [main options] action [args..]
+  action:  (require one)
+    send   XX...    send any command
+    query  [XX ..]  query command list ('?' is implied)
+    watch  XX YY .. watch a query command list
+    status          show hardware status (PH?)
+    state           show System State {SL SR AC AU VA VU TP TS}
+    motor           motor status {Stopped, Moving, Disabled}
+    move  N         move to absolute N micro-steps
+    stop            stop motor
+    error           show error status
+    showconf        show hardware configuration (SH?) [invalid]
+  main options:
+    --addr=N,-aN    controller address, {0..255}, (default 0)
+    --trace,x       show execution on stderr
+    --verbose,v     show responses on stderr
+    --help          show this usage
+    --man           show manual page
+  environment:
+    NSC220_ADDR     controller address {0..255} (default 0)
+    NSC220_DEV      serial port device file
