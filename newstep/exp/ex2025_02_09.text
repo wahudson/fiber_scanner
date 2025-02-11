@@ -1,0 +1,495 @@
+2025-02-09  William A. Hudson
+
+		NewStep Controller
+		------------------
+Purpose:
+    Turn-on/verify new NSA12 Motor (silver vacuum model).
+	This motor seems stuck also.
+	Continuing after a week long break.
+
+Setup:
+    At home.  Linux wah-pavilion.
+    Git:  b9ebae00b1  Sat Feb 8 20:58:33 2025 -0700
+
+Result:  2025-02-09
+    Both motors are jammed, but in different ways.
+
+----------------------------------------------------------------------------
+## Outline Procedure:
+----------------------------------------------------------------------------
+
+ v  Initialize:
+	% nscinit --dev=/dev/ttyUSB0
+	export NSC200_DEV=/dev/ttyUSB0
+
+	% export NSC200_DEV=/dev/ttyUSB0
+
+ v  Power up:
+	% nsc -x error
+
+ v  Show full status.
+	% nsc state
+	% nsc status
+
+ v  Use default Limits, acceleration and velocity.
+
+ v  Move ~5 mm
+	Watch movement.
+	% nsc move 50000
+
+ x  Try home, Watch movement.
+	% nsc watch TP? TS?
+
+----------------------------------------------------------------------------
+## Silver Motor  2025-02-09  (new vacuum unit)
+----------------------------------------------------------------------------
+
+Motor connected to controller.
+
+Power up:
+	LED is Red.
+
+    [] nsc -x -v error
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0TE?=
+    ^C
+	Hangs.  Power cycle.  Reset button.
+	Mysteriously it started working.
+
+    [] nsc -x -v error
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0TE?=
+    +< 0TE? 0
+
+    [] nsc -x -v query TP
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 10000
+    +< 0TE? 0
+    10000
+
+Check status
+
+    [] nsc status
+    Hardware Status (PH?):  0x0017fc03
+	1  [0]  Green LED on
+	1  [1]  Red LED on
+	0  [8]  Negative travel limit reached
+	0  [9]  Positive travel limit reached
+	1  [11]  Device reset button not pressed
+	1  [12]  Button A not pressed
+	1  [13]  Button B not pressed
+	1  [14]  Jog knob switch not pressed
+	1  [15]  Low voltage not detected
+	1  [16]  Encoder A signal high
+	1  [17]  Encoder B signal high
+	1  [18]  Driver line 1 no fault
+	0  [19]  Driver enabled 1  [20]  Driver line 2 no fault
+
+    [] nsc state
+	     0  uStep      Left Limit (SL)
+	116000  uStep      Right Limit (SR)
+	624.00  FStep/s/s  Acceleration (AC)
+       1239.00  FStep/s/s  Max Acceleration (AU)
+	156.00  FStep/s    Velocity (VA)
+	312.00  FStep/s    Max Velocity (VU)
+	 10000  uStep      Position (TP)
+       Stopped  --         Motor (TS)
+
+Try Moving at default speed:
+
+    [] nsc -x -v move 1000
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 10000
+    +< 0TE? 0
+    10000  start position (uStep)
+    + cmd=0PA 1000=
+    + cmd=0TE?=
+    +< 0TE? 0
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 7272
+    +< 0TE? 0
+    7272
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 1000
+    +< 0TE? 0
+    1000
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 1000
+    +< 0TE? 0
+    1000
+    + cmd=0TS?=
+    + cmd=0TE?=
+    +< 0TS? 81
+    +< 0TE? 0
+
+    [] nsc -v query OR
+    +< 0OR? 0
+    +< 0TE? 0
+    0
+	Not Homed.
+
+    [] nsc -v move 30000
+    +< 0TP? 1000
+    +< 0TE? 0
+    1000  start position (uStep)
+    +< 0TE? 0
+    +< 0TP? 3699
+    +< 0TE? 0
+    3699
+    +< 0TP? 17672
+    +< 0TE? 0
+    17672
+    +< 0TP? 30000
+    +< 0TE? 0
+    30000
+    +< 0TP? 30000
+    +< 0TE? 0
+    30000
+    +< 0TS? 81
+    +< 0TE? 0
+
+Length:  2.635 inch  did not move
+
+[] nsc move 80000
+    30000  start position (uStep)
+    32701
+    46670
+    60642
+    74613
+    80000
+    80000
+	Can feel/hear the motor physically vibrating!
+	Length:  2.635 inch  unchanged
+
+==> The motor is definitely stuck.
+
+[] nsc state
+	 0  uStep      Left Limit (SL)
+    116000  uStep      Right Limit (SR)
+    624.00  FStep/s/s  Acceleration (AC)
+   1239.00  FStep/s/s  Max Acceleration (AU)
+    156.00  FStep/s    Velocity (VA)
+    312.00  FStep/s    Max Velocity (VU)
+     80000  uStep      Position (TP)
+   Stopped  --         Motor (TS)
+
+[] nsc status
+Hardware Status (PH?):  0x0017fc03
+    1  [0]  Green LED on
+    1  [1]  Red LED on
+    0  [8]  Negative travel limit reached
+    0  [9]  Positive travel limit reached
+    1  [11]  Device reset button not pressed
+    1  [12]  Button A not pressed
+    1  [13]  Button B not pressed
+    1  [14]  Jog knob switch not pressed
+    1  [15]  Low voltage not detected
+    1  [16]  Encoder A signal high
+    1  [17]  Encoder B signal high
+    1  [18]  Driver line 1 no fault
+    0  [19]  Driver enabled
+    1  [20]  Driver line 2 no fault
+
+	LED is Yellow.
+
+----------------------------------------
+Power Cycle and try again.
+
+	Spindle is fully retracted, length = 2.635 inch
+
+    [] nsc -v error
+    +< 0TE? 0
+    [wah-pavilion:/home/wah]
+    [] nsc status
+    Hardware Status (PH?):  0x0017fc03
+	1  [0]  Green LED on
+	1  [1]  Red LED on
+	0  [8]  Negative travel limit reached
+	0  [9]  Positive travel limit reached
+	1  [11]  Device reset button not pressed
+	1  [12]  Button A not pressed
+	1  [13]  Button B not pressed
+	1  [14]  Jog knob switch not pressed
+	1  [15]  Low voltage not detected
+	1  [16]  Encoder A signal high
+	1  [17]  Encoder B signal high
+	1  [18]  Driver line 1 no fault
+	0  [19]  Driver enabled
+	1  [20]  Driver line 2 no fault
+
+    [] nsc state
+	     0  uStep      Left Limit (SL)
+	116000  uStep      Right Limit (SR)
+	624.00  FStep/s/s  Acceleration (AC)
+       1239.00  FStep/s/s  Max Acceleration (AU)
+	156.00  FStep/s    Velocity (VA)
+	312.00  FStep/s    Max Velocity (VU)
+	 80000  uStep      Position (TP)
+       Stopped  --         Motor (TS)
+
+Re-define zero, since it is fully retracted.
+
+    [] nsc query TP
+    +< 0TP? 80000
+    +< 0TE? 0
+    80000
+
+    [] nsc send DH 0
+
+    [] nsc query TP
+    +< 0TP? 0
+    +< 0TE? 0
+    0
+
+Move at default speed, about 5 mm:
+
+    [] nsc -x -v move 50000
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 0
+    +< 0TE? 0
+    0  start position (uStep)
+    + cmd=0PA 50000=
+    + cmd=0TE?=
+    +< 0TE? 0
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 2703
+    +< 0TE? 0
+    2703
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 16674
+    +< 0TE? 0
+    16674
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 30646
+    +< 0TE? 0
+    30646
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 44615
+    +< 0TE? 0
+    44615
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 50000
+    +< 0TE? 0
+    50000
+    + cmd=0TP?=
+    + cmd=0TE?=
+    +< 0TP? 50000
+    +< 0TE? 0
+    50000
+    + cmd=0TS?=
+    + cmd=0TE?=
+    +< 0TS? 81
+    +< 0TE? 0
+
+	Motor vibrated, LED flashed, no movement.
+	LED is Yellow.
+	Length:  2.635 inch, unchanged
+
+    [] nsc state
+	     0  uStep      Left Limit (SL)
+	116000  uStep      Right Limit (SR)
+	624.00  FStep/s/s  Acceleration (AC)
+       1239.00  FStep/s/s  Max Acceleration (AU)
+	156.00  FStep/s    Velocity (VA)
+	312.00  FStep/s    Max Velocity (VU)
+	 50000  uStep      Position (TP)
+       Stopped  --         Motor (TS)
+
+    [] nsc status
+    Hardware Status (PH?):  0x0017fc03
+	1  [0]  Green LED on
+	1  [1]  Red LED on
+	0  [8]  Negative travel limit reached
+	0  [9]  Positive travel limit reached
+	1  [11]  Device reset button not pressed
+	1  [12]  Button A not pressed
+	1  [13]  Button B not pressed
+	1  [14]  Jog knob switch not pressed
+	1  [15]  Low voltage not detected
+	1  [16]  Encoder A signal high
+	1  [17]  Encoder B signal high
+	1  [18]  Driver line 1 no fault
+	0  [19]  Driver enabled
+	1  [20]  Driver line 2 no fault
+
+	==> Sounds like motor is spinning, but spindle does not move.
+	Definitely stuck.
+
+----------------------------------------------------------------------------
+## Black Motor  2025-02-09  (old unit)
+----------------------------------------------------------------------------
+
+    Power Off.
+    Length:  2.602 inch
+
+    Power ON.
+    LED is Red.
+
+    [] nsc -v error
+    +< 0TE? 25
+    Error:  NewStep: (25) Negative hardware limit detected
+
+    [] nsc status
+    Hardware Status (PH?):  0x0017fd02
+	0  [0]  Green LED on
+	1  [1]  Red LED on
+	1  [8]  Negative travel limit reached
+	0  [9]  Positive travel limit reached
+	1  [11]  Device reset button not pressed
+	1  [12]  Button A not pressed
+	1  [13]  Button B not pressed
+	1  [14]  Jog knob switch not pressed
+	1  [15]  Low voltage not detected
+	1  [16]  Encoder A signal high
+	1  [17]  Encoder B signal high
+	1  [18]  Driver line 1 no fault
+	0  [19]  Driver enabled
+	1  [20]  Driver line 2 no fault
+
+    [] nsc state
+	     0  uStep      Left Limit (SL)
+	116000  uStep      Right Limit (SR)
+	624.00  FStep/s/s  Acceleration (AC)
+       1239.00  FStep/s/s  Max Acceleration (AU)
+	156.00  FStep/s    Velocity (VA)
+	312.00  FStep/s    Max Velocity (VU)
+	 50000  uStep      Position (TP)
+       Stopped  --         Motor (TS)
+
+	Remembers last position.
+
+Re-define zero, since it is fully retracted.
+
+    [] nsc -x -v  send DH 0
+    + open serial port:  /dev/ttyUSB0
+    + cmd=0DH 0=
+    + cmd=0TE?=
+    +< 0TE? 0
+
+Move at default speed, about 5 mm:
+
+    [] nsc move 50000
+    0  start position (uStep)
+    2699
+    16676
+    30650
+    44623
+    50000
+    50000
+	Felt a bit of a thump at beginning.
+	No motor sound or vibration.
+	No movement, Length = 2.602 inch, unchanged.
+	LED is Red.
+
+Try again, see if can detect rotor turning:
+
+    [] nsc move 100000
+    50000  start position (uStep)
+    52695
+    66666
+    80642
+    94613
+    100000
+    100000
+	I did feel and hear an initial jump from motor.
+	No motor sound or vibration.
+	This suggests at least one motor winding must have continuity.
+	Length:  2.604 inch, moved out ~0.002 inch (maybe).
+
+	==> Motor is definitely stuck.
+
+Try exceeding positive limit:  (exploring controller)
+
+    [] nsc state
+	     0  uStep      Left Limit (SL)
+	116000  uStep      Right Limit (SR)
+	624.00  FStep/s/s  Acceleration (AC)
+       1239.00  FStep/s/s  Max Acceleration (AU)
+	156.00  FStep/s    Velocity (VA)
+	312.00  FStep/s    Max Velocity (VU)
+	100000  uStep      Position (TP)
+       Stopped  --         Motor (TS)
+
+    [] nsc move 120000
+    100000  start position (uStep)
+    Error:  NewStep: (7) Parameter Out of Range
+    100000
+
+    [] nsc move 115990
+    100000  start position (uStep)
+    102697
+    115921
+    115990
+    115990
+	Felt and heard a glitch, as if rotor jumped and ran into something.
+
+    [] nsc status
+    Hardware Status (PH?):  0x0017fd02
+	0  [0]  Green LED on
+	1  [1]  Red LED on
+	1  [8]  Negative travel limit reached
+	0  [9]  Positive travel limit reached
+	1  [11]  Device reset button not pressed
+	1  [12]  Button A not pressed
+	1  [13]  Button B not pressed
+	1  [14]  Jog knob switch not pressed
+	1  [15]  Low voltage not detected
+	1  [16]  Encoder A signal high
+	1  [17]  Encoder B signal high
+	1  [18]  Driver line 1 no fault
+	0  [19]  Driver enabled
+	1  [20]  Driver line 2 no fault
+
+----------------------------------------------------------------------------
+## Conclusions:
+----------------------------------------------------------------------------
+
+Silver Motor:  (the new vacuum unit)
+    Spindle is stuck, but rotor is probably turning.
+    Feel/hear sounds of rotor turning, but spindle does not move.
+    Negative hardware limit is NOT indicated - is it faulty?  LED is Yellow.
+    Spindle appears fully retracted, Length = 2.635 inch (at negative limit).
+    Mounting cone is loose in housing.
+
+Black Motor:  (the old unit)
+    Spindle is stuck, and motor is jammed.
+    No sounds of rotor turning, but get rotor jerk sound at beginning.
+    Negative hardware limit is always indicated.  LED is Red.
+    Spindle appears fully retracted, Length = 2.604 inch (at negative limit).
+    Mounting cone feels tight in housing.
+
+Software:
+    My 'nsc' command is working well.
+    The high-level commands to decode error states, decode hardware status,
+    show controller configuration, and monitor motor movement are very helpful.
+
+NewStep Controller:
+    The controller seems to be functioning correctly.
+
+    Hardware limit seems OK, as the Black Motor indicates hardware limit
+    while the Silver Motor does not.
+
+    The motor driver seems functional, since the Silver Motor sounds like
+    the rotor is turning.
+
+    Movement commands (PA) and read back (TP?) are consistent with open-loop
+    motor movement, even though the spindle does not move.
+
+Next:
+    Take motor apart and see what is stuck.
+    Mounting cone unscrews from housing.
+

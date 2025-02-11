@@ -1,0 +1,20 @@
+2025-01-24  William A. Hudson
+
+		NewStep Controller Experiments
+		------------------------------
+Files:
+------
+README
+		    Controller with stuck motor
+ex2025_01_07.text	Very first try.
+ex2025_01_10/		at CSU, Reset controller
+ex2025_01_12/		First Run at my house, talking on address 0
+ex2025_01_14.text	Stuck motor, using 'nsc' script NscLib.pm
+ex2025_01_15.text	Stuck motor, try homing, sleep duration
+
+ex2025_01_22/		Matlab serial port, echo.m script, at CSU
+ex2025_01_25/		Initial turn-on of Silver motor
+
+ex2025_01_28.text	Turn-on Silver motor, low speed.
+ex2025_02_09.text	Run Black and Silver motors, default speed, both stuck
+
