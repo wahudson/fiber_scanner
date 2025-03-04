@@ -3,7 +3,24 @@
 		NewStep Micrometer Operation
 		----------------------------
 
-See also:  fiber_scanner/doc/newstep_micrometer.text
+See also:
+    fiber_scanner/doc/newstep_micrometer.text
+
+    /home/var/ref/NSC200-User-Manual-2005.pdf
+	NewStep User's Manual (old knob controller, copy from Jesse Wilson)
+	We have this one.
+
+    /home/var/ref/NSA12_micrometer_motor.pdf
+	Using a NSA12 with a controller other than Newport CONEX-PP.
+	https://www.newport.com/p/NSA12
+	    -> DS-032402 NSA12 Application Note (1.1 MB, PDF)
+	    Accessed 2025-02-06.
+
+    https://www.newport.com/f/linear-actuators-with-conex-controller
+	-> CONEX Datasheet (4.2 MB, PDF)
+	-> CONEX-NSA12 - User's Manual (178.9 kB, PDF)
+	-> CONEX-PP Command Interface User Manual (779.7 kB, PDF)
+	This is the newer controller, rectangular box, no knob.
 
 ----------------------------------------------------------------------------
 ## Hardware:
@@ -186,6 +203,11 @@ States of the System:  (single controller and motor)
 
 From manuals or deduced:
 
+    Position Direction:  (from DS-032402 NSA12 Application Note)
+    Home position is at the Negative limit (Left), fully retracted.
+    Positive direction (Right) is extending the spindle.
+    The travel limits identify the Left (SL) and Right (SR) directions.
+
     Motor and Controller operate in "open loop" (see TP Read Position).
     Hardware limit found by the Home operation is the reference.
     Controller essentially counts Full steps (and micro steps) to know the
@@ -337,4 +359,29 @@ Initialization instructions:  (deduced from manual)
 
 	2025-01-25  DH seems to only set current position to 0.
 	It does not change SL or SR.
+
+----------------------------------------------------------------------------
+## NSA12 Motor appears jammed.
+----------------------------------------------------------------------------
+    NSA12 Linear Actuator (Moterized Micrometer)
+
+Possible causes:
+
+    Motor rotor is actually jammed, i.e. run to its mechanical limit.
+
+    Micrometer screw is gummed up.
+	Grease has hardened?
+	Possibility on vacuum motor.
+	Not likely on old motor, since we saw it move correctly.
+
+    Motor windings failed open.
+
+    Controller drive phases failed, no output current.
+
+    Hard limit optical detector failed:
+	No +5 V power.
+	LED failed.
+	Phototransistor failed.
+
+    Connector/wiring failed.
 

@@ -64,4 +64,60 @@ RS-232 port identification:
     C) Hardwired in code.
 	- We can do better.
 
+----------------------------------------------------------------------------
+## RCM Z-stage
+----------------------------------------------------------------------------
+
+    Use NAS12 motorized micrometer on RCM stage for Z-height.
+
+Z-stack collection:
+    Manual position Z for center of stack, i.e. focus on object.
+    Then automatic scan +-Range on both sides stepping a fixed amount Dstep.
+    Stop at each Dstep and tell Matlab to capture an  image.
+    Control is from Linux box running eh motorized micrometer.
+
+Manual positioning:
+    Use the NewStep controller Knob to set start position.
+    Computer can read out that position and scan around it.
+
+Matlab RCM image capture:  (on Windows box)
+    Is essentially the existing rcm_uno.m program with a minor addition.
+
+    Read serial port for commands from Linux box running the micrometer.
+    Main command is to take an image and save it as the given file name.
+    File name has the Z-height.
+
+    Idea is to keep the Matlab script focused on one task - take an image.
+    It is already too complex and mostly un-testable.  Do not want to add
+    even more complexity of a Z-sweep.
+
+    while ( 1 )
+    {
+	Read cmd from serial port.  Want to block waiting for input.
+
+	Do action specified by command:
+	case cmd in
+	{
+	    "echo":  echo response
+
+	    "image":
+		ofile = command argument
+		Run RCM image capture, save image in ofile.
+	}
+	Write "done" indicator on serial port.
+    }
+
+Z-stack on Linux Box:
+
+    for ( z= start;  z < end;  z = z + dz )
+    {
+	Move stage to z position.  Wait for completion.
+
+	ofile = prefix . z . ".png";
+
+	Send command to Matlab:  "image  " . ofile
+
+	Read reply from Matlab.  Want block on reading.
+	Print reply.
+    }
 
