@@ -1,0 +1,136 @@
+2024-07-03  William A. Hudson
+
+		Issues - Galvo Scanner
+		----------------------
+
+Done:
+
+ v  Initial  rcm_uno.m  turn-on and debug.
+
+    Analyze 2024-07-02 results:
+	v  Scan line across USAF target.
+	v  Measure FOV - about 1.4 mm in Y
+	v  Compute X step size in center.
+	v  New XY steps sizes.
+	   Writeup ??
+
+
+CSU 2024-07-05
+
+    Does imshow() display one pixel per sample?
+	Just observe live display, don't try to fix it.
+	Cannot tell.
+
+ v  Does pgm_file using read-back work?  Don't fix it, turn off.
+	Yes, works.
+
+ v  Adjust focus.  Center USAF 1951 target.  Pinhole minimum.
+
+ x  Verify waves with plot fig1, fig2 ?
+
+ v  Verify new parameters:  SampleY_n, freqX_Hz, frameSamp_n, periodY_s,
+	wX, dX0_V, imageXu_n
+
+    Verify fig4 single FOV image.  Comment out dual FOV?
+	But note ~10 pixel phase delay.  Want to see mirror axis.
+
+ v  Adjust DAQ sample rate.  Try 125,000  250,000  100,000
+	Tried 125,000 works fine.
+
+ v  Check execution speed on T: drive.
+	Is much faster.
+
+ v  Adjust XY samples to be roughly square.  < theory compute
+	At 62500 Sa/s  X= 2000 Sa, y= 400 Sa, about 16 seconds
+
+ v  Collect Z-stack, 20 um steps.
+
+ v  Try 2x sample resolution at best focus.
+
+ v  periodX_s and periodY_s look totally wrong
+
+ v  Compute total time needed.  frameSamp_s
+
+ v  Save data after showing image.
+
+ v  Continuous acquision/display loop.
+
+ v  Rendered image save.  For quick reference later.
+	Just save the jpg.
+
+ v  Want square image aspect ratio in center.
+	Adjust X and Y samples.
+	Perhaps a common scale factor.
+
+ v  Raw data save, compression, parameters - one signal column.
+
+ v  Want single-FOV display.  Two side-by-side is a bit confusing.
+
+Next:
+
+    Linearize preview image.  (Jesse code)   call scanbin() once.
+
+    Histogram equalization.  (Jesse code)
+
+    Compute signal/image mean, SD, and delta max-min.
+
+    Align output file numbers and figure numbers.
+
+Features:
+
+    Linear X in display - gridbin simple solution.
+
+    Linear X in display - proper X interpolation.
+
+    Contrast range control for image.
+
+    FOV measurement or calibration.
+
+    Z-stack method for collection.
+
+    Parallel acquision/display method.
+
+Optical:
+
+    Intensity flat over FOV.
+    Symmetric beam spot, no shadowing on edges of pattern.
+    Pinhole properly aligned.
+    Aperature stop before pinhole lens.
+    Measure FOV, pixel size.
+
+Issues:
+
+ >  to_pgm:  options for min/max intensity
+
+    Display resolution problem.  Want one pixel per sample.
+	Does imshow() display one pixel per sample?
+	Is it exportgraphics() that distorts image?
+	Verify one pixel per sample on display.
+	The exportgraphics() .jpg is distorted.
+
+    Config paramater names rationalized.
+	X,Y size
+	Amplitude or width in Volts.
+
+    Measure Z depth of focus.
+	Find good focus, step Z by 50 um.
+
+    Contrast adjustment.
+	Min/Max intensity scale.  Let saturate outside that range.
+
+    Auto-scale contrast.  Controls, or fixed.
+
+    Sample rate adjusted.  62500, 100000
+
+    Measure FOV with ruler.
+    Measure FOV by micrometer offset stage.
+    Measure FOV by test target line pair.
+	2024_07_02 out8:  Y is ~1.4 mm (0.055 inch), 3.5 um/pixel
+
+Bugs in Matlab:
+
+    imwrite() .pgm looks broken, values out-of-range.
+
+    .pgm files - not handled correctly by Matlab?
+
+

@@ -1,0 +1,38 @@
+2026-02-21  William A. Hudson
+
+		NI DAQ Analog IO
+		----------------
+
+Experiments and MatLab code for Reflectance Confocal Microscope (RCM),
+both Fiber Scanner system and Galvo system.
+
+National Instruments USB-6211:
+   "16-input, 16-bit  250 kS/s Multifunction IO"
+
+Git for Windows:  https://gitforwindows.org/
+
+Files:  (2026-02-21)
+------
+README		    this file
+
+doc/		    Documentation
+    daq6211_connect.text	niDAQ USB-6211 Connections
+    issues_galvo.text		Issues - Galvo Scanner
+    michelson.text		RCM Michelson Interferometer
+    nidaq_matlab.text		niDAQ in Matlab
+    numbin_design.text		Linearize Sinusoidal Scan - numbin Design
+    plan_galvo.text		Galvo Scanner Partial Plan
+    rcm_architecture.text	RCM Galvo Scanner, Software Philosophy
+    sinebin_design.text		Linearize Sinusoidal Scan - sinebin Design
+
+exp/		    Experiments and Results
+    README
+
+src/		    Source code
+    README
+
+test/		    Testing code
+    README
+
+bme/		    BMD senior design 2024
+

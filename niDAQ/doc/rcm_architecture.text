@@ -1,0 +1,78 @@
+2025-01-23  William A. Hudson
+
+		RCM Galvo Scanner
+		-----------------
+
+Reflectance Confocal Microscope (RCM) implemented with Galvo scanning mirrors.
+
+----------------------------------------------------------------------------
+## Philosophy - Software  2025-01-23
+----------------------------------------------------------------------------
+
+Capturing thoughts about what my intuition and experience is telling me.
+
+Matlab:  (My View)
+    My view:  Having done enough programming in Matlab to see the problems,
+    I conclude it is simply a bad language.  I am sure at the beginning it
+    was a good thing focused on linear algebra and matrices.  Now it has
+    expanded to do everything poorly.  Lots of function documentation, mostly
+    by examples, but no actual language definition - probably because it
+    has become so twisted and irregular.
+
+    There is no real pass-by-reference ability in Matlab.
+    There is a class definition that produces handle objects (a reference
+    to an object), but they all point to the same object.  Why?
+
+    It seems object oriented use is to pass the object into the function
+    (by value copy), and then return the object to replace the object
+    passed in.  No wonder it is slow.
+
+    I am not interested in learning more Matlab.  It is a pay-walled dead end.
+
+    "When you find yourself in a hole, stop digging."
+
+    Others agree:
+
+I Hate Matlab: How an IDE, a Language, and a Mentality Harm  (2017)
+    https://neuroplausible.com/matlab
+    Limited Skill Transfer.  Harms learning.
+    Closed Source Means Closed Science.
+    ***** Good insight  philosophy of learning
+
+MATLAB is a terrible programming language
+    Nikolaus Rath  2017
+    https://www.rath.org/matlab-is-a-terrible-programming-language.html
+    Many examples of bad language design:
+    No language definition.  Ambigious Syntax.  Counterintuitively limited
+    syntax.  Function semantics are needlessly overloaded.  Everything is in
+    the same namespace.  Parameter names are treated as strings.
+    No 1-D arrays.  Cell Array Iteration is awkward.  Semicolon Changes
+    Semantics.  Functions are too clever.  No way to store static data.
+    Programmatic error handling is near impossible.
+    **** Good examples
+
+What to do?
+    We use Matlab on Windows because that is what we have:
+    Matlab running on Windows.
+    NiDAQ DAC/ADC works great, is the only interface to our RCM, and is
+    the only reason for using Matlab.
+
+    My ideal would be to move the NiDAQ to a Linux box and use any other
+    language.  A possible long-term solution.
+
+    For now, use Matlab in it's sweet spot:  Single file program in the IDE,
+    edit parameters on-the-fly.  Try to keep it small and straight forward,
+    since it really is not testable (other than manually).
+    Keep it focused on one thing - capture an RCM image.
+
+    NewStep NSC200 motorized micrometer controller:  ( fiber_scanner/newstep/ )
+    Want to use it for microscope Z-stage movement to collect a series of
+    images at different Z positions (a Z-stack).
+    I developed testable interface code on my Linux platform.
+    The idea is to keep Matlab focused on taking a single image and not add
+    even more complexity taking a Z-stack.
+    Use a simple serial port interface between Linux and Matlab on Windows.
+    Linux tells Matlab to take a picture and put it in given file name.
+    [Yes, it could all be integrated in one giant monolithic Matlab script,
+    but let someone else do that.]
+

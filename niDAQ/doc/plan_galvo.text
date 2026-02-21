@@ -1,0 +1,159 @@
+2024-06-24  William A. Hudson
+
+		    Galvo Scanner Partial Plan
+		    --------------------------
+
+Initial work breakdown to get to imaging biological samples.
+[The BME 2023 team got there, we need to do it again.]
+
+A work breakdown is a simple hierarchical list of all the things that need
+to be accomplished to meet the milestone/objective/deliverable.
+In this list, each line either clarifies the above task, or is a sub-task
+needed to accomplish it.
+
+Effort estimates:
+    1d = "one effort day", anywhere from 2 hours to 4 hours that I can spend
+    on the project.  If I was working full time, it might be 8 hours.
+    Any estimate is easily wrong by a factor of 2x.
+    Use in two ways:
+	1) Relative size to help choose between alternatives.
+	2) Get rough feel for total effort.
+    Use to trade off scope vs schedule and decide whether to push for
+    better quality (i.e. more scope) or to push "good enough for now"
+    (i.e. favor schedule, and maybe revisit it later).
+
+The idea is to think about what needs to be done.
+Typically it is the overlooked items that blow the schedule.
+Items and estimates should be added/changed as we go along - the plan
+is not static.
+
+"Plans are nothing, Planning is everything."
+"These are forward looking statements, do not invest based on them."
+
+----------------------------------------------------------------------------
+
+    A) Milestone:  Image a biological sample.
+	    Turn-on demonstration and enable Priya to do the same.
+	    Simplest bio sample, nothing fancy.
+	    IS  Existing galvo scanner 2024-06-20.
+	    NOT Other modes of operation, e.g polarized light, mirror
+		    beam splitter.
+	    IS  Any realignment or rework to make it work.
+	    NOT Best Z-sectioning (that comes later).
+	    IS  Wide open pinhole, just get imaging.
+	    IS  Measure field of view (FOV).
+	    IS  Measure resolution with USAF 1051 target.
+	    IS  Estimate spot size vs Z-position.
+	    IS  Just one objective.
+
+ 3d	Experiment:
+	    Initial experiment outline and operating procedure written.
+	    Image reference target - measure FOV, resolution.
+	    Image sample on galvo scanner.
+		Scan Z-depth.
+		Find coverslip surfaces and glass slide first surface).
+		Measure/Place reference marks on coverslip.
+	    Image sample on commercial microscope (and reference target).
+		Capture camera images.
+	    Analyze data, compare and contrast.
+	    Conclusions, next steps.
+	    Report write up.
+
+	    This IS the primary result/product, defines what is needed below.
+	    Actually this experiment will be repeated many times, improving
+	    methods as we go.
+
+ 1d	Scanner system aligned, calibrated.
+	    Align 5x objective and sample target.
+	    Pinhole open.
+	    Image reference target.  Image ruler.
+	    Measure FOV.
+	    Measure resolution.
+	    Measure spot size.
+	    At multiple Z-positions to find focus.
+
+	Sample Holder
+ 2d	    A) Make a holder for a microscope slide.
+		Holder to allow swapping in USAF 1951 target.
+		Mounted on XYZ stage.
+
+ 1d	    B) Purchased slide holder.
+		Install on XYZ stage.  Easier with no access behind sample.
+		Maybe need a mounting bar for access behind sample?
+		Align to find focus.
+
+ 1d	Software, Data organization.
+	    Start with raster_gal.m  2024-06-20.  Debug.
+	    Verify one pixel per sample image.
+	    Verify data files are correct (not transposed, etc.)
+	    Verify displayed image is truly 1 pixel-per-sample.
+	    Code review for correctness.
+	    IS  Raw image is non-linear in X.
+	    NOT Develop interpolation method to linearize X.
+
+ 1d	Operating Procedure
+	    Experiment data directory  e.g. exp/ex2024_06_24/
+	    Source of scripts, copy to experiment directory.  src/
+	    Turn-on/off equipment reminder list.
+	    Software operation procedure.
+	    Verify optical path, baseline signal intensity.
+	    Validate reference image of Ronchi Ruling.
+	    Placement of sample slide on stage.
+	    Adjust focus.  Find coverslip surfaces.
+	    Take data, possibly multiple Z-position.
+
+ 1d	Sample Preparation
+	    What is needed?
+	    What is lifetime of specimen (before unusable)?
+	    Perhaps make a robust long-life reference sample?
+	    Choose simplest bio sample, e.g. onion skin?
+	    Prepare, mount on slide, coverslip.
+	    Orientation marks on coverslip:  e.g. one dot near observation
+		point, and other orientation marks further away in FOV.
+		Purpose is to find the same area in both microscopes.
+	    Probably same day as galvo scanner ready to operate.
+	    Image blank slide and coverslip as a control.
+
+	Here I suggest leaving out optimizing the pinhole, mostly to avoid
+	creating even more dependencies before getting Priya started with
+	imaging.  There is so much more we need to learn by doing trial runs
+	toward the ultimate goal.
+
+
+    B) Milestone:  Image a biological sample - with Z-sectioning.
+	    Similar to A, but improved system.
+
+ 2d	Scanner system with small pinhole.
+	    Best resolution is 1 Airy unit.  Perhaps 5 um dia pinhole?
+		We might be lucky to get a 10 um pinhole?
+	    Align pinhole:
+		A) With mirror target at best focus.
+		B) With 1/4 wave plate and mirror after dichro, before galvos.
+		[Mirror alignment is critical - want a corner cube reflector?]
+	    We will do this more than once.
+	    Do we need XYZ pinhole/detector positioning?
+	    Measure signal at each smaller pinhole.  Are we loosing too much?
+
+ 2d	Scanner system calibration.
+	    Measure FOV.
+	    Measure resolution with USAF 1951 target.
+	    Measure spot size.
+	    Measure signal level.
+	    Analyze results.
+	    At multiple Z-positions to find focus and characterize beam waist.
+	    A) Bare minimum to start.
+	    B) Detailed to understand beam waist and Z-sectioning.
+		This is significant experiments and analysis.
+	    How/Why do we care?
+
+ 2d	Software speed improvement.
+	    Increase sample rate.
+	    Sinewave move to start of frame, saving half the run time.
+	    Verify it works correctly.
+	    What scanning resolution do we need?
+
+
+Things Needed:
+	Ruler for imaging FOV.  (Bill has 0.01 inch steel ruler)
+
+
